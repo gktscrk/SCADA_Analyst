@@ -1,0 +1,145 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace scada_analyst
+{
+    public class GeoData : BaseMetaData
+    {
+        #region Variables
+
+        private List<GeoSample> geoInfo = new List<GeoSample>();
+
+        #endregion
+
+        public GeoData(string filename, BackgroundWorker bgW)
+        {
+            if (!bgW.CancellationPending)
+            {
+                this.FileName = filename;
+
+                LoadGeogData(bgW);
+            }
+        }
+
+        private void LoadGeogData(BackgroundWorker bgW)
+        {
+            using (StreamReader sR = new StreamReader(FileName))
+            {
+                try
+                {
+                    int count = 0;
+
+                    geoInfo = new List<GeoSample>();
+
+                    while (!sR.EndOfStream)
+                    {
+                        if (!bgW.CancellationPending)
+                        {
+                            string line = sR.ReadLine();
+
+                            if (!line.Equals(""))
+                            {
+                                line = line.Replace("\"", String.Empty);
+
+                                string[] splits = Common.GetSplits(line, ',');
+
+                                geoInfo.Add(new GeoSample(splits));
+                            }
+
+                                count++;
+
+                            if (count % 1 == 0)
+                            {
+                                bgW.ReportProgress((int)
+                                    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sR.Close();
+                }
+            }
+        }
+
+        #region Support Classes
+
+        public class GeoSample : BaseSampleData
+        {
+            #region Variables
+
+            private double height;
+
+            private GeoSampleType geoType;
+
+            #endregion
+
+            public GeoSample() { }
+
+            public GeoSample(string[] data)
+            {
+                //"TurbineUID","Latitude","Longitude","Height","Type"
+
+                AssetID = Common.CanConvert<int>(data[0]) ? Convert.ToInt32(data[0]) : 0;
+
+                if (Common.CanConvert<double>(data[1]) && Common.CanConvert<double>(data[2]))
+                {
+                    Position = new GridPosition(Convert.ToDouble(data[1]), 
+                        Convert.ToDouble(data[2]), GridPosition.Type.GEOG);
+                }
+
+                height = Common.CanConvert<double>(data[3]) ? Convert.ToDouble(data[3]) : 0;
+
+                if (data[4].ToLower() == "turbine")
+                {
+                    geoType = GeoSampleType.TURBINE;
+                }
+                else if (data[4].ToLower() == "metmast")
+                {
+                    geoType = GeoSampleType.METMAST;
+                }
+                else
+                {
+                    geoType = GeoSampleType.UNKNOWN;
+                }                
+            }
+
+            #region Support Classes
+
+            public enum GeoSampleType
+            {
+                UNKNOWN,
+                TURBINE,
+                METMAST
+            }
+
+            #endregion
+
+            #region Properties
+
+            public double Height { get { return height; } set { height = value; } }
+
+            public GeoSampleType GeoType { get { return geoType; } set { geoType = value; } }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Properties
+
+        public List<GeoSample> GeoInfo { get { return geoInfo; } }
+
+        #endregion
+    }
+}
