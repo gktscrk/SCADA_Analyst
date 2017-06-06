@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace scada_analyst
+namespace scada_analyst.Shared
 {
     public class BaseMetaData
     {

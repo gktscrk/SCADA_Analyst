@@ -16,6 +16,8 @@ using System.Windows.Shapes;
 
 using Microsoft.Win32;
 
+using scada_analyst.Shared;
+
 namespace scada_analyst
 {
     /// <summary>
@@ -51,7 +53,7 @@ namespace scada_analyst
 
         private void AboutClick(object sender, RoutedEventArgs e)
         {
-
+            new Window_About(this).ShowDialog();
         }
 
         private void CancelProgress_Click(object sender, RoutedEventArgs e)
@@ -179,7 +181,12 @@ namespace scada_analyst
             }
         }
 
-        private bool StructureLocations(object sender, RoutedEventArgs e)
+        private void StructureLocations(object sender, RoutedEventArgs e)
+        {
+            StructureLocations();
+        }
+
+        private bool StructureLocations()
         {
             if (geoLoaded && (meteoLoaded || scadaLoaded))
             {
@@ -530,6 +537,7 @@ namespace scada_analyst
 
         public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
+        public bool PosnsCombnd { get { return posnsCombnd; } set { posnsCombnd = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
 
         #endregion

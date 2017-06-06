@@ -1,9 +1,34 @@
 ﻿<Application x:Class="scada_analyst.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shared="clr-namespace:scada_analyst.Shared"
              xmlns:local="clr-namespace:scada_analyst"
+             xmlns:component="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              StartupUri="MainWindow.xaml">
+    
     <Application.Resources>
-         
+        
+        <SolidColorBrush x:Key="GTGroupBrush_Background" Color="LightSteelBlue" />
+        <SolidColorBrush x:Key="GTGroupBrush_Foreground" Color="White" />
+
+        <shared:BoolToOppositeConverter x:Key="BoolToOppositeConverter"/>
+        <shared:TabControlViewModel x:Key="tabVM" />
+        <shared:ColourToBrushConverter x:Key="ColourToBrushConverter" />
+
+        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
+
+        <CollectionViewSource x:Key="LatestChanges">
+            <CollectionViewSource.SortDescriptions>
+                <component:SortDescription PropertyName="Version" Direction="Descending"/>
+            </CollectionViewSource.SortDescriptions>
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="VersionAndDate"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+
+        <Style x:Key="hiddenHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
+        
     </Application.Resources>
 </Application>

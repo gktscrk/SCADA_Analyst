@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 
+using scada_analyst.Shared;
+
 namespace scada_analyst
 {
     public class ScadaData : BaseMetaData

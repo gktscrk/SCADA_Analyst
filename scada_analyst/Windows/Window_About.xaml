@@ -1,0 +1,51 @@
+﻿<Window x:Name="winAbt" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        x:Class="scada_analyst.Shared.Window_About"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        ResizeMode="NoResize" 
+        SizeToContent="WidthAndHeight"
+        SnapsToDevicePixels="True"
+        Title="About Dragon"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="4" HorizontalAlignment="Left" Height="177" Width="220" Margin="12,12,3,3" 
+               /><!--Source="{StaticResource }"-->
+
+        <TextBlock Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" x:Name="txtblkAppTitle" FontWeight="Bold" FontSize="14" 
+                   Margin="3,12,12,3" TextWrapping="Wrap" Text="Title : Version"/>
+
+        <TextBlock Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" x:Name="environment_TextBlock"
+                   Margin="3,3,12,3" TextWrapping="Wrap" Text="Environment"/>
+
+        <TextBlock Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2" x:Name="txtblkCopyright" FontStyle="Italic"
+                   Margin="3,3,12,3" TextWrapping="Wrap" Text="Copyright © 2015"/>
+
+        <TextBlock Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" x:Name="txtblkDescription" 
+                   Margin="3,3,12,3" TextWrapping="Wrap" VerticalAlignment="Top" Width="200"
+                   Text="Text" />
+
+        <TextBlock Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="3" Margin="12,3,12,3" >
+           For help, queries or bug reports please contact 
+            <Hyperlink NavigateUri ="mailto:koit.rikson@gmail.com" RequestNavigate="SupportLink_RequestNavigate">the programmer</Hyperlink>
+        </TextBlock>
+
+        <Button Grid.Column="0" Grid.Row="5" Content="Version history" Margin="12,3,3,12" Width="100" 
+                HorizontalAlignment="Left" Click="VersionHistory_Button_Click"/>
+        <Button Grid.Column="2" Grid.Row="5" Content="OK" Margin="3,3,12,12" IsCancel="True" IsDefault="True" Width="75"/>
+    </Grid>
+</Window>
