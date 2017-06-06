@@ -26,13 +26,23 @@
         <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" IsMainMenu="True" 
               Name="Prime_Menu" >
             <MenuItem Header="_File" >
-                <MenuItem Header="_About" />
+                <MenuItem Header="_About" Click="AboutClick" />
+                <Separator />
                 <MenuItem Header="_Exit" Click="Exit" />
             </MenuItem>
             <MenuItem Header="_Load">
                 <MenuItem Header="_SCADA" Click="LoadScada" />
                 <MenuItem Header="_Geographic" Click="LoadGeo" />
                 <MenuItem Header="_Meteorologic" Click="LoadMet" />
+            </MenuItem>
+            <MenuItem Header="_Data Management">
+                <MenuItem Header="_Add Position Data" Click="StructureLocations" />
+                <Separator/>
+                <MenuItem Header="_Clear All" Click="ClearAllData" />
+                <Separator/>
+                <MenuItem Header="_Clear Geographic" Click="ClearGeoData" />
+                <MenuItem Header="_Clear Meteorologic" Click="ClearMeteoData" />
+                <MenuItem Header="_Clear SCADA Data" Click="ClearScadaData" />
             </MenuItem>
         </Menu>
 

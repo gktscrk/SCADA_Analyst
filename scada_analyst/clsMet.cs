@@ -18,6 +18,8 @@ namespace scada_analyst
 
         #endregion
 
+        public MeteoData() { }
+
         public MeteoData(string filename, BackgroundWorker bgW)
         {
             if (!bgW.CancellationPending)

@@ -11,9 +11,11 @@ namespace scada_analyst
 
         private ScadaHeader fileHeader = new ScadaHeader();
         
-        private List<TurbineData> windFarm = new List<TurbineData>(); 
+        private List<TurbineData> windFarm = new List<TurbineData>();
 
         #endregion
+
+        public ScadaData() { }
 
         public ScadaData(string filename, BackgroundWorker bgW)
         {

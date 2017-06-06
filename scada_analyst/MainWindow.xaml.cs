@@ -27,7 +27,10 @@ namespace scada_analyst
 
         private bool geoLoaded = false;
         private bool meteoLoaded = false;
+        private bool posnsCombnd = false;
         private bool scadaLoaded = false;
+
+        private List<string> loadedFiles = new List<string>();
 
         private BackgroundWorker bgW = null;
 
@@ -46,6 +49,11 @@ namespace scada_analyst
             cancel_ProgressBar.Visibility = Visibility.Collapsed;
         }
 
+        private void AboutClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         private void CancelProgress_Click(object sender, RoutedEventArgs e)
         {
             if (bgW != null && bgW.IsBusy)
@@ -53,6 +61,36 @@ namespace scada_analyst
                 bgW.CancelAsync();
                 TaskCompleted();
             }
+        }
+
+        private void ClearAllData(object sender, RoutedEventArgs e)
+        {
+            ClearGeoData(sender, e);
+            ClearMeteoData(sender, e);
+            ClearScadaData(sender, e);
+
+            StructureLocations(sender, e);
+        }
+
+        private void ClearGeoData(object sender, RoutedEventArgs e)
+        {
+            geoFile = null;
+
+            StructureLocations(sender, e);
+        }
+
+        private void ClearMeteoData(object sender, RoutedEventArgs e)
+        {
+            meteoFile = null;
+
+            StructureLocations(sender, e);
+        }
+
+        private void ClearScadaData(object sender, RoutedEventArgs e)
+        {
+            scadaFile = null;
+
+            StructureLocations(sender, e);
         }
 
         private void Exit(object sender, RoutedEventArgs e)
@@ -141,6 +179,41 @@ namespace scada_analyst
             }
         }
 
+        private bool StructureLocations(object sender, RoutedEventArgs e)
+        {
+            if (geoLoaded && (meteoLoaded || scadaLoaded))
+            {
+                for (int i = 0; i < geoFile.GeoInfo.Count; i++)
+                {
+                    if (meteoLoaded)
+                    {
+                        for (int ij = 0; ij < meteoFile.MetMasts.Count; ij++)
+                        {
+                            if (geoFile.GeoInfo[i].AssetID == meteoFile.MetMasts[ij].UnitID)
+                            {
+                                meteoFile.MetMasts[ij].Position = geoFile.GeoInfo[i].Position;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int ik = 0; ik < scadaFile.WindFarm.Count; ik++)
+                        {
+                            if (geoFile.GeoInfo[i].AssetID == scadaFile.WindFarm[ik].UnitID)
+                            {
+                                scadaFile.WindFarm[ik].Position = geoFile.GeoInfo[i].Position;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                return posnsCombnd = true;
+            }
+            else { return posnsCombnd = false; }
+        }
+
         #region BackgroundWorker
 
         void TaskBegun(BackgroundWorker bgW)
@@ -181,11 +254,16 @@ namespace scada_analyst
 
             try
             {
-                foreach (string filename in filenames)
+                for (int i = 0; i < filenames.Length; i++)
                 {
-                    GeoData geography = new GeoData(filename, bgW);
+                    if (!loadedFiles.Contains(filenames[i]))
+                    {
+                        GeoData geography = new GeoData(filenames[i], bgW);
 
-                    e.Result = geography;
+                        e.Result = geography;
+
+                        loadedFiles.Add(filenames[i]);
+                    }
                 }
             }
             catch (Exception ex)
@@ -220,12 +298,19 @@ namespace scada_analyst
 
             try
             {
-                foreach (string filename in filenames)
-                {
-                    MeteoData meteorology = new MeteoData(filename, bgW);
+                List<MeteoData> meteoAnalysis = new List<MeteoData>();
 
-                    e.Result = meteorology;
+                for (int i = 0; i < filenames.Length; i++)
+                {
+                    if (!loadedFiles.Contains(filenames[i]))
+                    {
+                        meteoAnalysis.Add(new MeteoData(filenames[i], bgW));
+
+                        loadedFiles.Add(filenames[i]);
+                    }
                 }
+
+                e.Result = meteoAnalysis;
             }
             catch (Exception ex)
             {
@@ -259,12 +344,19 @@ namespace scada_analyst
 
             try
             {
-                foreach (string filename in filenames)
-                {
-                    ScadaData scadaAnalysis = new ScadaData(filename, bgW);
+                List<ScadaData> scadaAnalysis = new List<ScadaData>();
 
-                    e.Result = scadaAnalysis;
+                for (int i = 0; i < filenames.Length; i++)
+                {
+                    if (!loadedFiles.Contains(filenames[i]))
+                    {
+                        scadaAnalysis.Add(new ScadaData(filenames[i], bgW));
+
+                        loadedFiles.Add(filenames[i]);
+                    }
                 }
+
+                e.Result = scadaAnalysis;
             }
             catch (Exception ex)
             {
@@ -303,22 +395,21 @@ namespace scada_analyst
 
         void BGW_Meteo_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is MeteoData)
+            if (e.Result is List<MeteoData>)
             {
-                if (!scadaLoaded)
-                {
-                    meteoFile = (MeteoData)e.Result;
-                    meteoLoaded = true;
-                }
-                else
-                {
-                    MeteoData temp = (MeteoData)e.Result;
+                List<MeteoData> temp = (List<MeteoData>)e.Result;
 
-                    for (int i = 0; i < temp.MetMasts.Count; i++)
+                meteoFile = new MeteoData();
+
+                for (int i = 0; i < temp.Count; i++)
+                {
+                    for (int j = 0; j < temp[i].MetMasts.Count; j++)
                     {
-                        meteoFile.MetMasts.Add(temp.MetMasts[i]);
+                        meteoFile.MetMasts.Add(temp[i].MetMasts[j]);
                     }
                 }
+
+                meteoLoaded = true;
             }
             else
             {
@@ -331,22 +422,21 @@ namespace scada_analyst
 
         void BGW_Scada_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is ScadaData)
+            if (e.Result is List<ScadaData>)
             {
-                if (!scadaLoaded)
-                {
-                    scadaFile = (ScadaData)e.Result;
-                    scadaLoaded = true;
-                }
-                else
-                {
-                    ScadaData temp = (ScadaData)e.Result;
+                List<ScadaData> temp = (List<ScadaData>)e.Result;
 
-                    for (int i = 0; i < temp.WindFarm.Count; i++)
+                scadaFile = new ScadaData();
+
+                for (int i = 0; i < temp.Count; i++)
+                {
+                    for (int j = 0; j < temp[i].WindFarm.Count; j++)
                     {
-                        scadaFile.WindFarm.Add(temp.WindFarm[i]);
+                        scadaFile.WindFarm.Add(temp[i].WindFarm[j]);
                     }
                 }
+
+                scadaLoaded = true;
             }
             else
             {
@@ -443,6 +533,7 @@ namespace scada_analyst
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
 
         #endregion
+
     }
 
     public class FutureDevelopmentException : Exception { }
