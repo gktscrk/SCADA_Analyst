@@ -25,7 +25,15 @@ namespace scada_analyst
     {
         #region Variables
 
+        private bool geoLoaded = false;
+        private bool meteoLoaded = false;
+        private bool scadaLoaded = false;
+
         private BackgroundWorker bgW = null;
+
+        private GeoData geoFile;
+        private MeteoData meteoFile;
+        private ScadaData scadaFile;
 
         #endregion
 
@@ -253,9 +261,9 @@ namespace scada_analyst
             {
                 foreach (string filename in filenames)
                 {
-                    ScadaData scadaDataFile = new ScadaData(filename, bgW);
+                    ScadaData scadaAnalysis = new ScadaData(filename, bgW);
 
-                    e.Result = scadaDataFile;
+                    e.Result = scadaAnalysis;
                 }
             }
             catch (Exception ex)
@@ -281,7 +289,8 @@ namespace scada_analyst
         {
             if (e.Result is GeoData)
             {
-                GeoData result = (GeoData)e.Result;                
+                geoFile = (GeoData)e.Result;
+                geoLoaded = true;
             }
             else
             {
@@ -296,7 +305,20 @@ namespace scada_analyst
         {
             if (e.Result is MeteoData)
             {
-                MeteoData result = (MeteoData)e.Result;
+                if (!scadaLoaded)
+                {
+                    meteoFile = (MeteoData)e.Result;
+                    meteoLoaded = true;
+                }
+                else
+                {
+                    MeteoData temp = (MeteoData)e.Result;
+
+                    for (int i = 0; i < temp.MetMasts.Count; i++)
+                    {
+                        meteoFile.MetMasts.Add(temp.MetMasts[i]);
+                    }
+                }
             }
             else
             {
@@ -311,7 +333,20 @@ namespace scada_analyst
         {
             if (e.Result is ScadaData)
             {
-                ScadaData result = (ScadaData)e.Result;
+                if (!scadaLoaded)
+                {
+                    scadaFile = (ScadaData)e.Result;
+                    scadaLoaded = true;
+                }
+                else
+                {
+                    ScadaData temp = (ScadaData)e.Result;
+
+                    for (int i = 0; i < temp.WindFarm.Count; i++)
+                    {
+                        scadaFile.WindFarm.Add(temp.WindFarm[i]);
+                    }
+                }
             }
             else
             {
@@ -401,6 +436,13 @@ namespace scada_analyst
 
         #endregion
 
+        #region Properties
+
+        public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
+        public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
+        public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
+
+        #endregion
     }
 
     public class FutureDevelopmentException : Exception { }

@@ -15,11 +15,11 @@ namespace scada_analyst
 
         #endregion
 
-        public ScadaData(string fileName, BackgroundWorker bgW)
+        public ScadaData(string filename, BackgroundWorker bgW)
         {
             if (!bgW.CancellationPending)
             {
-                this.FileName = fileName;
+                this.FileName = filename;
 
                 LoadScada(bgW);
             }
