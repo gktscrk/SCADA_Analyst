@@ -37,8 +37,8 @@ namespace scada_analyst
         private BackgroundWorker bgW = null;
 
         private GeoData geoFile;
-        private MeteoData meteoFile;
-        private ScadaData scadaFile;
+        private MeteoData meteoFile = new MeteoData();
+        private ScadaData scadaFile = new ScadaData();
 
         #endregion
 
@@ -70,29 +70,27 @@ namespace scada_analyst
             ClearGeoData(sender, e);
             ClearMeteoData(sender, e);
             ClearScadaData(sender, e);
-
-            StructureLocations(sender, e);
         }
 
         private void ClearGeoData(object sender, RoutedEventArgs e)
         {
             geoFile = null;
 
-            StructureLocations(sender, e);
+            StructureLocations();
         }
 
         private void ClearMeteoData(object sender, RoutedEventArgs e)
         {
             meteoFile = null;
 
-            StructureLocations(sender, e);
+            StructureLocations();
         }
 
         private void ClearScadaData(object sender, RoutedEventArgs e)
         {
             scadaFile = null;
 
-            StructureLocations(sender, e);
+            StructureLocations();
         }
 
         private void Exit(object sender, RoutedEventArgs e)
@@ -181,11 +179,6 @@ namespace scada_analyst
             }
         }
 
-        private void StructureLocations(object sender, RoutedEventArgs e)
-        {
-            StructureLocations();
-        }
-
         private bool StructureLocations()
         {
             if (geoLoaded && (meteoLoaded || scadaLoaded))
@@ -203,7 +196,8 @@ namespace scada_analyst
                             }
                         }
                     }
-                    else
+
+                    if (scadaLoaded)
                     {
                         for (int ik = 0; ik < scadaFile.WindFarm.Count; ik++)
                         {
@@ -219,6 +213,11 @@ namespace scada_analyst
                 return posnsCombnd = true;
             }
             else { return posnsCombnd = false; }
+        }
+
+        private void StructureLocations(object sender, RoutedEventArgs e)
+        {
+            StructureLocations();
         }
 
         #region BackgroundWorker
@@ -405,9 +404,7 @@ namespace scada_analyst
             if (e.Result is List<MeteoData>)
             {
                 List<MeteoData> temp = (List<MeteoData>)e.Result;
-
-                meteoFile = new MeteoData();
-
+                
                 for (int i = 0; i < temp.Count; i++)
                 {
                     for (int j = 0; j < temp[i].MetMasts.Count; j++)
@@ -432,15 +429,18 @@ namespace scada_analyst
             if (e.Result is List<ScadaData>)
             {
                 List<ScadaData> temp = (List<ScadaData>)e.Result;
-
-                scadaFile = new ScadaData();
-
+                
                 for (int i = 0; i < temp.Count; i++)
                 {
                     for (int j = 0; j < temp[i].WindFarm.Count; j++)
                     {
                         scadaFile.WindFarm.Add(temp[i].WindFarm[j]);
                     }
+                }
+
+                if (scadaFile.WindFarm.Count > 1)
+                {
+                    scadaFile.CombineScada(scadaFile);
                 }
 
                 scadaLoaded = true;

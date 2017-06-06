@@ -29,6 +29,36 @@ namespace scada_analyst
             }
         }
 
+        public void CombineScada(ScadaData sFile)
+        {
+            CombineScadas(sFile);
+        }
+
+        private void CombineScadas(ScadaData sFile)
+        {
+            for (int i = 0; i < sFile.WindFarm.Count; i++)
+            {
+                for (int j = i+1; j < sFile.WindFarm.Count; j++)
+                {
+                    if (sFile.WindFarm[i].UnitID == sFile.WindFarm[j].UnitID)
+                    {
+                        for (int k = 0; k < sFile.WindFarm[i].Data.Count; k++)
+                        {
+                            for (int l = 0; l < sFile.WindFarm[j].Data.Count; l++)
+                            {
+                                if (sFile.WindFarm[i].Data[k].TimeStamp == sFile.WindFarm[j].Data[l].TimeStamp)
+                                {
+
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void LoadScada(BackgroundWorker bgW)
         {
             if (!bgW.CancellationPending)
