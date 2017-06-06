@@ -5,7 +5,7 @@ using System.IO;
 
 namespace scada_analyst
 {
-    public class Scada : BaseMetaData
+    public class ScadaData : BaseMetaData
     {
         #region Variables
 
@@ -15,7 +15,7 @@ namespace scada_analyst
 
         #endregion
 
-        public Scada(string fileName, BackgroundWorker bgW)
+        public ScadaData(string fileName, BackgroundWorker bgW)
         {
             if (!bgW.CancellationPending)
             {
@@ -27,75 +27,80 @@ namespace scada_analyst
 
         private void LoadScada(BackgroundWorker bgW)
         {
-            using (StreamReader sR = new StreamReader(FileName))
+            if (!bgW.CancellationPending)
             {
-                try
+                using (StreamReader sR = new StreamReader(FileName))
                 {
-                    int count = 0;
-                    bool readHeader = false;
-                    
-                    windFarm = new List<TurbineData>();
-
-                    while (!sR.EndOfStream)
+                    try
                     {
-                        if (!bgW.CancellationPending)
+                        int count = 0;
+                        bool readHeader = false;
+
+                        windFarm = new List<TurbineData>();
+
+                        while (!sR.EndOfStream)
                         {
-                            if (readHeader == false)
+                            if (!bgW.CancellationPending)
                             {
-                                string header = sR.ReadLine();
-                                header = header.Replace("\"", String.Empty);
-                                readHeader = true;
-
-                                fileHeader = new ScadaHeader(header);
-                            }
-
-                            string line = sR.ReadLine();
-
-                            if (!line.Equals(""))
-                            {
-                                line = line.Replace("\"", String.Empty);
-
-                                string[] splits = Common.GetSplits(line, ',');
-
-                                if (windFarm.Count < 1)
+                                if (readHeader == false)
                                 {
-                                    windFarm.Add(new TurbineData(splits, fileHeader));
+                                    string header = sR.ReadLine();
+                                    header = header.ToLower().Replace("\"", String.Empty);
+                                    readHeader = true;
+
+                                    if (!header.Contains("wtc")) { throw new WrongFileTypeException(); }
+
+                                    fileHeader = new ScadaHeader(header);
                                 }
-                                else
-                                {
-                                    bool foundTurbine = false;
 
-                                    for (int i = 0; i < windFarm.Count; i++)
+                                string line = sR.ReadLine();
+
+                                if (!line.Equals(""))
+                                {
+                                    line = line.Replace("\"", String.Empty);
+
+                                    string[] splits = Common.GetSplits(line, ',');
+
+                                    if (windFarm.Count < 1)
                                     {
-                                        if (windFarm[i].UnitID == Convert.ToInt32(splits[fileHeader.AssetCol]))
-                                        {
-                                            windFarm[i].Data.Add(new ScadaSample(splits, fileHeader));
-
-                                            foundTurbine = true; break;
-                                        }
+                                        windFarm.Add(new TurbineData(splits, fileHeader));
                                     }
+                                    else
+                                    {
+                                        bool foundTurbine = false;
 
-                                    if (!foundTurbine) { windFarm.Add(new TurbineData(splits, fileHeader)); }
+                                        for (int i = 0; i < windFarm.Count; i++)
+                                        {
+                                            if (windFarm[i].UnitID == Convert.ToInt32(splits[fileHeader.AssetCol]))
+                                            {
+                                                windFarm[i].Data.Add(new ScadaSample(splits, fileHeader));
+
+                                                foundTurbine = true; break;
+                                            }
+                                        }
+
+                                        if (!foundTurbine) { windFarm.Add(new TurbineData(splits, fileHeader)); }
+                                    }
                                 }
-                            }
 
-                            count++;
+                                count++;
 
-                            if (count % 500 == 0)
-                            {
-                                bgW.ReportProgress((int)
-                                    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                if (count % 500 == 0)
+                                {
+                                    bgW.ReportProgress((int)
+                                        ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                }
                             }
                         }
                     }
-                }
-                catch
-                {
-                    throw;
-                }
-                finally
-                {
-                    sR.Close();
+                    catch
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        sR.Close();
+                    }
                 }
             }
         }
@@ -152,8 +157,6 @@ namespace scada_analyst
 
             private void HeaderSeparation(string headerLine)
             {
-                headerLine = headerLine.ToLower();
-
                 string[] splits = Common.GetSplits(headerLine, ',');
 
                 HeaderSeparation(splits);

@@ -25,80 +25,98 @@ namespace scada_analyst
                 this.FileName = filename;
 
                 LoadMeteorology(bgW);
+
+                SortMeteorology(bgW);
             }
         }
 
         private void LoadMeteorology(BackgroundWorker bgW)
         {
-            using (StreamReader sR = new StreamReader(FileName))
+            if (!bgW.CancellationPending)
             {
-                try
+                using (StreamReader sR = new StreamReader(FileName))
                 {
-                    int count = 0;
-                    bool readHeader = false;
-
-                    metMasts = new List<MetMastData>();
-
-                    while (!sR.EndOfStream)
+                    try
                     {
-                        if (!bgW.CancellationPending)
+                        int count = 0;
+                        bool readHeader = false;
+
+                        metMasts = new List<MetMastData>();
+
+                        while (!sR.EndOfStream)
                         {
-                            if (readHeader == false)
+                            if (!bgW.CancellationPending)
                             {
-                                string header = sR.ReadLine();
-                                header = header.Replace("\"", String.Empty);
-                                readHeader = true;
-
-                                metrHeader = new MeteoHeader(header);
-                            }
-
-                            string line = sR.ReadLine();
-
-                            if (!line.Equals(""))
-                            {
-                                line = line.Replace("\"", String.Empty);
-
-                                string[] splits = Common.GetSplits(line, ',');
-
-                                if (metMasts.Count < 1)
+                                if (readHeader == false)
                                 {
-                                    metMasts.Add(new MetMastData(splits, metrHeader));
+                                    string header = sR.ReadLine();
+                                    header = header.ToLower().Replace("\"", String.Empty);
+                                    readHeader = true;
+
+                                    if (!header.Contains("met")) { throw new WrongFileTypeException(); }
+
+                                    metrHeader = new MeteoHeader(header);
                                 }
-                                else
-                                {
-                                    bool foundMetMast = false;
 
-                                    for (int i = 0; i < metMasts.Count; i++)
+                                string line = sR.ReadLine();
+
+                                if (!line.Equals(""))
+                                {
+                                    line = line.Replace("\"", String.Empty);
+
+                                    string[] splits = Common.GetSplits(line, ',');
+
+                                    if (metMasts.Count < 1)
                                     {
-                                        if (metMasts[i].UnitID == Convert.ToInt32(splits[metrHeader.AssetCol]))
-                                        {
-                                            metMasts[i].MetData.Add(new MeteoSample(splits, metrHeader));
-
-                                            foundMetMast = true; break;
-                                        }
+                                        metMasts.Add(new MetMastData(splits, metrHeader));
                                     }
+                                    else
+                                    {
+                                        bool foundMetMast = false;
 
-                                    if (!foundMetMast) { metMasts.Add(new MetMastData(splits, metrHeader)); }
+                                        for (int i = 0; i < metMasts.Count; i++)
+                                        {
+                                            if (metMasts[i].UnitID == Convert.ToInt32(splits[metrHeader.AssetCol]))
+                                            {
+                                                metMasts[i].MetData.Add(new MeteoSample(splits, metrHeader));
+
+                                                foundMetMast = true; break;
+                                            }
+                                        }
+
+                                        if (!foundMetMast) { metMasts.Add(new MetMastData(splits, metrHeader)); }
+                                    }
                                 }
-                            }
 
-                            count++;
+                                count++;
 
-                            if (count % 500 == 0)
-                            {
-                                bgW.ReportProgress((int)
-                                    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                if (count % 500 == 0)
+                                {
+                                    bgW.ReportProgress((int)
+                                        ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                }
                             }
                         }
                     }
+                    catch
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        sR.Close();
+                    }
                 }
-                catch
+            }
+        }
+
+        private void SortMeteorology(BackgroundWorker bgW)
+        {
+            if (!bgW.CancellationPending)
+            {
+                for (int i = 0; i < metMasts.Count; i++)
                 {
-                    throw;
-                }
-                finally
-                {
-                    sR.Close();
+                    metMasts[i].MetDataSorted = metMasts[i].MetData.OrderBy(o => o.TimeStamp).ToList();
                 }
             }
         }
@@ -110,6 +128,7 @@ namespace scada_analyst
             #region Variables
 
             private List<MeteoSample> metData = new List<MeteoSample>();
+            private List<MeteoSample> metDataSorted = new List<MeteoSample>();
 
             #endregion
 
@@ -129,7 +148,8 @@ namespace scada_analyst
 
             #region Properties
 
-            public List<MeteoSample> MetData { get { return metData; } }
+            public List<MeteoSample> MetData { get { return metData; } set { metData = value; } }
+            public List<MeteoSample> MetDataSorted { get { return metDataSorted; } set { metDataSorted = value; } }
 
             #endregion
         }
@@ -150,8 +170,6 @@ namespace scada_analyst
 
             private void HeaderSeparation(string headerLine)
             {
-                headerLine = headerLine.ToLower();
-
                 string[] splits = Common.GetSplits(headerLine, ',');
 
                 HeaderSeparation(splits);

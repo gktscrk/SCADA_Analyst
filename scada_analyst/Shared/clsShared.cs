@@ -15,6 +15,17 @@ namespace scada_analyst
             return converter.IsValid(data);
         }
 
+        public static bool ContainsAny(this string haystack, params string[] needles)
+        {
+            foreach (string needle in needles)
+            {
+                if (haystack.Contains(needle))
+                    return true;
+            }
+
+            return false;
+        }
+
         public static string[] GetSplits(string line, char[] delimiters, bool useEmpty, bool trim)
         {
             string[] splits = line.Split(delimiters);

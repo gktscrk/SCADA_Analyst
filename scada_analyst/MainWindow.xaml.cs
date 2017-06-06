@@ -43,6 +43,7 @@ namespace scada_analyst
             if (bgW != null && bgW.IsBusy)
             {
                 bgW.CancelAsync();
+                TaskCompleted();
             }
         }
 
@@ -78,7 +79,7 @@ namespace scada_analyst
             }
         }
 
-        private void LoadGeog(object sender, RoutedEventArgs e)
+        private void LoadGeo(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Location files (*.csv)|*.csv|All files (*.*)|*.*";
@@ -252,7 +253,7 @@ namespace scada_analyst
             {
                 foreach (string filename in filenames)
                 {
-                    Scada scadaDataFile = new Scada(filename, bgW);
+                    ScadaData scadaDataFile = new ScadaData(filename, bgW);
 
                     e.Result = scadaDataFile;
                 }
@@ -308,9 +309,9 @@ namespace scada_analyst
 
         void BGW_Scada_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is Scada)
+            if (e.Result is ScadaData)
             {
-                Scada result = (Scada)e.Result;
+                ScadaData result = (ScadaData)e.Result;
             }
             else
             {

@@ -31,7 +31,7 @@
             </MenuItem>
             <MenuItem Header="_Load">
                 <MenuItem Header="_SCADA" Click="LoadScada" />
-                <MenuItem Header="_Geographic" Click="LoadGeog" />
+                <MenuItem Header="_Geographic" Click="LoadGeo" />
                 <MenuItem Header="_Meteorologic" Click="LoadMet" />
             </MenuItem>
         </Menu>

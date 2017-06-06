@@ -12,6 +12,9 @@ namespace scada_analyst
     {
         #region Variables
 
+        private string[] geoNames =
+            { "latitude" , "longitude" , "lat" , "lon" , "easting" , "east" , "northing" , "north" };
+
         private List<GeoSample> geoInfo = new List<GeoSample>();
 
         #endregion
@@ -22,52 +25,65 @@ namespace scada_analyst
             {
                 this.FileName = filename;
 
-                LoadGeogData(bgW);
+                LoadGeography(bgW);
             }
         }
 
-        private void LoadGeogData(BackgroundWorker bgW)
+        private void LoadGeography(BackgroundWorker bgW)
         {
-            using (StreamReader sR = new StreamReader(FileName))
+            if (!bgW.CancellationPending)
             {
-                try
+                using (StreamReader sR = new StreamReader(FileName))
                 {
-                    int count = 0;
-
-                    geoInfo = new List<GeoSample>();
-
-                    while (!sR.EndOfStream)
+                    try
                     {
-                        if (!bgW.CancellationPending)
+                        int count = 0;
+                        bool readHeader = false;
+
+                        geoInfo = new List<GeoSample>();
+
+                        while (!sR.EndOfStream)
                         {
-                            string line = sR.ReadLine();
-
-                            if (!line.Equals(""))
+                            if (!bgW.CancellationPending)
                             {
-                                line = line.Replace("\"", String.Empty);
+                                if (readHeader == false)
+                                {
+                                    string header = sR.ReadLine();
+                                    header = header.ToLower().Replace("\"", String.Empty);
+                                    readHeader = true;
 
-                                string[] splits = Common.GetSplits(line, ',');
+                                    if (!Common.ContainsAny(header, geoNames)) { throw new WrongFileTypeException(); }
+                                }
 
-                                geoInfo.Add(new GeoSample(splits));
-                            }
+                                string line = sR.ReadLine();
+
+                                if (!line.Equals(""))
+                                {
+                                    line = line.Replace("\"", String.Empty);
+
+                                    string[] splits = Common.GetSplits(line, ',');
+
+                                    geoInfo.Add(new GeoSample(splits));
+                                }
 
                                 count++;
 
-                            if (count % 1 == 0)
-                            {
-                                bgW.ReportProgress((int)
-                                    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                if (count % 1 == 0)
+                                {
+                                    bgW.ReportProgress((int)
+                                        ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                }
                             }
                         }
                     }
-                }
-                catch
-                {
-                    throw;
-                }
-                finally
-                {
-                    sR.Close();
+                    catch
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        sR.Close();
+                    }
                 }
             }
         }
@@ -81,6 +97,7 @@ namespace scada_analyst
             private double height;
 
             private GeoSampleType geoType;
+            private GridPosition position;
 
             #endregion
 
@@ -130,6 +147,7 @@ namespace scada_analyst
             public double Height { get { return height; } set { height = value; } }
 
             public GeoSampleType GeoType { get { return geoType; } set { geoType = value; } }
+            public GridPosition Position { get { return position; } set { position = value; } }
 
             #endregion
         }

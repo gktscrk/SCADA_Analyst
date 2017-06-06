@@ -10,7 +10,7 @@ namespace scada_analyst
     {
         #region Variables
 
-        protected string fileName = "";
+        private string fileName = "";
 
         #endregion
 
@@ -29,7 +29,8 @@ namespace scada_analyst
 
         private int unitID = -1;
 
-        private Types type;
+        private GridPosition position;
+        private Types type = Types.UNKNOWN;
 
         #endregion
 
@@ -37,7 +38,7 @@ namespace scada_analyst
 
         public enum Types
         {
-            UNK,
+            UNKNOWN,
             TURBINE,
             METMAST
         }
@@ -46,6 +47,7 @@ namespace scada_analyst
 
         public int UnitID { get { return unitID; } set { unitID = value; } }
 
+        public GridPosition Position {  get { return position; } set { position = value; } }
         public Types Type { get { return type; } set { type = value; } }
 
         #endregion
@@ -60,7 +62,6 @@ namespace scada_analyst
         private int stationID = 0;
 
         private DateTime timeStamp;
-        private GridPosition position;
 
         private int assetCol = -1, sampleCol = -1, stationCol = -1, timeCol = -1;
 
@@ -76,7 +77,6 @@ namespace scada_analyst
         public int StationID { get { return stationID; } set { stationID = value; } }
         public int TimesCol { get { return timeCol; } set { timeCol = value; } }
         public DateTime TimeStamp { get { return timeStamp; } set { timeStamp = value; } }
-        public GridPosition Position { get { return position; } set { position = value; } }
 
         #endregion
     }
