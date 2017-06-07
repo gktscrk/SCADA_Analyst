@@ -14,6 +14,8 @@ namespace scada_analyst
     {
         #region Variables
 
+        private List<int> inclMetm = new List<int>();
+
         private MeteoHeader metrHeader = new MeteoHeader();
 
         private List<MetMastData> metMasts = new List<MetMastData>();
@@ -22,19 +24,36 @@ namespace scada_analyst
 
         public MeteoData() { }
 
-        public MeteoData(string filename, BackgroundWorker bgW)
+        public MeteoData(string[] filenames, BackgroundWorker bgW)
         {
             if (!bgW.CancellationPending)
             {
-                this.FileName = filename;
-
-                LoadMeteorology(bgW);
-
-                SortMeteorology(bgW);
+                LoadNSortMet(filenames, bgW);
             }
         }
 
-        private void LoadMeteorology(BackgroundWorker bgW)
+        public void AppendFiles(string[] filenames, BackgroundWorker bgW)
+        {
+            if (!bgW.CancellationPending)
+            {
+                LoadNSortMet(filenames, bgW);
+            }
+        }
+
+        private void LoadMetFiles(string[] filenames, BackgroundWorker bgW)
+        {
+            if (!bgW.CancellationPending)
+            {
+                for (int i = 0; i < filenames.Length; i++)
+                {
+                    this.FileName = filenames[i];
+
+                    LoadMeteorology(bgW, filenames.Length, i);
+                }
+            }
+        }
+
+        private void LoadMeteorology(BackgroundWorker bgW, int numberOfFiles = 1, int i = 0)
         {
             if (!bgW.CancellationPending)
             {
@@ -70,25 +89,23 @@ namespace scada_analyst
 
                                     string[] splits = Common.GetSplits(line, ',');
 
-                                    if (metMasts.Count < 1)
+                                    int thisAsset = Common.CanConvert<int>(splits[metrHeader.AssetCol]) ?
+                                        Convert.ToInt32(splits[metrHeader.AssetCol]) : throw new FileFormatException();
+
+                                    // organise loading so it would check which ones have already
+                                    // been loaded; then work around the ones have have been
+
+                                    if (inclMetm.Contains(thisAsset))
                                     {
-                                        metMasts.Add(new MetMastData(splits, metrHeader));
+                                        int index = metMasts.FindIndex(x => x.UnitID == thisAsset);
+
+                                        metMasts[index].AddData(splits, metrHeader);
                                     }
                                     else
                                     {
-                                        bool foundMetMast = false;
+                                        metMasts.Add(new MetMastData(splits, metrHeader));
 
-                                        for (int i = 0; i < metMasts.Count; i++)
-                                        {
-                                            if (metMasts[i].UnitID == Convert.ToInt32(splits[metrHeader.AssetCol]))
-                                            {
-                                                metMasts[i].MetData.Add(new MeteoSample(splits, metrHeader));
-
-                                                foundMetMast = true; break;
-                                            }
-                                        }
-
-                                        if (!foundMetMast) { metMasts.Add(new MetMastData(splits, metrHeader)); }
+                                        inclMetm.Add(Convert.ToInt32(splits[metrHeader.AssetCol]));
                                     }
                                 }
 
@@ -97,7 +114,8 @@ namespace scada_analyst
                                 if (count % 500 == 0)
                                 {
                                     bgW.ReportProgress((int)
-                                        ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                        ((double)100 / numberOfFiles * i +
+                                        (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
                                 }
                             }
                         }
@@ -112,6 +130,13 @@ namespace scada_analyst
                     }
                 }
             }
+        }
+
+        private void LoadNSortMet(string[] filenames, BackgroundWorker bgW)
+        {
+            LoadMetFiles(filenames, bgW);
+
+            SortMeteorology(bgW);
         }
 
         private void SortMeteorology(BackgroundWorker bgW)
@@ -144,9 +169,29 @@ namespace scada_analyst
 
                 metData.Add(new MeteoSample(splits, header));
 
+                InclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' })));
+
                 if (UnitID == -1 && metData.Count > 0)
                 {
                     UnitID = metData[0].AssetID;
+                }
+            }
+
+            public void AddData(string[] splits, MeteoHeader header)
+            {
+                DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }));
+
+                if (InclDtTm.Contains(thisTime))
+                {
+                    int index = metData.FindIndex(x => x.TimeStamp == thisTime);
+
+                    metData[index].AddDataFields(splits, header);
+                }
+                else
+                {
+                    metData.Add(new MeteoSample(splits, header));
+
+                    InclDtTm.Add(thisTime);
                 }
             }
 
@@ -259,6 +304,16 @@ namespace scada_analyst
 
             public MeteoSample(string[] data, MeteoHeader header)
             {
+                LoadData(data, header);
+            }
+
+            public void AddDataFields(string[] data, MeteoHeader header)
+            {
+                LoadData(data, header);
+            }
+
+            private void LoadData(string[] data, MeteoHeader header)
+            {
                 if (header.AssetCol != -1)
                 {
                     AssetID = Common.CanConvert<int>(data[header.AssetCol]) ? Convert.ToInt32(data[header.AssetCol]) : 0;
@@ -302,7 +357,7 @@ namespace scada_analyst
 
             private double GetVals(double value, string[] data, double index)
             { 
-                if (value == 0 || value == metError)
+                if (value == -999999 || value == metError)
                 {
                     return Common.GetVals(data, (int)index, metError);
                 }

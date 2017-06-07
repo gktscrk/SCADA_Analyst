@@ -145,7 +145,7 @@ namespace scada_analyst
                 bgW.ProgressChanged += BGW_ProgressChanged;
                 bgW.RunWorkerCompleted += BGW_Meteo_RunWorkerCompleted;
 
-                bgW.RunWorkerAsync(new object[] { fileList });
+                bgW.RunWorkerAsync(new object[] { fileList , meteoFile , meteoLoaded });
             }
         }
 
@@ -170,7 +170,7 @@ namespace scada_analyst
                 bgW.ProgressChanged += BGW_ProgressChanged;
                 bgW.RunWorkerCompleted += BGW_Scada_RunWorkerCompleted;
 
-                bgW.RunWorkerAsync(new object[] { fileList , scadaFile });
+                bgW.RunWorkerAsync(new object[] { fileList , scadaFile , scadaLoaded });
             }
         }
 
@@ -303,6 +303,8 @@ namespace scada_analyst
 
             Object[] args = (Object[])e.Argument;
             string[] filenames = (string[])args[0];
+            MeteoData existingData = (MeteoData)args[1];
+            bool loaded = (bool)args[2];
 
             string errors;
 
@@ -310,19 +312,18 @@ namespace scada_analyst
 
             try
             {
-                List<MeteoData> meteoAnalysis = new List<MeteoData>();
+                MeteoData analysis = existingData;
 
-                for (int i = 0; i < filenames.Length; i++)
+                if (!loaded)
                 {
-                    if (!loadedFiles.Contains(filenames[i]))
-                    {
-                        meteoAnalysis.Add(new MeteoData(filenames[i], bgW));
-
-                        loadedFiles.Add(filenames[i]);
-                    }
+                    analysis = new MeteoData(filenames, bgW);
+                }
+                else
+                {
+                    analysis.AppendFiles(filenames, bgW);
                 }
 
-                e.Result = meteoAnalysis;
+                e.Result = analysis;
             }
             catch (Exception ex)
             {
@@ -350,6 +351,7 @@ namespace scada_analyst
             Object[] args = (Object[])e.Argument;
             string[] filenames = (string[])args[0];
             ScadaData existingData = (ScadaData)args[1];
+            bool loaded = (bool)args[2];
 
             string errors;
 
@@ -359,7 +361,7 @@ namespace scada_analyst
             {
                 ScadaData analysis = existingData;
 
-                if (!scadaLoaded)
+                if (!loaded)
                 {
                     analysis = new ScadaData(filenames, bgW);
                 }
@@ -407,18 +409,10 @@ namespace scada_analyst
 
         void BGW_Meteo_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is List<MeteoData>)
+            if (e.Result is MeteoData)
             {
-                List<MeteoData> temp = (List<MeteoData>)e.Result;
+                meteoFile = (MeteoData)e.Result;
                 
-                for (int i = 0; i < temp.Count; i++)
-                {
-                    for (int j = 0; j < temp[i].MetMasts.Count; j++)
-                    {
-                        meteoFile.MetMasts.Add(temp[i].MetMasts[j]);
-                    }
-                }
-
                 meteoLoaded = true;
             }
             else

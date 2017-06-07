@@ -29,6 +29,8 @@ namespace scada_analyst.Shared
 
         private int unitID = -1;
 
+        private List<DateTime> inclDtTm = new List<DateTime>();
+
         private GridPosition position;
         private Types type = Types.UNKNOWN;
 
@@ -46,6 +48,8 @@ namespace scada_analyst.Shared
         #region Properties
 
         public int UnitID { get { return unitID; } set { unitID = value; } }
+
+        public List<DateTime> InclDtTm { get { return inclDtTm; } set { inclDtTm = value; } }
 
         public GridPosition Position {  get { return position; } set { position = value; } }
         public Types Type { get { return type; } set { type = value; } }
@@ -160,10 +164,10 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        protected double minm;
-        protected double maxm;
-        protected double mean;
-        protected double stdv;
+        protected double minm = -999999;
+        protected double maxm = -999999;
+        protected double mean = -999999;
+        protected double stdv = -999999;
 
         // protected int minmCol = -1, maxmCol = -1, meanCol = -1, stdvCol = -1;
 

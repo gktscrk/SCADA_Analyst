@@ -14,6 +14,11 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0101 = new ProgramVersion(0101, new DateTime(2017, 06, 07));
+            v0101.AddChange("Improved loading methodology for meteorology files.");
+            v0101.AddChange("Improving turbine data loading with regards to empty variables and unknown info.");
+            results.Add(v0101);
+
             ProgramVersion v0100 = new ProgramVersion(0100, new DateTime(2017,06,07));
             v0100.AddChange("Improved loading methodology for SCADA files.");
             v0100.AddChange("More variables loaded from turbine and temperature files.");
