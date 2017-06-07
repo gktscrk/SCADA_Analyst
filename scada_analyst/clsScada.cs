@@ -316,11 +316,11 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "reactpwr")
                             {
-                                if (parts[2] == "mean") { React.Powers.Mean = i; }
-                                else if (parts[2] == "stddev") { React.Powers.Stdv = i; }
-                                else if (parts[2] == "max") { React.Powers.Maxm = i; }
-                                else if (parts[2] == "min") { React.Powers.Minm = i; }
-                                else if (parts[2] == "endvalue") { React.Powers.EndVal = i; }
+                                if (parts[2] == "mean") { Powers.Reactives.Mean = i; }
+                                else if (parts[2] == "stddev") { Powers.Reactives.Stdv = i; }
+                                else if (parts[2] == "max") { Powers.Reactives.Maxm = i; }
+                                else if (parts[2] == "min") { Powers.Reactives.Minm = i; }
+                                else if (parts[2] == "endvalue") { Powers.Reactives.EndVal = i; }
                             }
                             else if (parts[1] == "voltphr")
                             {
@@ -345,6 +345,20 @@ namespace scada_analyst
                             }
                             #endregion
                             #region Temperature File
+                            else if (parts[1] == "ambietmp")
+                            {
+                                if (parts[2] == "mean") { AmbTemps.Mean = i; }
+                                else if (parts[2] == "stddev") { AmbTemps.Stdv = i; }
+                                else if (parts[2] == "max") { AmbTemps.Maxm = i; }
+                                else if (parts[2] == "min") { AmbTemps.Minm = i; }
+                            }
+                            else if (parts[1] == "deltatmp")
+                            {
+                                if (parts[2] == "mean") { DeltaTs.Mean = i; }
+                                else if (parts[2] == "stddev") { DeltaTs.Stdv = i; }
+                                else if (parts[2] == "max") { DeltaTs.Maxm = i; }
+                                else if (parts[2] == "min") { DeltaTs.Minm = i; }
+                            }
                             else if (parts[1] == "gen1u1tm")
                             {
                                 if (parts[2] == "mean") { Genny.G1u1.Mean = i; }
@@ -492,6 +506,34 @@ namespace scada_analyst
                                 else if (parts[2] == "max") { Gearbox.Ims.Rots.Maxm = i; }
                                 else if (parts[2] == "min") { Gearbox.Ims.Rots.Minm = i; }
                             }
+                            else if (parts[1] == "mainbtmp")
+                            {
+                                if (parts[2] == "mean") { MainBear.Standards.Mean = i; }
+                                else if (parts[2] == "stddev") { MainBear.Standards.Stdv = i; }
+                                else if (parts[2] == "max") { MainBear.Standards.Maxm = i; }
+                                else if (parts[2] == "min") { MainBear.Standards.Minm = i; }
+                            }
+                            else if (parts[1] == "mbeargtm")
+                            {
+                                if (parts[2] == "mean") { MainBear.Gs.Mean = i; }
+                                else if (parts[2] == "stddev") { MainBear.Gs.Stdv = i; }
+                                else if (parts[2] == "max") { MainBear.Gs.Maxm = i; }
+                                else if (parts[2] == "min") { MainBear.Gs.Minm = i; }
+                            }
+                            else if (parts[1] == "mbearhtm")
+                            {
+                                if (parts[2] == "mean") { MainBear.Hs.Mean = i; }
+                                else if (parts[2] == "stddev") { MainBear.Hs.Stdv = i; }
+                                else if (parts[2] == "max") { MainBear.Hs.Maxm = i; }
+                                else if (parts[2] == "min") { MainBear.Hs.Minm = i; }
+                            }
+                            else if (parts[1] == "naceltmp")
+                            {
+                                if (parts[2] == "mean") { Nacel.Mean = i; }
+                                else if (parts[2] == "stddev") { Nacel.Stdv = i; }
+                                else if (parts[2] == "max") { Nacel.Maxm = i; }
+                                else if (parts[2] == "min") { Nacel.Minm = i; }
+                            }
                             #endregion
                             #region Turbine File
                             else if (parts[1] == "curtime") { curTimeCol = i; }
@@ -544,6 +586,13 @@ namespace scada_analyst
                                 else if (parts[2] == "max") { AnemoM.TerAnemo.Maxm = i; }
                                 else if (parts[2] == "min") { AnemoM.TerAnemo.Minm = i; }
                             }
+                            else if (parts[1] == "twrhumid")
+                            {
+                                if (parts[2] == "mean") { Towers.Humid.Mean = i; }
+                                else if (parts[2] == "stddev") { Towers.Humid.Stdv = i; }
+                                else if (parts[2] == "max") { Towers.Humid.Maxm = i; }
+                                else if (parts[2] == "min") { Towers.Humid.Minm = i; }
+                            }
                             #endregion
                         }
                     }
@@ -591,6 +640,7 @@ namespace scada_analyst
             private Nacelle nacel = new Nacelle();
             private Power power = new Power();
             private Reactor react = new Reactor();
+            private Tower tower = new Tower();
             private Transformer transf = new Transformer();
             private Voltage voltage = new Voltage();
 
@@ -651,11 +701,11 @@ namespace scada_analyst
                 power.PowrFact.Minm = GetVals(power.PowrFact.Minm, data, header.Powers.PowrFact.Minm);
                 power.PowrFact.EndVal = GetVals(power.PowrFact.EndVal, data, header.Powers.PowrFact.EndValCol);
 
-                react.Powers.Mean = GetVals(react.Powers.Mean, data, header.React.Powers.Mean);
-                react.Powers.Stdv = GetVals(react.Powers.Stdv, data, header.React.Powers.Stdv);
-                react.Powers.Maxm = GetVals(react.Powers.Maxm, data, header.React.Powers.Maxm);
-                react.Powers.Minm = GetVals(react.Powers.Minm, data, header.React.Powers.Minm);
-                react.Powers.EndVal = GetVals(react.Powers.EndVal, data, header.React.Powers.EndValCol);
+                power.Reactives.Mean = GetVals(power.Reactives.Mean, data, header.Powers.Reactives.Mean);
+                power.Reactives.Stdv = GetVals(power.Reactives.Stdv, data, header.Powers.Reactives.Stdv);
+                power.Reactives.Maxm = GetVals(power.Reactives.Maxm, data, header.Powers.Reactives.Maxm);
+                power.Reactives.Minm = GetVals(power.Reactives.Minm, data, header.Powers.Reactives.Minm);
+                power.Reactives.EndVal = GetVals(power.Reactives.EndVal, data, header.Powers.Reactives.EndValCol);
 
                 current.phR.Mean = GetVals(current.phR.Mean, data, header.Currents.phR.Mean);
                 current.phR.Stdv = GetVals(current.phR.Stdv, data, header.Currents.phR.Stdv);
@@ -690,23 +740,92 @@ namespace scada_analyst
                 #endregion
                 #region Temperature File
 
-                gearbox.Hs.Gens.Mean = GetVals(gearbox.Hs.Gens.Mean, data, header.gearbox.Hs.Gens.Mean);
-                gearbox.Hs.Gens.Stdv = GetVals(gearbox.Hs.Gens.Stdv, data, header.gearbox.Hs.Gens.Stdv);
-                gearbox.Hs.Gens.Maxm = GetVals(gearbox.Hs.Gens.Maxm, data, header.gearbox.Hs.Gens.Maxm);
-                gearbox.Hs.Gens.Minm = GetVals(gearbox.Hs.Gens.Minm, data, header.gearbox.Hs.Gens.Minm);
-                gearbox.Hs.Rots.Mean = GetVals(gearbox.Hs.Rots.Mean, data, header.gearbox.Hs.Rots.Mean);
-                gearbox.Hs.Rots.Stdv = GetVals(gearbox.Hs.Rots.Stdv, data, header.gearbox.Hs.Rots.Stdv);
-                gearbox.Hs.Rots.Maxm = GetVals(gearbox.Hs.Rots.Maxm, data, header.gearbox.Hs.Rots.Maxm);
-                gearbox.Hs.Rots.Minm = GetVals(gearbox.Hs.Rots.Minm, data, header.gearbox.Hs.Rots.Minm);
+                ambTemps.Maxm = GetVals(ambTemps.Mean, data, header.AmbTemps.Mean);
+                ambTemps.Stdv = GetVals(ambTemps.Stdv, data, header.AmbTemps.Stdv);
+                ambTemps.Maxm = GetVals(ambTemps.Maxm, data, header.AmbTemps.Maxm);
+                ambTemps.Minm = GetVals(ambTemps.Minm, data, header.AmbTemps.Minm);
 
-                gearbox.Ims.Gens.Mean = GetVals(gearbox.Ims.Gens.Mean, data, header.gearbox.Ims.Gens.Mean);
-                gearbox.Ims.Gens.Stdv = GetVals(gearbox.Ims.Gens.Stdv, data, header.gearbox.Ims.Gens.Stdv);
-                gearbox.Ims.Gens.Maxm = GetVals(gearbox.Ims.Gens.Maxm, data, header.gearbox.Ims.Gens.Maxm);
-                gearbox.Ims.Gens.Minm = GetVals(gearbox.Ims.Gens.Minm, data, header.gearbox.Ims.Gens.Minm);
-                gearbox.Ims.Rots.Mean = GetVals(gearbox.Ims.Rots.Mean, data, header.gearbox.Ims.Rots.Mean);
-                gearbox.Ims.Rots.Stdv = GetVals(gearbox.Ims.Rots.Stdv, data, header.gearbox.Ims.Rots.Stdv);
-                gearbox.Ims.Rots.Maxm = GetVals(gearbox.Ims.Rots.Maxm, data, header.gearbox.Ims.Rots.Maxm);
-                gearbox.Ims.Rots.Minm = GetVals(gearbox.Ims.Rots.Minm, data, header.gearbox.Ims.Rots.Minm);
+                deltaT.Maxm = GetVals(deltaT.Mean, data, header.DeltaTs.Mean);
+                deltaT.Stdv = GetVals(deltaT.Stdv, data, header.DeltaTs.Stdv);
+                deltaT.Maxm = GetVals(deltaT.Maxm, data, header.DeltaTs.Maxm);
+                deltaT.Minm = GetVals(deltaT.Minm, data, header.DeltaTs.Minm);
+
+                gearbox.Hs.Gens.Mean = GetVals(gearbox.Hs.Gens.Mean, data, header.Gearbox.Hs.Gens.Mean);
+                gearbox.Hs.Gens.Stdv = GetVals(gearbox.Hs.Gens.Stdv, data, header.Gearbox.Hs.Gens.Stdv);
+                gearbox.Hs.Gens.Maxm = GetVals(gearbox.Hs.Gens.Maxm, data, header.Gearbox.Hs.Gens.Maxm);
+                gearbox.Hs.Gens.Minm = GetVals(gearbox.Hs.Gens.Minm, data, header.Gearbox.Hs.Gens.Minm);
+                gearbox.Hs.Rots.Mean = GetVals(gearbox.Hs.Rots.Mean, data, header.Gearbox.Hs.Rots.Mean);
+                gearbox.Hs.Rots.Stdv = GetVals(gearbox.Hs.Rots.Stdv, data, header.Gearbox.Hs.Rots.Stdv);
+                gearbox.Hs.Rots.Maxm = GetVals(gearbox.Hs.Rots.Maxm, data, header.Gearbox.Hs.Rots.Maxm);
+                gearbox.Hs.Rots.Minm = GetVals(gearbox.Hs.Rots.Minm, data, header.Gearbox.Hs.Rots.Minm);
+
+                gearbox.Ims.Gens.Mean = GetVals(gearbox.Ims.Gens.Mean, data, header.Gearbox.Ims.Gens.Mean);
+                gearbox.Ims.Gens.Stdv = GetVals(gearbox.Ims.Gens.Stdv, data, header.Gearbox.Ims.Gens.Stdv);
+                gearbox.Ims.Gens.Maxm = GetVals(gearbox.Ims.Gens.Maxm, data, header.Gearbox.Ims.Gens.Maxm);
+                gearbox.Ims.Gens.Minm = GetVals(gearbox.Ims.Gens.Minm, data, header.Gearbox.Ims.Gens.Minm);
+                gearbox.Ims.Rots.Mean = GetVals(gearbox.Ims.Rots.Mean, data, header.Gearbox.Ims.Rots.Mean);
+                gearbox.Ims.Rots.Stdv = GetVals(gearbox.Ims.Rots.Stdv, data, header.Gearbox.Ims.Rots.Stdv);
+                gearbox.Ims.Rots.Maxm = GetVals(gearbox.Ims.Rots.Maxm, data, header.Gearbox.Ims.Rots.Maxm);
+                gearbox.Ims.Rots.Minm = GetVals(gearbox.Ims.Rots.Minm, data, header.Gearbox.Ims.Rots.Minm);
+
+                gearbox.Oils.Mean = GetVals(gearbox.Oils.Mean, data, header.Gearbox.Oils.Mean);
+                gearbox.Oils.Stdv = GetVals(gearbox.Oils.Stdv, data, header.Gearbox.Oils.Stdv);
+                gearbox.Oils.Maxm = GetVals(gearbox.Oils.Maxm, data, header.Gearbox.Oils.Maxm);
+                gearbox.Oils.Minm = GetVals(gearbox.Oils.Minm, data, header.Gearbox.Oils.Minm);
+
+                genny.G1u1.Mean = GetVals(genny.G1u1.Mean, data, header.Genny.G1u1.Mean);
+                genny.G1u1.Stdv = GetVals(genny.G1u1.Stdv, data, header.Genny.G1u1.Stdv);
+                genny.G1u1.Maxm = GetVals(genny.G1u1.Maxm, data, header.Genny.G1u1.Maxm);
+                genny.G1u1.Minm = GetVals(genny.G1u1.Minm, data, header.Genny.G1u1.Minm);
+                genny.G1v1.Mean = GetVals(genny.G1v1.Mean, data, header.Genny.G1v1.Mean);
+                genny.G1v1.Stdv = GetVals(genny.G1v1.Stdv, data, header.Genny.G1v1.Stdv);
+                genny.G1v1.Maxm = GetVals(genny.G1v1.Maxm, data, header.Genny.G1v1.Maxm);
+                genny.G1v1.Minm = GetVals(genny.G1v1.Minm, data, header.Genny.G1v1.Minm);
+                genny.G1w1.Mean = GetVals(genny.G1w1.Mean, data, header.Genny.G1w1.Mean);
+                genny.G1w1.Stdv = GetVals(genny.G1w1.Stdv, data, header.Genny.G1w1.Stdv);
+                genny.G1w1.Maxm = GetVals(genny.G1w1.Maxm, data, header.Genny.G1w1.Maxm);
+                genny.G1w1.Minm = GetVals(genny.G1w1.Minm, data, header.Genny.G1w1.Minm);
+
+                genny.G2u1.Mean = GetVals(genny.G2u1.Mean, data, header.Genny.G2u1.Mean);
+                genny.G2u1.Stdv = GetVals(genny.G2u1.Stdv, data, header.Genny.G2u1.Stdv);
+                genny.G2u1.Maxm = GetVals(genny.G2u1.Maxm, data, header.Genny.G2u1.Maxm);
+                genny.G2u1.Minm = GetVals(genny.G2u1.Minm, data, header.Genny.G2u1.Minm);
+                genny.G2v1.Mean = GetVals(genny.G2v1.Mean, data, header.Genny.G2v1.Mean);
+                genny.G2v1.Stdv = GetVals(genny.G2v1.Stdv, data, header.Genny.G2v1.Stdv);
+                genny.G2v1.Maxm = GetVals(genny.G2v1.Maxm, data, header.Genny.G2v1.Maxm);
+                genny.G2v1.Minm = GetVals(genny.G2v1.Minm, data, header.Genny.G2v1.Minm);
+                genny.G2w1.Mean = GetVals(genny.G2w1.Mean, data, header.Genny.G2w1.Mean);
+                genny.G2w1.Stdv = GetVals(genny.G2w1.Stdv, data, header.Genny.G2w1.Stdv);
+                genny.G2w1.Maxm = GetVals(genny.G2w1.Maxm, data, header.Genny.G2w1.Maxm);
+                genny.G2w1.Minm = GetVals(genny.G2w1.Minm, data, header.Genny.G2w1.Minm);
+
+                genny.bearingG.Mean = GetVals(genny.bearingG.Mean, data, header.Genny.bearingG.Mean);
+                genny.bearingG.Stdv = GetVals(genny.bearingG.Stdv, data, header.Genny.bearingG.Stdv);
+                genny.bearingG.Maxm = GetVals(genny.bearingG.Maxm, data, header.Genny.bearingG.Maxm);
+                genny.bearingG.Minm = GetVals(genny.bearingG.Minm, data, header.Genny.bearingG.Minm);
+                genny.bearingR.Mean = GetVals(genny.bearingR.Mean, data, header.Genny.bearingR.Mean);
+                genny.bearingR.Stdv = GetVals(genny.bearingR.Stdv, data, header.Genny.bearingR.Stdv);
+                genny.bearingR.Maxm = GetVals(genny.bearingR.Maxm, data, header.Genny.bearingR.Maxm);
+                genny.bearingR.Minm = GetVals(genny.bearingR.Minm, data, header.Genny.bearingR.Minm);
+
+                mainBear.Standards.Mean = GetVals(mainBear.Standards.Mean, data, header.MainBear.Standards.Mean);
+                mainBear.Standards.Stdv = GetVals(mainBear.Standards.Stdv, data, header.MainBear.Standards.Stdv);
+                mainBear.Standards.Maxm = GetVals(mainBear.Standards.Maxm, data, header.MainBear.Standards.Maxm);
+                mainBear.Standards.Minm = GetVals(mainBear.Standards.Minm, data, header.MainBear.Standards.Minm);
+
+                mainBear.Gs.Mean = GetVals(mainBear.Gs.Mean, data, header.MainBear.Gs.Mean);
+                mainBear.Gs.Stdv = GetVals(mainBear.Gs.Stdv, data, header.MainBear.Gs.Stdv);
+                mainBear.Gs.Maxm = GetVals(mainBear.Gs.Maxm, data, header.MainBear.Gs.Maxm);
+                mainBear.Gs.Minm = GetVals(mainBear.Gs.Minm, data, header.MainBear.Gs.Minm);
+                mainBear.Hs.Mean = GetVals(mainBear.Hs.Mean, data, header.MainBear.Hs.Mean);
+                mainBear.Hs.Stdv = GetVals(mainBear.Hs.Stdv, data, header.MainBear.Hs.Stdv);
+                mainBear.Hs.Maxm = GetVals(mainBear.Hs.Maxm, data, header.MainBear.Hs.Maxm);
+                mainBear.Hs.Minm = GetVals(mainBear.Hs.Minm, data, header.MainBear.Hs.Minm);
+
+                nacel.Mean = GetVals(nacel.Mean, data, header.Nacel.Mean);
+                nacel.Stdv = GetVals(nacel.Stdv, data, header.Nacel.Stdv);
+                nacel.Maxm = GetVals(nacel.Maxm, data, header.Nacel.Maxm);
+                nacel.Minm = GetVals(nacel.Minm, data, header.Nacel.Minm);
 
                 #endregion
                 #region Turbine File
@@ -748,7 +867,10 @@ namespace scada_analyst
                 genny.Rpms.Maxm = GetVals(genny.Rpms.Maxm, data, header.Genny.Rpms.Maxm);
                 genny.Rpms.Minm = GetVals(genny.Rpms.Minm, data, header.Genny.Rpms.Minm);
 
-
+                tower.Humid.Mean = GetVals(tower.Humid.Mean, data, header.Towers.Humid.Mean);
+                tower.Humid.Stdv = GetVals(tower.Humid.Stdv, data, header.Towers.Humid.Stdv);
+                tower.Humid.Maxm = GetVals(tower.Humid.Maxm, data, header.Towers.Humid.Maxm);
+                tower.Humid.Minm = GetVals(tower.Humid.Minm, data, header.Towers.Humid.Minm);
 
                 #endregion
             }
@@ -1166,11 +1288,12 @@ namespace scada_analyst
                 protected double endValue;
                 protected double qualEndVal;
                 protected double rgStEndVal;
-                protected GridFrequency gridFreq = new GridFrequency();
-                protected PowerFactor powrFact = new PowerFactor();
-
                 protected int endValCol, qualEndValCol, rgStEndValCol;
 
+                protected GridFrequency gridFreq = new GridFrequency();
+                protected PowerFactor powrFact = new PowerFactor();
+                protected Reactive reactive = new Reactive();
+                
                 #endregion
 
                 #region Support Classes            
@@ -1209,38 +1332,7 @@ namespace scada_analyst
                     #endregion
                 }
 
-                #endregion
-
-                #region Properties
-
-                public double EndVal { get { return endValue; } set { endValue = value; } }
-                public double QualEndVal { get { return qualEndVal; } set { qualEndVal = value; } }
-                public double RgStEndVal { get { return rgStEndVal; } set { rgStEndVal = value; } }
-
-                public int EndValCol { get { return endValCol; } set { endValCol = value; } }
-                public int QualEndValCol { get { return qualEndValCol; } set { qualEndValCol = value; } }
-                public int RgStEndValCol { get { return rgStEndValCol; } set { rgStEndValCol = value; } }
-
-                public GridFrequency GridFreq { get { return gridFreq; } set { gridFreq = value; } }
-                public PowerFactor PowrFact { get { return powrFact; } set { powrFact = value; } }
-
-                #endregion
-            }
-
-            public class Reactor
-            {
-                #region Variables
-
-                protected Power power = new Power();
-                protected U u = new U();
-                protected V v = new V();
-                protected W w = new W();
-                
-                #endregion
-
-                #region Support Classes
-
-                public class Power : Stats
+                public class Reactive : Stats
                 {
                     #region Variables
 
@@ -1257,6 +1349,37 @@ namespace scada_analyst
                     #endregion
                 }
 
+                #endregion
+
+                #region Properties
+
+                public double EndVal { get { return endValue; } set { endValue = value; } }
+                public double QualEndVal { get { return qualEndVal; } set { qualEndVal = value; } }
+                public double RgStEndVal { get { return rgStEndVal; } set { rgStEndVal = value; } }
+
+                public int EndValCol { get { return endValCol; } set { endValCol = value; } }
+                public int QualEndValCol { get { return qualEndValCol; } set { qualEndValCol = value; } }
+                public int RgStEndValCol { get { return rgStEndValCol; } set { rgStEndValCol = value; } }
+
+                public GridFrequency GridFreq { get { return gridFreq; } set { gridFreq = value; } }
+                public PowerFactor PowrFact { get { return powrFact; } set { powrFact = value; } }
+                public Reactive Reactives { get { return reactive; } set { reactive = value; } }
+
+                #endregion
+            }
+
+            public class Reactor
+            {
+                #region Variables
+                
+                protected U u = new U();
+                protected V v = new V();
+                protected W w = new W();
+                
+                #endregion
+
+                #region Support Classes
+                
                 public class U : Temperature { }
                 public class V : Temperature { }
                 public class W : Temperature { }
@@ -1265,10 +1388,33 @@ namespace scada_analyst
 
                 #region Properties
 
-                public Power Powers { get { return power; } set { power = value; } }
                 public U Us { get { return u; } set { u = value; } }
                 public V Vs { get { return v; } set { v = value; } }
                 public W Ws { get { return w; } set { w = value; } }
+
+                #endregion
+            }
+
+            public class Tower
+            {
+                #region Variables
+
+                protected Humidity humid = new Humidity();
+                protected Frequenc freqs = new Frequenc();
+
+                #endregion
+
+                #region Support Classes
+
+                public class Humidity : Stats { }
+                public class Frequenc : Stats { }
+
+                #endregion
+
+                #region Properties
+
+                public Humidity Humid { get { return humid; } set { humid = value; } }
+                public Frequenc Freqs { get { return freqs; } set { freqs = value; } }
 
                 #endregion
             }
@@ -1372,6 +1518,7 @@ namespace scada_analyst
             public Nacelle Nacel { get { return nacel; } set { nacel = value; } }
             public Power Powers { get { return power; } set { power = value; } }
             public Reactor React { get { return react; } set { react = value; } }
+            public Tower Towers { get { return tower; } set { tower = value; } }
             public Transformer Transf { get { return transf; } set { transf = value; } }
             public Voltage Voltages { get { return voltage; } set { voltage = value; } }
 
