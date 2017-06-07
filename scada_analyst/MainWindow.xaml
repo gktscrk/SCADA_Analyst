@@ -59,19 +59,22 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0" Text=" " />
+                
                 <ProgressBar Grid.Column="1"
                          Name="progress_ProgressBar" Width="100"
                          Margin="5,0" >
                 </ProgressBar>
+                
+                <!--<Label Grid.Column="1" Name="counter_ProgressBar" Width="40" Padding="0"
+                       Margin="5,0" FontSize="10" />-->
 
-                <Label Name="label_ProgressBar" Width="24" Padding="0" Grid.Column="2" 
+                <Label Grid.Column="2"  Name="label_ProgressBar" Width="24" Padding="0"
                    Margin="5,0" FontSize="10" />
 
-                <Button Name="cancel_ProgressBar" Margin="5,0" Grid.Column="3" 
-                    VerticalAlignment="Center"
-                    Content="Cancel" Click="CancelProgress_Click" Padding="5,1"
-                    TextOptions.TextFormattingMode="Display" MinHeight="10"
-                    FontSize="8" />
+                <Button Grid.Column="3" Name="cancel_ProgressBar" 
+                        Margin="5,0" VerticalAlignment="Center" FontSize="8"                     
+                        Content="Cancel" Click="CancelProgress_Click" Padding="5,1"                    
+                        TextOptions.TextFormattingMode="Display" MinHeight="10" />
             </Grid>
         </StatusBar>
         

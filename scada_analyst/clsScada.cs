@@ -12,7 +12,10 @@ namespace scada_analyst
         #region Variables
 
         private ScadaHeader fileHeader = new ScadaHeader();
-        
+
+        // a list for including the asset IDs for all loaded turbines
+        private List<int> inclTrbn = new List<int>(); 
+
         private List<TurbineData> windFarm = new List<TurbineData>();
 
         #endregion
@@ -29,37 +32,36 @@ namespace scada_analyst
             }
         }
 
-        public void CombineScada(ScadaData sFile)
+        public ScadaData(string[] filenames, BackgroundWorker bgW)
         {
-            CombineScadas(sFile);
+            if (!bgW.CancellationPending)
+            {
+                LoadFiles(filenames, bgW);
+            }
         }
 
-        private void CombineScadas(ScadaData sFile)
+        public void AppendFiles(string[] filenames, BackgroundWorker bgW)
         {
-            for (int i = 0; i < sFile.WindFarm.Count; i++)
+            if (!bgW.CancellationPending)
             {
-                for (int j = i+1; j < sFile.WindFarm.Count; j++)
+                LoadFiles(filenames, bgW);
+            }
+        }
+
+        private void LoadFiles(string[] filenames, BackgroundWorker bgW)
+        {
+            if (!bgW.CancellationPending)
+            {
+                for (int i = 0; i < filenames.Length; i++)
                 {
-                    if (sFile.WindFarm[i].UnitID == sFile.WindFarm[j].UnitID)
-                    {
-                        for (int k = 0; k < sFile.WindFarm[i].Data.Count; k++)
-                        {
-                            for (int l = 0; l < sFile.WindFarm[j].Data.Count; l++)
-                            {
-                                if (sFile.WindFarm[i].Data[k].TimeStamp == sFile.WindFarm[j].Data[l].TimeStamp)
-                                {
+                    this.FileName = filenames[i];
 
-
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    LoadScada(bgW, filenames.Length, i);
                 }
             }
         }
 
-        private void LoadScada(BackgroundWorker bgW)
+        private void LoadScada(BackgroundWorker bgW, int numberOfFiles = 1, int i = 0)
         {
             if (!bgW.CancellationPending)
             {
@@ -69,8 +71,6 @@ namespace scada_analyst
                     {
                         int count = 0;
                         bool readHeader = false;
-
-                        windFarm = new List<TurbineData>();
 
                         while (!sR.EndOfStream)
                         {
@@ -95,34 +95,33 @@ namespace scada_analyst
 
                                     string[] splits = Common.GetSplits(line, ',');
 
-                                    if (windFarm.Count < 1)
+                                    int thisAsset = Common.CanConvert<int>(splits[fileHeader.AssetCol]) ? 
+                                        Convert.ToInt32(splits[fileHeader.AssetCol]) : throw new FileFormatException();
+
+                                    // organise loading so it would check which ones have already
+                                    // been loaded; then work around the ones have have been
+
+                                    if (inclTrbn.Contains(thisAsset))
                                     {
-                                        windFarm.Add(new TurbineData(splits, fileHeader));
+                                        int index = windFarm.FindIndex(x => x.UnitID == thisAsset);
+
+                                        windFarm[index].AddData(splits, fileHeader);
                                     }
                                     else
                                     {
-                                        bool foundTurbine = false;
+                                        windFarm.Add(new TurbineData(splits, fileHeader));
 
-                                        for (int i = 0; i < windFarm.Count; i++)
-                                        {
-                                            if (windFarm[i].UnitID == Convert.ToInt32(splits[fileHeader.AssetCol]))
-                                            {
-                                                windFarm[i].Data.Add(new ScadaSample(splits, fileHeader));
-
-                                                foundTurbine = true; break;
-                                            }
-                                        }
-
-                                        if (!foundTurbine) { windFarm.Add(new TurbineData(splits, fileHeader)); }
-                                    }
+                                        inclTrbn.Add(Convert.ToInt32(splits[fileHeader.AssetCol]));
+                                    }                                          
                                 }
 
                                 count++;
 
-                                if (count % 500 == 0)
+                                if (count % 1000 == 0)
                                 {
                                     bgW.ReportProgress((int)
-                                        ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                                        ((double)100 / numberOfFiles * i +
+                                        (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
                                 }
                             }
                         }
@@ -143,11 +142,13 @@ namespace scada_analyst
 
         public class TurbineData : BaseStructure
         {
-            // this class represents a full wind turbine which includes a set of turbines which all have sets
-            // of data
+            // this class represents a full wind turbine which includes a set of 
+            // turbines which all have sets of data
 
             #region Variables
-            
+
+            private List<DateTime> inclDtTm = new List<DateTime>();
+
             private List<ScadaSample> data = new List<ScadaSample>();
 
             #endregion
@@ -160,13 +161,35 @@ namespace scada_analyst
 
                 data.Add(new ScadaSample(splits, header));
 
+                inclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' })));
+                
                 if (UnitID == -1 && data.Count > 0)
                 {
                     UnitID = data[0].AssetID;
                 }
             }
+                        
+            public void AddData(string[] splits, ScadaHeader header)
+            {
+                DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }));
+
+                if (inclDtTm.Contains(thisTime))
+                {
+                    int index = data.FindIndex(x => x.TimeStamp == thisTime);
+
+                    data[index].AddDataFields(splits, header);
+                }
+                else
+                {
+                    data.Add(new ScadaSample(splits, header));
+                    
+                    inclDtTm.Add(thisTime);
+                }
+            }
 
             #region Properties
+
+            public List<DateTime> InclDtTm { get { return inclDtTm; } }
 
             public List<ScadaSample> Data { get { return data; } }
 
@@ -536,14 +559,24 @@ namespace scada_analyst
 
             public ScadaSample(string[] data, ScadaHeader header)
             {
+                LoadData(data, header);
+            }
+
+            public void AddDataFields(string[] data, ScadaHeader header)
+            {
+                LoadData(data, header);
+            }
+
+            private void LoadData(string[] data, ScadaHeader header)
+            {
+                if (header.TimesCol != -1)
+                {
+                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }));
+                }
+
                 if (header.AssetCol != -1)
                 {
                     AssetID = Common.CanConvert<int>(data[header.AssetCol]) ? Convert.ToInt32(data[header.AssetCol]) : 0;
-                }
-
-                if (header.SamplCol != -1)
-                {
-                    SampleID = Common.CanConvert<int>(data[header.SamplCol]) ? Convert.ToInt32(data[header.SamplCol]) : 0;
                 }
 
                 if (header.StatnCol != -1)
@@ -551,9 +584,9 @@ namespace scada_analyst
                     StationID = Common.CanConvert<int>(data[header.StatnCol]) ? Convert.ToInt32(data[header.StatnCol]) : 0;
                 }
 
-                if (header.TimesCol != -1)
+                if (header.SamplCol != -1)
                 {
-                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }));
+                    SampleID = Common.CanConvert<int>(data[header.SamplCol]) ? Convert.ToInt32(data[header.SamplCol]) : 0;
                 }
 
                 #region Grid File
@@ -577,16 +610,16 @@ namespace scada_analyst
                 power.PowrFact.Minm = GetVals(power.PowrFact.Minm, data, header.Powers.PowrFact.MinmCol);
                 power.PowrFact.EndVal = GetVals(power.PowrFact.EndVal, data, header.Powers.PowrFact.EndValCol);
 
-                react.Powers.Mean = GetVals(react.Powers.Mean, data, header.React.Powers.MeanCol); 
-                react.Powers.Stdv = GetVals(react.Powers.Stdv, data, header.React.Powers.StdvCol); 
-                react.Powers.Maxm = GetVals(react.Powers.Maxm, data, header.React.Powers.MaxmCol); 
-                react.Powers.Minm = GetVals(react.Powers.Minm, data, header.React.Powers.MinmCol); 
+                react.Powers.Mean = GetVals(react.Powers.Mean, data, header.React.Powers.MeanCol);
+                react.Powers.Stdv = GetVals(react.Powers.Stdv, data, header.React.Powers.StdvCol);
+                react.Powers.Maxm = GetVals(react.Powers.Maxm, data, header.React.Powers.MaxmCol);
+                react.Powers.Minm = GetVals(react.Powers.Minm, data, header.React.Powers.MinmCol);
                 react.Powers.EndVal = GetVals(react.Powers.EndVal, data, header.React.Powers.EndValCol);
 
                 #endregion
                 #region Temperature File
 
-                gearbox.Hs.Gens.Mean = GetVals(gearbox.Hs.Gens.Mean, data, header.gearbox.Hs.Gens.MeanCol);                                                                                                                                                                                                                          
+                gearbox.Hs.Gens.Mean = GetVals(gearbox.Hs.Gens.Mean, data, header.gearbox.Hs.Gens.MeanCol);
                 gearbox.Hs.Gens.Stdv = GetVals(gearbox.Hs.Gens.Stdv, data, header.gearbox.Hs.Gens.StdvCol);
                 gearbox.Hs.Gens.Maxm = GetVals(gearbox.Hs.Gens.Maxm, data, header.gearbox.Hs.Gens.MaxmCol);
                 gearbox.Hs.Gens.Minm = GetVals(gearbox.Hs.Gens.Minm, data, header.gearbox.Hs.Gens.MinmCol);
@@ -611,27 +644,27 @@ namespace scada_analyst
                 anemoM.ActWinds.Stdv = GetVals(anemoM.ActWinds.Stdv, data, header.AnemoM.ActWinds.StdvCol);
                 anemoM.ActWinds.Maxm = GetVals(anemoM.ActWinds.Maxm, data, header.AnemoM.ActWinds.MaxmCol);
                 anemoM.ActWinds.Minm = GetVals(anemoM.ActWinds.Minm, data, header.AnemoM.ActWinds.MinmCol);
-                                                                   
+
                 anemoM.PriAnemo.Mean = GetVals(anemoM.PriAnemo.Mean, data, header.AnemoM.PriAnemo.MeanCol);
                 anemoM.PriAnemo.Stdv = GetVals(anemoM.PriAnemo.Stdv, data, header.AnemoM.PriAnemo.StdvCol);
                 anemoM.PriAnemo.Maxm = GetVals(anemoM.PriAnemo.Maxm, data, header.AnemoM.PriAnemo.MaxmCol);
                 anemoM.PriAnemo.Minm = GetVals(anemoM.PriAnemo.Minm, data, header.AnemoM.PriAnemo.MinmCol);
-                                                                   
+
                 anemoM.PriWinds.Mean = GetVals(anemoM.PriWinds.Mean, data, header.AnemoM.PriWinds.MeanCol);
                 anemoM.PriWinds.Stdv = GetVals(anemoM.PriWinds.Stdv, data, header.AnemoM.PriWinds.StdvCol);
                 anemoM.PriWinds.Maxm = GetVals(anemoM.PriWinds.Maxm, data, header.AnemoM.PriWinds.MaxmCol);
                 anemoM.PriWinds.Minm = GetVals(anemoM.PriWinds.Minm, data, header.AnemoM.PriWinds.MinmCol);
-                                                                   
+
                 anemoM.SecAnemo.Mean = GetVals(anemoM.SecAnemo.Mean, data, header.AnemoM.SecAnemo.MeanCol);
                 anemoM.SecAnemo.Stdv = GetVals(anemoM.SecAnemo.Stdv, data, header.AnemoM.SecAnemo.StdvCol);
                 anemoM.SecAnemo.Maxm = GetVals(anemoM.SecAnemo.Maxm, data, header.AnemoM.SecAnemo.MaxmCol);
                 anemoM.SecAnemo.Minm = GetVals(anemoM.SecAnemo.Minm, data, header.AnemoM.SecAnemo.MinmCol);
-                                                                                                    
+
                 anemoM.SecWinds.Mean = GetVals(anemoM.SecWinds.Mean, data, header.AnemoM.SecWinds.MeanCol);
                 anemoM.SecWinds.Stdv = GetVals(anemoM.SecWinds.Stdv, data, header.AnemoM.SecWinds.StdvCol);
                 anemoM.SecWinds.Maxm = GetVals(anemoM.SecWinds.Maxm, data, header.AnemoM.SecWinds.MaxmCol);
                 anemoM.SecWinds.Minm = GetVals(anemoM.SecWinds.Minm, data, header.AnemoM.SecWinds.MinmCol);
-                                                                                                
+
                 anemoM.TerAnemo.Mean = GetVals(anemoM.TerAnemo.Mean, data, header.AnemoM.TerAnemo.MeanCol);
                 anemoM.TerAnemo.Stdv = GetVals(anemoM.TerAnemo.Stdv, data, header.AnemoM.TerAnemo.StdvCol);
                 anemoM.TerAnemo.Maxm = GetVals(anemoM.TerAnemo.Maxm, data, header.AnemoM.TerAnemo.MaxmCol);
@@ -1276,6 +1309,8 @@ namespace scada_analyst
         #region Properties
 
         public ScadaHeader FileHeader { get { return fileHeader; } }
+
+        public List<int> InclTrbn { get { return inclTrbn; } }
 
         public List<TurbineData> WindFarm { get { return windFarm; } }
 

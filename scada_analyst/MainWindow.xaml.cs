@@ -49,6 +49,7 @@ namespace scada_analyst
             progress_ProgressBar.Visibility = Visibility.Collapsed;
             label_ProgressBar.Visibility = Visibility.Collapsed;
             cancel_ProgressBar.Visibility = Visibility.Collapsed;
+            //counter_ProgressBar.Visibility = Visibility.Collapsed;
         }
 
         private void AboutClick(object sender, RoutedEventArgs e)
@@ -74,21 +75,21 @@ namespace scada_analyst
 
         private void ClearGeoData(object sender, RoutedEventArgs e)
         {
-            geoFile = null;
+            geoFile = null; geoLoaded = false;
 
             StructureLocations();
         }
 
         private void ClearMeteoData(object sender, RoutedEventArgs e)
         {
-            meteoFile = null;
+            meteoFile = null; meteoLoaded = false;
 
             StructureLocations();
         }
 
         private void ClearScadaData(object sender, RoutedEventArgs e)
         {
-            scadaFile = null;
+            scadaFile = null; scadaLoaded = false;
 
             StructureLocations();
         }
@@ -96,33 +97,6 @@ namespace scada_analyst
         private void Exit(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        private void LoadScada(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "SCADA files (*.csv)|*.csv|All files (*.*)|*.*";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog().Value)
-            {
-                progress_ProgressBar.Visibility = Visibility.Visible;
-                label_ProgressBar.Visibility = Visibility.Visible;
-                cancel_ProgressBar.Visibility = Visibility.Visible;
-
-                string[] fileList = openFileDialog.FileNames;
-
-                bgW = new BackgroundWorker();
-
-                bgW.WorkerReportsProgress = true;
-                bgW.WorkerSupportsCancellation = true;
-
-                bgW.DoWork += BGW_Scada_DoWork;
-                bgW.ProgressChanged += BGW_ProgressChanged;
-                bgW.RunWorkerCompleted += BGW_Scada_RunWorkerCompleted;
-
-                bgW.RunWorkerAsync(new object[] { fileList });
-            }
         }
 
         private void LoadGeo(object sender, RoutedEventArgs e)
@@ -133,9 +107,7 @@ namespace scada_analyst
 
             if (openFileDialog.ShowDialog().Value)
             {
-                progress_ProgressBar.Visibility = Visibility.Visible;
-                label_ProgressBar.Visibility = Visibility.Visible;
-                cancel_ProgressBar.Visibility = Visibility.Visible;
+                ProgressBarVisible();
 
                 string[] fileList = openFileDialog.FileNames;
 
@@ -160,9 +132,7 @@ namespace scada_analyst
 
             if (openFileDialog.ShowDialog().Value)
             {
-                progress_ProgressBar.Visibility = Visibility.Visible;
-                label_ProgressBar.Visibility = Visibility.Visible;
-                cancel_ProgressBar.Visibility = Visibility.Visible;
+                ProgressBarVisible();
 
                 string[] fileList = openFileDialog.FileNames;
 
@@ -176,6 +146,31 @@ namespace scada_analyst
                 bgW.RunWorkerCompleted += BGW_Meteo_RunWorkerCompleted;
 
                 bgW.RunWorkerAsync(new object[] { fileList });
+            }
+        }
+
+        private void LoadScada(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "SCADA files (*.csv)|*.csv|All files (*.*)|*.*";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog().Value)
+            {
+                ProgressBarVisible();
+
+                string[] fileList = openFileDialog.FileNames;
+
+                bgW = new BackgroundWorker();
+
+                bgW.WorkerReportsProgress = true;
+                bgW.WorkerSupportsCancellation = true;
+
+                bgW.DoWork += BGW_Scada_DoWork;
+                bgW.ProgressChanged += BGW_ProgressChanged;
+                bgW.RunWorkerCompleted += BGW_Scada_RunWorkerCompleted;
+
+                bgW.RunWorkerAsync(new object[] { fileList , scadaFile });
             }
         }
 
@@ -227,6 +222,14 @@ namespace scada_analyst
             bgW.ReportProgress(0);
         }
 
+        void ProgressBarVisible()
+        {
+            progress_ProgressBar.Visibility = Visibility.Visible;
+            label_ProgressBar.Visibility = Visibility.Visible;
+            cancel_ProgressBar.Visibility = Visibility.Visible;
+            //counter_ProgressBar.Visibility = Visibility.Visible;
+        }
+
         void BGW_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progress_ProgressBar.Value = e.ProgressPercentage;
@@ -245,6 +248,9 @@ namespace scada_analyst
             label_ProgressBar.Visibility = Visibility.Collapsed;
             label_ProgressBar.Content = "";
             cancel_ProgressBar.Visibility = Visibility.Collapsed;
+
+            //counter_ProgressBar.Content = "";
+            //counter_ProgressBar.Visibility = Visibility.Collapsed;
         }
 
         void BGW_Geog_DoWork(object sender, DoWorkEventArgs e)
@@ -343,6 +349,7 @@ namespace scada_analyst
 
             Object[] args = (Object[])e.Argument;
             string[] filenames = (string[])args[0];
+            ScadaData existingData = (ScadaData)args[1];
 
             string errors;
 
@@ -350,19 +357,18 @@ namespace scada_analyst
 
             try
             {
-                List<ScadaData> scadaAnalysis = new List<ScadaData>();
+                ScadaData analysis = existingData;
 
-                for (int i = 0; i < filenames.Length; i++)
+                if (!scadaLoaded)
                 {
-                    if (!loadedFiles.Contains(filenames[i]))
-                    {
-                        scadaAnalysis.Add(new ScadaData(filenames[i], bgW));
-
-                        loadedFiles.Add(filenames[i]);
-                    }
+                    analysis = new ScadaData(filenames, bgW);
+                }
+                else
+                {
+                    analysis.AppendFiles(filenames, bgW);
                 }
 
-                e.Result = scadaAnalysis;
+                e.Result = analysis;
             }
             catch (Exception ex)
             {
@@ -426,22 +432,9 @@ namespace scada_analyst
 
         void BGW_Scada_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is List<ScadaData>)
+            if (e.Result is ScadaData)
             {
-                List<ScadaData> temp = (List<ScadaData>)e.Result;
-                
-                for (int i = 0; i < temp.Count; i++)
-                {
-                    for (int j = 0; j < temp[i].WindFarm.Count; j++)
-                    {
-                        scadaFile.WindFarm.Add(temp[i].WindFarm[j]);
-                    }
-                }
-
-                if (scadaFile.WindFarm.Count > 1)
-                {
-                    scadaFile.CombineScada(scadaFile);
-                }
+                scadaFile = (ScadaData)e.Result;
 
                 scadaLoaded = true;
             }
