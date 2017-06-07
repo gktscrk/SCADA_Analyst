@@ -165,6 +165,12 @@ namespace scada_analyst
             // files to be of variable structure without crashing the entire
             // thing
 
+            #region Variables
+
+            private int assetCol = -1, sampleCol = -1, stationCol = -1, timeCol = -1;
+
+            #endregion
+
             public MeteoHeader() { }
 
             public MeteoHeader(string header)
@@ -195,36 +201,45 @@ namespace scada_analyst
                         {
                             if (parts[1] == "humidity")
                             {
-                                if (parts[2] == "mean") { Humid.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Humid.StdvCol = i; }
-                                else if (parts[2] == "max") { Humid.MaxmCol = i; }
-                                else if (parts[2] == "min") { Humid.MinmCol = i; }
+                                if (parts[2] == "mean") { Humid.Mean = i; }
+                                else if (parts[2] == "stddev") { Humid.Stdv = i; }
+                                else if (parts[2] == "max") { Humid.Maxm = i; }
+                                else if (parts[2] == "min") { Humid.Minm = i; }
                             }
                             else if (parts[1] == "temperatureten")
                             {
-                                if (parts[2] == "mean") { Tempr.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Tempr.StdvCol = i; }
-                                else if (parts[2] == "max") { Tempr.MaxmCol = i; }
-                                else if (parts[2] == "min") { Tempr.MinmCol = i; }
+                                if (parts[2] == "mean") { Tempr.Mean = i; }
+                                else if (parts[2] == "stddev") { Tempr.Stdv = i; }
+                                else if (parts[2] == "max") { Tempr.Maxm = i; }
+                                else if (parts[2] == "min") { Tempr.Minm = i; }
                             }
                             else if (parts[1] == "winddirection10")
                             {
-                                if (parts[2] == "mean") { WDirc.MeanCol = i; }
-                                else if (parts[2] == "stddev") { WDirc.StdvCol = i; }
-                                else if (parts[2] == "max") { WDirc.MaxmCol = i; }
-                                else if (parts[2] == "min") { WDirc.MinmCol = i; }
+                                if (parts[2] == "mean") { WDirc.Mean = i; }
+                                else if (parts[2] == "stddev") { WDirc.Stdv = i; }
+                                else if (parts[2] == "max") { WDirc.Maxm = i; }
+                                else if (parts[2] == "min") { WDirc.Minm = i; }
                             }
                             else if (parts[1] == "windspeedrot")
                             {
-                                if (parts[2] == "mean") { WSpdR.MeanCol = i; }
-                                else if (parts[2] == "stddev") { WSpdR.StdvCol = i; }
-                                else if (parts[2] == "max") { WSpdR.MaxmCol = i; }
-                                else if (parts[2] == "min") { WSpdR.MinmCol = i; }
+                                if (parts[2] == "mean") { WSpdR.Mean = i; }
+                                else if (parts[2] == "stddev") { WSpdR.Stdv = i; }
+                                else if (parts[2] == "max") { WSpdR.Maxm = i; }
+                                else if (parts[2] == "min") { WSpdR.Minm = i; }
                             }
                         }
                     }
                 }
             }
+
+            #region Properties
+
+            public int AssetCol { get { return assetCol; } set { assetCol = value; } }
+            public int SamplCol { get { return sampleCol; } set { sampleCol = value; } }
+            public int StatnCol { get { return stationCol; } set { stationCol = value; } }
+            public int TimesCol { get { return timeCol; } set { timeCol = value; } }
+
+            #endregion
         }
 
         public class MeteoSample : BaseSampleData
@@ -264,42 +279,37 @@ namespace scada_analyst
                     TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }));
                 }
 
-                humid.Mean = GetVals(humid.Mean, data, header.Humid.MeanCol);
-                humid.Stdv = GetVals(humid.Stdv, data, header.Humid.StdvCol);
-                humid.Maxm = GetVals(humid.Maxm, data, header.Humid.MaxmCol);
-                humid.Minm = GetVals(humid.Minm, data, header.Humid.MinmCol);
+                humid.Mean = GetVals(humid.Mean, data, header.Humid.Mean);
+                humid.Stdv = GetVals(humid.Stdv, data, header.Humid.Stdv);
+                humid.Maxm = GetVals(humid.Maxm, data, header.Humid.Maxm);
+                humid.Minm = GetVals(humid.Minm, data, header.Humid.Minm);
 
-                tempr.Mean = GetVals(tempr.Mean, data, header.Tempr.MeanCol);
-                tempr.Stdv = GetVals(tempr.Stdv, data, header.Tempr.StdvCol);
-                tempr.Maxm = GetVals(tempr.Maxm, data, header.Tempr.MaxmCol);
-                tempr.Minm = GetVals(tempr.Minm, data, header.Tempr.MinmCol);
+                tempr.Mean = GetVals(tempr.Mean, data, header.Tempr.Mean);
+                tempr.Stdv = GetVals(tempr.Stdv, data, header.Tempr.Stdv);
+                tempr.Maxm = GetVals(tempr.Maxm, data, header.Tempr.Maxm);
+                tempr.Minm = GetVals(tempr.Minm, data, header.Tempr.Minm);
 
-                wDirc.Mean = GetVals(wDirc.Mean, data, header.WDirc.MeanCol);
-                wDirc.Stdv = GetVals(wDirc.Stdv, data, header.WDirc.StdvCol);
-                wDirc.Maxm = GetVals(wDirc.Maxm, data, header.WDirc.MaxmCol);
-                wDirc.Minm = GetVals(wDirc.Minm, data, header.WDirc.MinmCol);
+                wDirc.Mean = GetVals(wDirc.Mean, data, header.WDirc.Mean);
+                wDirc.Stdv = GetVals(wDirc.Stdv, data, header.WDirc.Stdv);
+                wDirc.Maxm = GetVals(wDirc.Maxm, data, header.WDirc.Maxm);
+                wDirc.Minm = GetVals(wDirc.Minm, data, header.WDirc.Minm);
 
-                wSpdR.Mean = GetVals(wSpdR.Mean, data, header.WSpdR.MeanCol);
-                wSpdR.Stdv = GetVals(wSpdR.Stdv, data, header.WSpdR.StdvCol);
-                wSpdR.Maxm = GetVals(wSpdR.Maxm, data, header.WSpdR.MaxmCol);
-                wSpdR.Minm = GetVals(wSpdR.Minm, data, header.WSpdR.MinmCol);
+                wSpdR.Mean = GetVals(wSpdR.Mean, data, header.WSpdR.Mean);
+                wSpdR.Stdv = GetVals(wSpdR.Stdv, data, header.WSpdR.Stdv);
+                wSpdR.Maxm = GetVals(wSpdR.Maxm, data, header.WSpdR.Maxm);
+                wSpdR.Minm = GetVals(wSpdR.Minm, data, header.WSpdR.Minm);
             }
 
-            private double GetVals(double value, string[] data, int index)
-            {
+            private double GetVals(double value, string[] data, double index)
+            { 
                 if (value == 0 || value == metError)
                 {
-                    return GetVals(data, index);
+                    return Common.GetVals(data, (int)index, metError);
                 }
                 else
                 {
                     return value;
                 }
-            }
-
-            private double GetVals(string[] data, int index)
-            {
-                return index != -1 && Common.CanConvert<double>(data[index]) ? Convert.ToDouble(data[index]) : metError;
             }
             
             #region Support Classes

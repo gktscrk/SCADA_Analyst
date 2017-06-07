@@ -52,7 +52,7 @@ namespace scada_analyst.Shared
 
         #endregion
     }
-
+    
     public class BaseSampleData
     {
         #region Variables
@@ -62,20 +62,14 @@ namespace scada_analyst.Shared
         private int stationID = 0;
 
         private DateTime timeStamp;
-
-        private int assetCol = -1, sampleCol = -1, stationCol = -1, timeCol = -1;
-
+        
         #endregion
         
         #region Properties
         
-        public int AssetCol { get { return assetCol; } set { assetCol = value; } }
         public int AssetID { get { return assetID; } set { assetID = value; } }
-        public int SamplCol { get { return sampleCol; } set { sampleCol = value; } }
         public int SampleID { get { return sampleID; } set { sampleID = value; } }
-        public int StatnCol { get { return stationCol; } set { stationCol = value; } }
         public int StationID { get { return stationID; } set { stationID = value; } }
-        public int TimesCol { get { return timeCol; } set { timeCol = value; } }
         public DateTime TimeStamp { get { return timeStamp; } set { timeStamp = value; } }
 
         #endregion
@@ -166,12 +160,12 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        protected double min;
-        protected double max;
+        protected double minm;
+        protected double maxm;
         protected double mean;
         protected double stdv;
 
-        protected int minmCol = -1, maxmCol = -1, meanCol = -1, stdvCol = -1;
+        // protected int minmCol = -1, maxmCol = -1, meanCol = -1, stdvCol = -1;
 
         #endregion
 
@@ -179,15 +173,15 @@ namespace scada_analyst.Shared
 
         #region Properties
 
-        public double Minm { get { return min; } set { min = value; } }
-        public double Maxm { get { return max; } set { max = value; } }
+        public double Minm { get { return minm; } set { minm = value; } }
+        public double Maxm { get { return maxm; } set { maxm = value; } }
         public double Mean { get { return mean; } set { mean = value; } }
         public double Stdv { get { return stdv; } set { stdv = value; } }
 
-        public int MinmCol { get { return minmCol; } set { minmCol = value; } }
-        public int MaxmCol { get { return maxmCol; } set { maxmCol = value; } }
-        public int MeanCol { get { return meanCol; } set { meanCol = value; } }
-        public int StdvCol { get { return stdvCol; } set { stdvCol = value; } }
+        //public int MinmCol { get { return minmCol; } set { minmCol = value; } }
+        //public int MaxmCol { get { return maxmCol; } set { maxmCol = value; } }
+        //public int MeanCol { get { return meanCol; } set { meanCol = value; } }
+        //public int StdvCol { get { return stdvCol; } set { stdvCol = value; } }
 
         #endregion
     }

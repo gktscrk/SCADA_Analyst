@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 
 using scada_analyst.Shared;
 
@@ -36,7 +37,7 @@ namespace scada_analyst
         {
             if (!bgW.CancellationPending)
             {
-                LoadFiles(filenames, bgW);
+                LoadNSort(filenames, bgW);
             }
         }
 
@@ -44,7 +45,7 @@ namespace scada_analyst
         {
             if (!bgW.CancellationPending)
             {
-                LoadFiles(filenames, bgW);
+                LoadNSort(filenames, bgW);
             }
         }
 
@@ -59,6 +60,13 @@ namespace scada_analyst
                     LoadScada(bgW, filenames.Length, i);
                 }
             }
+        }
+        
+        private void LoadNSort(string[] filenames, BackgroundWorker bgW)
+        {
+            LoadFiles(filenames, bgW);
+
+            SortScada(bgW);
         }
 
         private void LoadScada(BackgroundWorker bgW, int numberOfFiles = 1, int i = 0)
@@ -138,6 +146,17 @@ namespace scada_analyst
             }
         }
 
+        private void SortScada(BackgroundWorker bgW)
+        {
+            if (!bgW.CancellationPending)
+            {
+                for (int i = 0; i < windFarm.Count; i++)
+                {
+                    windFarm[i].DataSorted = windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
+                }
+            }
+        }
+
         #region Support Classes
 
         public class TurbineData : BaseStructure
@@ -150,6 +169,7 @@ namespace scada_analyst
             private List<DateTime> inclDtTm = new List<DateTime>();
 
             private List<ScadaSample> data = new List<ScadaSample>();
+            private List<ScadaSample> dataSorted = new List<ScadaSample>();
 
             #endregion
 
@@ -191,7 +211,8 @@ namespace scada_analyst
 
             public List<DateTime> InclDtTm { get { return inclDtTm; } }
 
-            public List<ScadaSample> Data { get { return data; } }
+            public List<ScadaSample> Data { get { return data; } set { data = value; } }
+            public List<ScadaSample> DataSorted { get { return dataSorted; } set { dataSorted = value; } }
 
             #endregion
         }
@@ -204,6 +225,13 @@ namespace scada_analyst
 
             // this will be initialised to begin with, and after that will be maintained for
             // the duration of loading the file            
+
+            #region Variabes
+
+            private int curTimeCol = -1;
+            private int assetCol = -1, sampleCol = -1, stationCol = -1, timeCol = -1;
+
+            #endregion
 
             public ScadaHeader() { }
 
@@ -236,290 +264,301 @@ namespace scada_analyst
                             // actual power has a special case where one "endvalue" is 
                             // represented by "quality"
 
-                            #region Temperature File
-                            if (parts[1] == "gen1u1tm")
-                            {
-                                if (parts[2] == "mean") { Genny.G1u1.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.G1u1.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.G1u1.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.G1u1.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gen1v1tm")
-                            {
-                                if (parts[2] == "mean") { Genny.G1v1.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.G1v1.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.G1v1.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.G1v1.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gen1w1tm")
-                            {
-                                if (parts[2] == "mean") { Genny.G1w1.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.G1w1.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.G1w1.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.G1w1.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gen2u1tm")
-                            {
-                                if (parts[2] == "mean") { Genny.G2u1.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.G2u1.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.G2u1.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.G2u1.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gen2v1tm")
-                            {
-                                if (parts[2] == "mean") { Genny.G2v1.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.G2v1.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.G2v1.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.G2v1.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gen2w1tm")
-                            {
-                                if (parts[2] == "mean") { Genny.G2w1.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.G2w1.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.G2w1.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.G2w1.MinmCol = i; }
-                            }
-                            else if (parts[1] == "genbegtm")
-                            {
-                                if (parts[2] == "mean") { Genny.bearingG.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.bearingG.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.bearingG.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.bearingG.MinmCol = i; }
-                            }
-                            else if (parts[1] == "genbertm")
-                            {
-                                if (parts[2] == "mean") { Genny.bearingR.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.bearingR.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.bearingR.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.bearingR.MinmCol = i; }
-                            }
-                            else if (parts[1] == "geoiltmp")
-                            {
-                                if (parts[2] == "mean") { Gearbox.Oils.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Gearbox.Oils.StdvCol = i; }
-                                else if (parts[2] == "max") { Gearbox.Oils.MaxmCol = i; }
-                                else if (parts[2] == "min") { Gearbox.Oils.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gfilb1tm")
-                            {
-                                if (parts[2] == "mean") { GridFilt.B1s.MeanCol = i; }
-                                else if (parts[2] == "stddev") { GridFilt.B1s.StdvCol = i; }
-                                else if (parts[2] == "max") { GridFilt.B1s.MaxmCol = i; }
-                                else if (parts[2] == "min") { GridFilt.B1s.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gfilb2tm")
-                            {
-                                if (parts[2] == "mean") { GridFilt.B2s.MeanCol = i; }
-                                else if (parts[2] == "stddev") { GridFilt.B2s.StdvCol = i; }
-                                else if (parts[2] == "max") { GridFilt.B2s.MaxmCol = i; }
-                                else if (parts[2] == "min") { GridFilt.B2s.MinmCol = i; }
-                            }
-                            else if (parts[1] == "gfilb3tm")
-                            {
-                                if (parts[2] == "mean") { GridFilt.B3s.MeanCol = i; }
-                                else if (parts[2] == "stddev") { GridFilt.B3s.StdvCol = i; }
-                                else if (parts[2] == "max") { GridFilt.B3s.MaxmCol = i; }
-                                else if (parts[2] == "min") { GridFilt.B3s.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hsgentmp")
-                            {
-                                if (parts[2] == "mean") { Gearbox.Hs.Gens.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Gearbox.Hs.Gens.StdvCol = i; }
-                                else if (parts[2] == "max") { Gearbox.Hs.Gens.MaxmCol = i; }
-                                else if (parts[2] == "min") { Gearbox.Hs.Gens.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hsrottmp")
-                            {
-                                if (parts[2] == "mean") { Gearbox.Hs.Rots.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Gearbox.Hs.Rots.StdvCol = i; }
-                                else if (parts[2] == "max") { Gearbox.Hs.Rots.MaxmCol = i; }
-                                else if (parts[2] == "min") { Gearbox.Hs.Rots.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hubbrdtm")
-                            {
-                                if (parts[2] == "mean") { Hubs.Boards.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Hubs.Boards.StdvCol = i; }
-                                else if (parts[2] == "max") { Hubs.Boards.MaxmCol = i; }
-                                else if (parts[2] == "min") { Hubs.Boards.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hubtemp")
-                            {
-                                if (parts[2] == "mean") { Hubs.Internals.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Hubs.Internals.StdvCol = i; }
-                                else if (parts[2] == "max") { Hubs.Internals.MaxmCol = i; }
-                                else if (parts[2] == "min") { Hubs.Internals.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hubtref1")
-                            {
-                                if (parts[2] == "mean") { Hubs.Ref1s.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Hubs.Ref1s.StdvCol = i; }
-                                else if (parts[2] == "max") { Hubs.Ref1s.MaxmCol = i; }
-                                else if (parts[2] == "min") { Hubs.Ref1s.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hubtref2")
-                            {
-                                if (parts[2] == "mean") { Hubs.Ref2s.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Hubs.Ref2s.StdvCol = i; }
-                                else if (parts[2] == "max") { Hubs.Ref2s.MaxmCol = i; }
-                                else if (parts[2] == "min") { Hubs.Ref2s.MinmCol = i; }
-                            }
-                            else if (parts[1] == "hydoiltm")
-                            {
-                                if (parts[2] == "mean") { HydOils.Temp.MeanCol = i; }
-                                else if (parts[2] == "stddev") { HydOils.Temp.StdvCol = i; }
-                                else if (parts[2] == "max") { HydOils.Temp.MaxmCol = i; }
-                                else if (parts[2] == "min") { HydOils.Temp.MinmCol = i; }
-                            }
-                            else if (parts[1] == "imsgentm")
-                            {
-                                if (parts[2] == "mean") { Gearbox.Ims.Gens.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Gearbox.Ims.Gens.StdvCol = i; }
-                                else if (parts[2] == "max") { Gearbox.Ims.Gens.MaxmCol = i; }
-                                else if (parts[2] == "min") { Gearbox.Ims.Gens.MinmCol = i; }
-                            }
-                            else if (parts[1] == "imsrottm")
-                            {
-                                if (parts[2] == "mean") { Gearbox.Ims.Rots.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Gearbox.Ims.Rots.StdvCol = i; }
-                                else if (parts[2] == "max") { Gearbox.Ims.Rots.MaxmCol = i; }
-                                else if (parts[2] == "min") { Gearbox.Ims.Rots.MinmCol = i; }
-                            }
-                            #endregion
                             #region Grid File Variables
-                            else if (parts[1] == "actpower")
+                            if (parts[1] == "actpower")
                             {
-                                if (parts[2] == "mean") { Powers.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Powers.StdvCol = i; }
-                                else if (parts[2] == "max") { Powers.MaxmCol = i; }
-                                else if (parts[2] == "min") { Powers.MinmCol = i; }
-                                else if (parts[2] == "endvalue") { Powers.EndValCol = i; }
-                                else if (parts[2] == "quality") { Powers.QualEndValCol = i; }
+                                if (parts[2] == "mean") { Powers.Mean = i; }
+                                else if (parts[2] == "stddev") { Powers.Stdv = i; }
+                                else if (parts[2] == "max") { Powers.Maxm = i; }
+                                else if (parts[2] == "min") { Powers.Minm = i; }
+                                else if (parts[2] == "endvalue") { Powers.EndVal = i; }
+                                else if (parts[2] == "quality") { Powers.QualEndVal = i; }
                             }
                             else if (parts[1] == "actregst")
                             {
-                                if (parts[2] == "endvalue") { Powers.RgStEndValCol = i; }
+                                if (parts[2] == "endvalue") { Powers.RgStEndVal = i; }
                             }
                             else if (parts[1] == "ampphr")
                             {
-                                if (parts[2] == "mean") { Currents.phR.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Currents.phR.StdvCol = i; }
-                                else if (parts[2] == "max") { Currents.phR.MaxmCol = i; }
-                                else if (parts[2] == "min") { Currents.phR.MinmCol = i; }
+                                if (parts[2] == "mean") { Currents.phR.Mean = i; }
+                                else if (parts[2] == "stddev") { Currents.phR.Stdv = i; }
+                                else if (parts[2] == "max") { Currents.phR.Maxm = i; }
+                                else if (parts[2] == "min") { Currents.phR.Minm = i; }
                             }
                             else if (parts[1] == "ampphs")
                             {
-                                if (parts[2] == "mean") { Currents.phS.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Currents.phS.StdvCol = i; }
-                                else if (parts[2] == "max") { Currents.phS.MaxmCol = i; }
-                                else if (parts[2] == "min") { Currents.phS.MinmCol = i; }
+                                if (parts[2] == "mean") { Currents.phS.Mean = i; }
+                                else if (parts[2] == "stddev") { Currents.phS.Stdv = i; }
+                                else if (parts[2] == "max") { Currents.phS.Maxm = i; }
+                                else if (parts[2] == "min") { Currents.phS.Minm = i; }
                             }
                             else if (parts[1] == "amppht")
                             {
-                                if (parts[2] == "mean") { Currents.phT.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Currents.phT.StdvCol = i; }
-                                else if (parts[2] == "max") { Currents.phT.MaxmCol = i; }
-                                else if (parts[2] == "min") { Currents.phT.MinmCol = i; }
+                                if (parts[2] == "mean") { Currents.phT.Mean = i; }
+                                else if (parts[2] == "stddev") { Currents.phT.Stdv = i; }
+                                else if (parts[2] == "max") { Currents.phT.Maxm = i; }
+                                else if (parts[2] == "min") { Currents.phT.Minm = i; }
                             }
                             else if (parts[1] == "cosphi")
                             {
-                                if (parts[2] == "mean") { Powers.PowrFact.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Powers.PowrFact.StdvCol = i; }
-                                else if (parts[2] == "max") { Powers.PowrFact.MaxmCol = i; }
-                                else if (parts[2] == "min") { Powers.PowrFact.MinmCol = i; }
-                                else if (parts[2] == "endvalue") { Powers.PowrFact.EndValCol = i; }
+                                if (parts[2] == "mean") { Powers.PowrFact.Mean = i; }
+                                else if (parts[2] == "stddev") { Powers.PowrFact.Stdv = i; }
+                                else if (parts[2] == "max") { Powers.PowrFact.Maxm = i; }
+                                else if (parts[2] == "min") { Powers.PowrFact.Minm = i; }
+                                else if (parts[2] == "endvalue") { Powers.PowrFact.EndVal = i; }
                             }
                             else if (parts[1] == "gridfreq")
                             {
-                                if (parts[2] == "mean") { Powers.GridFreq.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Powers.GridFreq.StdvCol = i; }
-                                else if (parts[2] == "max") { Powers.GridFreq.MaxmCol = i; }
-                                else if (parts[2] == "min") { Powers.GridFreq.MinmCol = i; }
+                                if (parts[2] == "mean") { Powers.GridFreq.Mean = i; }
+                                else if (parts[2] == "stddev") { Powers.GridFreq.Stdv = i; }
+                                else if (parts[2] == "max") { Powers.GridFreq.Maxm = i; }
+                                else if (parts[2] == "min") { Powers.GridFreq.Minm = i; }
                             }
                             else if (parts[1] == "reactpwr")
                             {
-                                if (parts[2] == "mean") { React.Powers.MeanCol = i; }
-                                else if (parts[2] == "stddev") { React.Powers.StdvCol = i; }
-                                else if (parts[2] == "max") { React.Powers.MaxmCol = i; }
-                                else if (parts[2] == "min") { React.Powers.MinmCol = i; }
-                                else if (parts[2] == "endvalue") { React.Powers.EndValCol = i; }
+                                if (parts[2] == "mean") { React.Powers.Mean = i; }
+                                else if (parts[2] == "stddev") { React.Powers.Stdv = i; }
+                                else if (parts[2] == "max") { React.Powers.Maxm = i; }
+                                else if (parts[2] == "min") { React.Powers.Minm = i; }
+                                else if (parts[2] == "endvalue") { React.Powers.EndVal = i; }
                             }
                             else if (parts[1] == "voltphr")
                             {
-                                if (parts[2] == "mean") { Voltag.phR.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Voltag.phR.StdvCol = i; }
-                                else if (parts[2] == "max") { Voltag.phR.MaxmCol = i; }
-                                else if (parts[2] == "min") { Voltag.phR.MinmCol = i; }
+                                if (parts[2] == "mean") { Voltages.phR.Mean = i; }
+                                else if (parts[2] == "stddev") { Voltages.phR.Stdv = i; }
+                                else if (parts[2] == "max") { Voltages.phR.Maxm = i; }
+                                else if (parts[2] == "min") { Voltages.phR.Minm = i; }
                             }
                             else if (parts[1] == "voltphs")
                             {
-                                if (parts[2] == "mean") { Voltag.phS.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Voltag.phS.StdvCol = i; }
-                                else if (parts[2] == "max") { Voltag.phS.MaxmCol = i; }
-                                else if (parts[2] == "min") { Voltag.phS.MinmCol = i; }
+                                if (parts[2] == "mean") { Voltages.phS.Mean = i; }
+                                else if (parts[2] == "stddev") { Voltages.phS.Stdv = i; }
+                                else if (parts[2] == "max") { Voltages.phS.Maxm = i; }
+                                else if (parts[2] == "min") { Voltages.phS.Minm = i; }
                             }
                             else if (parts[1] == "voltpht")
                             {
-                                if (parts[2] == "mean") { Voltag.phT.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Voltag.phT.StdvCol = i; }
-                                else if (parts[2] == "max") { Voltag.phT.MaxmCol = i; }
-                                else if (parts[2] == "min") { Voltag.phT.MinmCol = i; }
+                                if (parts[2] == "mean") { Voltages.phT.Mean = i; }
+                                else if (parts[2] == "stddev") { Voltages.phT.Stdv = i; }
+                                else if (parts[2] == "max") { Voltages.phT.Maxm = i; }
+                                else if (parts[2] == "min") { Voltages.phT.Minm = i; }
+                            }
+                            #endregion
+                            #region Temperature File
+                            else if (parts[1] == "gen1u1tm")
+                            {
+                                if (parts[2] == "mean") { Genny.G1u1.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.G1u1.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.G1u1.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.G1u1.Minm = i; }
+                            }
+                            else if (parts[1] == "gen1v1tm")
+                            {
+                                if (parts[2] == "mean") { Genny.G1v1.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.G1v1.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.G1v1.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.G1v1.Minm = i; }
+                            }
+                            else if (parts[1] == "gen1w1tm")
+                            {
+                                if (parts[2] == "mean") { Genny.G1w1.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.G1w1.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.G1w1.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.G1w1.Minm = i; }
+                            }
+                            else if (parts[1] == "gen2u1tm")
+                            {
+                                if (parts[2] == "mean") { Genny.G2u1.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.G2u1.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.G2u1.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.G2u1.Minm = i; }
+                            }
+                            else if (parts[1] == "gen2v1tm")
+                            {
+                                if (parts[2] == "mean") { Genny.G2v1.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.G2v1.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.G2v1.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.G2v1.Minm = i; }
+                            }
+                            else if (parts[1] == "gen2w1tm")
+                            {
+                                if (parts[2] == "mean") { Genny.G2w1.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.G2w1.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.G2w1.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.G2w1.Minm = i; }
+                            }
+                            else if (parts[1] == "genbegtm")
+                            {
+                                if (parts[2] == "mean") { Genny.bearingG.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.bearingG.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.bearingG.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.bearingG.Minm = i; }
+                            }
+                            else if (parts[1] == "genbertm")
+                            {
+                                if (parts[2] == "mean") { Genny.bearingR.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.bearingR.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.bearingR.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.bearingR.Minm = i; }
+                            }
+                            else if (parts[1] == "geoiltmp")
+                            {
+                                if (parts[2] == "mean") { Gearbox.Oils.Mean = i; }
+                                else if (parts[2] == "stddev") { Gearbox.Oils.Stdv = i; }
+                                else if (parts[2] == "max") { Gearbox.Oils.Maxm = i; }
+                                else if (parts[2] == "min") { Gearbox.Oils.Minm = i; }
+                            }
+                            else if (parts[1] == "gfilb1tm")
+                            {
+                                if (parts[2] == "mean") { GridFilt.B1s.Mean = i; }
+                                else if (parts[2] == "stddev") { GridFilt.B1s.Stdv = i; }
+                                else if (parts[2] == "max") { GridFilt.B1s.Maxm = i; }
+                                else if (parts[2] == "min") { GridFilt.B1s.Minm = i; }
+                            }
+                            else if (parts[1] == "gfilb2tm")
+                            {
+                                if (parts[2] == "mean") { GridFilt.B2s.Mean = i; }
+                                else if (parts[2] == "stddev") { GridFilt.B2s.Stdv = i; }
+                                else if (parts[2] == "max") { GridFilt.B2s.Maxm = i; }
+                                else if (parts[2] == "min") { GridFilt.B2s.Minm = i; }
+                            }
+                            else if (parts[1] == "gfilb3tm")
+                            {
+                                if (parts[2] == "mean") { GridFilt.B3s.Mean = i; }
+                                else if (parts[2] == "stddev") { GridFilt.B3s.Stdv = i; }
+                                else if (parts[2] == "max") { GridFilt.B3s.Maxm = i; }
+                                else if (parts[2] == "min") { GridFilt.B3s.Minm = i; }
+                            }
+                            else if (parts[1] == "hsgentmp")
+                            {
+                                if (parts[2] == "mean") { Gearbox.Hs.Gens.Mean = i; }
+                                else if (parts[2] == "stddev") { Gearbox.Hs.Gens.Stdv = i; }
+                                else if (parts[2] == "max") { Gearbox.Hs.Gens.Maxm = i; }
+                                else if (parts[2] == "min") { Gearbox.Hs.Gens.Minm = i; }
+                            }
+                            else if (parts[1] == "hsrottmp")
+                            {
+                                if (parts[2] == "mean") { Gearbox.Hs.Rots.Mean = i; }
+                                else if (parts[2] == "stddev") { Gearbox.Hs.Rots.Stdv = i; }
+                                else if (parts[2] == "max") { Gearbox.Hs.Rots.Maxm = i; }
+                                else if (parts[2] == "min") { Gearbox.Hs.Rots.Minm = i; }
+                            }
+                            else if (parts[1] == "hubbrdtm")
+                            {
+                                if (parts[2] == "mean") { Hubs.Boards.Mean = i; }
+                                else if (parts[2] == "stddev") { Hubs.Boards.Stdv = i; }
+                                else if (parts[2] == "max") { Hubs.Boards.Maxm = i; }
+                                else if (parts[2] == "min") { Hubs.Boards.Minm = i; }
+                            }
+                            else if (parts[1] == "hubtemp")
+                            {
+                                if (parts[2] == "mean") { Hubs.Internals.Mean = i; }
+                                else if (parts[2] == "stddev") { Hubs.Internals.Stdv = i; }
+                                else if (parts[2] == "max") { Hubs.Internals.Maxm = i; }
+                                else if (parts[2] == "min") { Hubs.Internals.Minm = i; }
+                            }
+                            else if (parts[1] == "hubtref1")
+                            {
+                                if (parts[2] == "mean") { Hubs.Ref1s.Mean = i; }
+                                else if (parts[2] == "stddev") { Hubs.Ref1s.Stdv = i; }
+                                else if (parts[2] == "max") { Hubs.Ref1s.Maxm = i; }
+                                else if (parts[2] == "min") { Hubs.Ref1s.Minm = i; }
+                            }
+                            else if (parts[1] == "hubtref2")
+                            {
+                                if (parts[2] == "mean") { Hubs.Ref2s.Mean = i; }
+                                else if (parts[2] == "stddev") { Hubs.Ref2s.Stdv = i; }
+                                else if (parts[2] == "max") { Hubs.Ref2s.Maxm = i; }
+                                else if (parts[2] == "min") { Hubs.Ref2s.Minm = i; }
+                            }
+                            else if (parts[1] == "hydoiltm")
+                            {
+                                if (parts[2] == "mean") { HydOils.Temp.Mean = i; }
+                                else if (parts[2] == "stddev") { HydOils.Temp.Stdv = i; }
+                                else if (parts[2] == "max") { HydOils.Temp.Maxm = i; }
+                                else if (parts[2] == "min") { HydOils.Temp.Minm = i; }
+                            }
+                            else if (parts[1] == "imsgentm")
+                            {
+                                if (parts[2] == "mean") { Gearbox.Ims.Gens.Mean = i; }
+                                else if (parts[2] == "stddev") { Gearbox.Ims.Gens.Stdv = i; }
+                                else if (parts[2] == "max") { Gearbox.Ims.Gens.Maxm = i; }
+                                else if (parts[2] == "min") { Gearbox.Ims.Gens.Minm = i; }
+                            }
+                            else if (parts[1] == "imsrottm")
+                            {
+                                if (parts[2] == "mean") { Gearbox.Ims.Rots.Mean = i; }
+                                else if (parts[2] == "stddev") { Gearbox.Ims.Rots.Stdv = i; }
+                                else if (parts[2] == "max") { Gearbox.Ims.Rots.Maxm = i; }
+                                else if (parts[2] == "min") { Gearbox.Ims.Rots.Minm = i; }
                             }
                             #endregion
                             #region Turbine File
+                            else if (parts[1] == "curtime") { curTimeCol = i; }
                             else if (parts[1] == "acwindsp")
                             {
-                                if (parts[2] == "mean") { AnemoM.ActWinds.MeanCol = i; }
-                                else if (parts[2] == "stddev") { AnemoM.ActWinds.StdvCol = i; }
-                                else if (parts[2] == "max") { AnemoM.ActWinds.MaxmCol = i; }
-                                else if (parts[2] == "min") { AnemoM.ActWinds.MinmCol = i; }
+                                if (parts[2] == "mean") { AnemoM.ActWinds.Mean = i; }
+                                else if (parts[2] == "stddev") { AnemoM.ActWinds.Stdv = i; }
+                                else if (parts[2] == "max") { AnemoM.ActWinds.Maxm = i; }
+                                else if (parts[2] == "min") { AnemoM.ActWinds.Minm = i; }
                             }
                             else if (parts[1] == "genrpm")
                             {
-                                if (parts[2] == "mean") { Genny.Rpms.MeanCol = i; }
-                                else if (parts[2] == "stddev") { Genny.Rpms.StdvCol = i; }
-                                else if (parts[2] == "max") { Genny.Rpms.MaxmCol = i; }
-                                else if (parts[2] == "min") { Genny.Rpms.MinmCol = i; }
+                                if (parts[2] == "mean") { Genny.Rpms.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.Rpms.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.Rpms.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.Rpms.Minm = i; }
                             }
                             else if (parts[1] == "prianemo")
                             {
-                                if (parts[2] == "mean") { AnemoM.PriAnemo.MeanCol = i; }
-                                else if (parts[2] == "stddev") { AnemoM.PriAnemo.StdvCol = i; }
-                                else if (parts[2] == "max") { AnemoM.PriAnemo.MaxmCol = i; }
-                                else if (parts[2] == "min") { AnemoM.PriAnemo.MinmCol = i; }
+                                if (parts[2] == "mean") { AnemoM.PriAnemo.Mean = i; }
+                                else if (parts[2] == "stddev") { AnemoM.PriAnemo.Stdv = i; }
+                                else if (parts[2] == "max") { AnemoM.PriAnemo.Maxm = i; }
+                                else if (parts[2] == "min") { AnemoM.PriAnemo.Minm = i; }
                             }
                             else if (parts[1] == "prwindsp")
                             {
-                                if (parts[2] == "mean") { AnemoM.PriWinds.MeanCol = i; }
-                                else if (parts[2] == "stddev") { AnemoM.PriWinds.StdvCol = i; }
-                                else if (parts[2] == "max") { AnemoM.PriWinds.MaxmCol = i; }
-                                else if (parts[2] == "min") { AnemoM.PriWinds.MinmCol = i; }
+                                if (parts[2] == "mean") { AnemoM.PriWinds.Mean = i; }
+                                else if (parts[2] == "stddev") { AnemoM.PriWinds.Stdv = i; }
+                                else if (parts[2] == "max") { AnemoM.PriWinds.Maxm = i; }
+                                else if (parts[2] == "min") { AnemoM.PriWinds.Minm = i; }
                             }
                             else if (parts[1] == "secanemo")
                             {
-                                if (parts[2] == "mean") { AnemoM.SecAnemo.MeanCol = i; }
-                                else if (parts[2] == "stddev") { AnemoM.SecAnemo.StdvCol = i; }
-                                else if (parts[2] == "max") { AnemoM.SecAnemo.MaxmCol = i; }
-                                else if (parts[2] == "min") { AnemoM.SecAnemo.MinmCol = i; }
+                                if (parts[2] == "mean") { AnemoM.SecAnemo.Mean = i; }
+                                else if (parts[2] == "stddev") { AnemoM.SecAnemo.Stdv = i; }
+                                else if (parts[2] == "max") { AnemoM.SecAnemo.Maxm = i; }
+                                else if (parts[2] == "min") { AnemoM.SecAnemo.Minm = i; }
                             }
                             else if (parts[1] == "sewindsp")
                             {
-                                if (parts[2] == "mean") { AnemoM.SecWinds.MeanCol = i; }
-                                else if (parts[2] == "stddev") { AnemoM.SecWinds.StdvCol = i; }
-                                else if (parts[2] == "max") { AnemoM.SecWinds.MaxmCol = i; }
-                                else if (parts[2] == "min") { AnemoM.SecWinds.MinmCol = i; }
+                                if (parts[2] == "mean") { AnemoM.SecWinds.Mean = i; }
+                                else if (parts[2] == "stddev") { AnemoM.SecWinds.Stdv = i; }
+                                else if (parts[2] == "max") { AnemoM.SecWinds.Maxm = i; }
+                                else if (parts[2] == "min") { AnemoM.SecWinds.Minm = i; }
                             }
                             else if (parts[1] == "tetanemo")
                             {
-                                if (parts[2] == "mean") { AnemoM.TerAnemo.MeanCol = i; }
-                                else if (parts[2] == "stddev") { AnemoM.TerAnemo.StdvCol = i; }
-                                else if (parts[2] == "max") { AnemoM.TerAnemo.MaxmCol = i; }
-                                else if (parts[2] == "min") { AnemoM.TerAnemo.MinmCol = i; }
+                                if (parts[2] == "mean") { AnemoM.TerAnemo.Mean = i; }
+                                else if (parts[2] == "stddev") { AnemoM.TerAnemo.Stdv = i; }
+                                else if (parts[2] == "max") { AnemoM.TerAnemo.Maxm = i; }
+                                else if (parts[2] == "min") { AnemoM.TerAnemo.Minm = i; }
                             }
                             #endregion
                         }
                     }
                 }
             }
+
+            #region Properties
+
+            public int AssetCol { get { return assetCol; } set { assetCol = value; } }
+            public int CurTimeCol { get { return curTimeCol; } set { curTimeCol = value; } }
+            public int SamplCol { get { return sampleCol; } set { sampleCol = value; } }
+            public int StatnCol { get { return stationCol; } set { stationCol = value; } }
+            public int TimesCol { get { return timeCol; } set { timeCol = value; } }
+
+            #endregion
         }
 
         public class ScadaSample : BaseSampleData
@@ -530,6 +569,8 @@ namespace scada_analyst
             #region Variables
             
             private int error = -9999;
+
+            private DateTime curTime = new DateTime();
 
             private Ambient ambTemps = new Ambient();
             private Anemometry anemoM = new Anemometry();
@@ -551,7 +592,7 @@ namespace scada_analyst
             private Power power = new Power();
             private Reactor react = new Reactor();
             private Transformer transf = new Transformer();
-            private Voltage voltag = new Voltage();
+            private Voltage voltage = new Voltage();
 
             #endregion
 
@@ -591,110 +632,139 @@ namespace scada_analyst
 
                 #region Grid File
 
-                power.Mean = GetVals(power.Mean, data, header.Powers.MeanCol);
-                power.Stdv = GetVals(power.Stdv, data, header.Powers.StdvCol);
-                power.Maxm = GetVals(power.Maxm, data, header.Powers.MaxmCol);
-                power.Minm = GetVals(power.Minm, data, header.Powers.MinmCol);
+                power.Mean = GetVals(power.Mean, data, header.Powers.Mean);
+                power.Stdv = GetVals(power.Stdv, data, header.Powers.Stdv);
+                power.Maxm = GetVals(power.Maxm, data, header.Powers.Maxm);
+                power.Minm = GetVals(power.Minm, data, header.Powers.Minm);
                 power.EndVal = GetVals(power.EndVal, data, header.Powers.EndValCol);
                 power.QualEndVal = GetVals(power.QualEndVal, data, header.Powers.QualEndValCol);
                 power.RgStEndVal = GetVals(power.RgStEndVal, data, header.Powers.RgStEndValCol);
 
-                power.GridFreq.Mean = GetVals(power.GridFreq.Mean, data, header.Powers.GridFreq.MeanCol);
-                power.GridFreq.Stdv = GetVals(power.GridFreq.Stdv, data, header.Powers.GridFreq.StdvCol);
-                power.GridFreq.Maxm = GetVals(power.GridFreq.Maxm, data, header.Powers.GridFreq.MaxmCol);
-                power.GridFreq.Minm = GetVals(power.GridFreq.Minm, data, header.Powers.GridFreq.MinmCol);
+                power.GridFreq.Mean = GetVals(power.GridFreq.Mean, data, header.Powers.GridFreq.Mean);
+                power.GridFreq.Stdv = GetVals(power.GridFreq.Stdv, data, header.Powers.GridFreq.Stdv);
+                power.GridFreq.Maxm = GetVals(power.GridFreq.Maxm, data, header.Powers.GridFreq.Maxm);
+                power.GridFreq.Minm = GetVals(power.GridFreq.Minm, data, header.Powers.GridFreq.Minm);
 
-                power.PowrFact.Mean = GetVals(power.PowrFact.Mean, data, header.Powers.PowrFact.MeanCol);
-                power.PowrFact.Stdv = GetVals(power.PowrFact.Stdv, data, header.Powers.PowrFact.StdvCol);
-                power.PowrFact.Maxm = GetVals(power.PowrFact.Maxm, data, header.Powers.PowrFact.MaxmCol);
-                power.PowrFact.Minm = GetVals(power.PowrFact.Minm, data, header.Powers.PowrFact.MinmCol);
+                power.PowrFact.Mean = GetVals(power.PowrFact.Mean, data, header.Powers.PowrFact.Mean);
+                power.PowrFact.Stdv = GetVals(power.PowrFact.Stdv, data, header.Powers.PowrFact.Stdv);
+                power.PowrFact.Maxm = GetVals(power.PowrFact.Maxm, data, header.Powers.PowrFact.Maxm);
+                power.PowrFact.Minm = GetVals(power.PowrFact.Minm, data, header.Powers.PowrFact.Minm);
                 power.PowrFact.EndVal = GetVals(power.PowrFact.EndVal, data, header.Powers.PowrFact.EndValCol);
 
-                react.Powers.Mean = GetVals(react.Powers.Mean, data, header.React.Powers.MeanCol);
-                react.Powers.Stdv = GetVals(react.Powers.Stdv, data, header.React.Powers.StdvCol);
-                react.Powers.Maxm = GetVals(react.Powers.Maxm, data, header.React.Powers.MaxmCol);
-                react.Powers.Minm = GetVals(react.Powers.Minm, data, header.React.Powers.MinmCol);
+                react.Powers.Mean = GetVals(react.Powers.Mean, data, header.React.Powers.Mean);
+                react.Powers.Stdv = GetVals(react.Powers.Stdv, data, header.React.Powers.Stdv);
+                react.Powers.Maxm = GetVals(react.Powers.Maxm, data, header.React.Powers.Maxm);
+                react.Powers.Minm = GetVals(react.Powers.Minm, data, header.React.Powers.Minm);
                 react.Powers.EndVal = GetVals(react.Powers.EndVal, data, header.React.Powers.EndValCol);
+
+                current.phR.Mean = GetVals(current.phR.Mean, data, header.Currents.phR.Mean);
+                current.phR.Stdv = GetVals(current.phR.Stdv, data, header.Currents.phR.Stdv);
+                current.phR.Maxm = GetVals(current.phR.Maxm, data, header.Currents.phR.Maxm);
+                current.phR.Minm = GetVals(current.phR.Minm, data, header.Currents.phR.Minm);
+
+                current.phS.Mean = GetVals(current.phS.Mean, data, header.Currents.phS.Mean);
+                current.phS.Stdv = GetVals(current.phS.Stdv, data, header.Currents.phS.Stdv);
+                current.phS.Maxm = GetVals(current.phS.Maxm, data, header.Currents.phS.Maxm);
+                current.phS.Minm = GetVals(current.phS.Minm, data, header.Currents.phS.Minm);
+
+                current.phT.Mean = GetVals(current.phT.Mean, data, header.Currents.phT.Mean);
+                current.phT.Stdv = GetVals(current.phT.Stdv, data, header.Currents.phT.Stdv);
+                current.phT.Maxm = GetVals(current.phT.Maxm, data, header.Currents.phT.Maxm);
+                current.phT.Minm = GetVals(current.phT.Minm, data, header.Currents.phT.Minm);
+
+                voltage.phR.Mean = GetVals(voltage.phR.Mean, data, header.Voltages.phR.Mean);
+                voltage.phR.Stdv = GetVals(voltage.phR.Stdv, data, header.Voltages.phR.Stdv);
+                voltage.phR.Maxm = GetVals(voltage.phR.Maxm, data, header.Voltages.phR.Maxm);
+                voltage.phR.Minm = GetVals(voltage.phR.Minm, data, header.Voltages.phR.Minm);
+
+                voltage.phS.Mean = GetVals(voltage.phS.Mean, data, header.Voltages.phS.Mean);
+                voltage.phS.Stdv = GetVals(voltage.phS.Stdv, data, header.Voltages.phS.Stdv);
+                voltage.phS.Maxm = GetVals(voltage.phS.Maxm, data, header.Voltages.phS.Maxm);
+                voltage.phS.Minm = GetVals(voltage.phS.Minm, data, header.Voltages.phS.Minm);
+
+                voltage.phT.Mean = GetVals(voltage.phT.Mean, data, header.Voltages.phT.Mean);
+                voltage.phT.Stdv = GetVals(voltage.phT.Stdv, data, header.Voltages.phT.Stdv);
+                voltage.phT.Maxm = GetVals(voltage.phT.Maxm, data, header.Voltages.phT.Maxm);
+                voltage.phT.Minm = GetVals(voltage.phT.Minm, data, header.Voltages.phT.Minm);
 
                 #endregion
                 #region Temperature File
 
-                gearbox.Hs.Gens.Mean = GetVals(gearbox.Hs.Gens.Mean, data, header.gearbox.Hs.Gens.MeanCol);
-                gearbox.Hs.Gens.Stdv = GetVals(gearbox.Hs.Gens.Stdv, data, header.gearbox.Hs.Gens.StdvCol);
-                gearbox.Hs.Gens.Maxm = GetVals(gearbox.Hs.Gens.Maxm, data, header.gearbox.Hs.Gens.MaxmCol);
-                gearbox.Hs.Gens.Minm = GetVals(gearbox.Hs.Gens.Minm, data, header.gearbox.Hs.Gens.MinmCol);
-                gearbox.Hs.Rots.Mean = GetVals(gearbox.Hs.Rots.Mean, data, header.gearbox.Hs.Rots.MeanCol);
-                gearbox.Hs.Rots.Stdv = GetVals(gearbox.Hs.Rots.Stdv, data, header.gearbox.Hs.Rots.StdvCol);
-                gearbox.Hs.Rots.Maxm = GetVals(gearbox.Hs.Rots.Maxm, data, header.gearbox.Hs.Rots.MaxmCol);
-                gearbox.Hs.Rots.Minm = GetVals(gearbox.Hs.Rots.Minm, data, header.gearbox.Hs.Rots.MinmCol);
+                gearbox.Hs.Gens.Mean = GetVals(gearbox.Hs.Gens.Mean, data, header.gearbox.Hs.Gens.Mean);
+                gearbox.Hs.Gens.Stdv = GetVals(gearbox.Hs.Gens.Stdv, data, header.gearbox.Hs.Gens.Stdv);
+                gearbox.Hs.Gens.Maxm = GetVals(gearbox.Hs.Gens.Maxm, data, header.gearbox.Hs.Gens.Maxm);
+                gearbox.Hs.Gens.Minm = GetVals(gearbox.Hs.Gens.Minm, data, header.gearbox.Hs.Gens.Minm);
+                gearbox.Hs.Rots.Mean = GetVals(gearbox.Hs.Rots.Mean, data, header.gearbox.Hs.Rots.Mean);
+                gearbox.Hs.Rots.Stdv = GetVals(gearbox.Hs.Rots.Stdv, data, header.gearbox.Hs.Rots.Stdv);
+                gearbox.Hs.Rots.Maxm = GetVals(gearbox.Hs.Rots.Maxm, data, header.gearbox.Hs.Rots.Maxm);
+                gearbox.Hs.Rots.Minm = GetVals(gearbox.Hs.Rots.Minm, data, header.gearbox.Hs.Rots.Minm);
 
-                gearbox.Ims.Gens.Mean = GetVals(gearbox.Ims.Gens.Mean, data, header.gearbox.Ims.Gens.MeanCol);
-                gearbox.Ims.Gens.Stdv = GetVals(gearbox.Ims.Gens.Stdv, data, header.gearbox.Ims.Gens.StdvCol);
-                gearbox.Ims.Gens.Maxm = GetVals(gearbox.Ims.Gens.Maxm, data, header.gearbox.Ims.Gens.MaxmCol);
-                gearbox.Ims.Gens.Minm = GetVals(gearbox.Ims.Gens.Minm, data, header.gearbox.Ims.Gens.MinmCol);
-                gearbox.Ims.Rots.Mean = GetVals(gearbox.Ims.Rots.Mean, data, header.gearbox.Ims.Rots.MeanCol);
-                gearbox.Ims.Rots.Stdv = GetVals(gearbox.Ims.Rots.Stdv, data, header.gearbox.Ims.Rots.StdvCol);
-                gearbox.Ims.Rots.Maxm = GetVals(gearbox.Ims.Rots.Maxm, data, header.gearbox.Ims.Rots.MaxmCol);
-                gearbox.Ims.Rots.Minm = GetVals(gearbox.Ims.Rots.Minm, data, header.gearbox.Ims.Rots.MinmCol);
+                gearbox.Ims.Gens.Mean = GetVals(gearbox.Ims.Gens.Mean, data, header.gearbox.Ims.Gens.Mean);
+                gearbox.Ims.Gens.Stdv = GetVals(gearbox.Ims.Gens.Stdv, data, header.gearbox.Ims.Gens.Stdv);
+                gearbox.Ims.Gens.Maxm = GetVals(gearbox.Ims.Gens.Maxm, data, header.gearbox.Ims.Gens.Maxm);
+                gearbox.Ims.Gens.Minm = GetVals(gearbox.Ims.Gens.Minm, data, header.gearbox.Ims.Gens.Minm);
+                gearbox.Ims.Rots.Mean = GetVals(gearbox.Ims.Rots.Mean, data, header.gearbox.Ims.Rots.Mean);
+                gearbox.Ims.Rots.Stdv = GetVals(gearbox.Ims.Rots.Stdv, data, header.gearbox.Ims.Rots.Stdv);
+                gearbox.Ims.Rots.Maxm = GetVals(gearbox.Ims.Rots.Maxm, data, header.gearbox.Ims.Rots.Maxm);
+                gearbox.Ims.Rots.Minm = GetVals(gearbox.Ims.Rots.Minm, data, header.gearbox.Ims.Rots.Minm);
 
                 #endregion
                 #region Turbine File
 
-                anemoM.ActWinds.Mean = GetVals(anemoM.ActWinds.Mean, data, header.AnemoM.ActWinds.MeanCol);
-                anemoM.ActWinds.Stdv = GetVals(anemoM.ActWinds.Stdv, data, header.AnemoM.ActWinds.StdvCol);
-                anemoM.ActWinds.Maxm = GetVals(anemoM.ActWinds.Maxm, data, header.AnemoM.ActWinds.MaxmCol);
-                anemoM.ActWinds.Minm = GetVals(anemoM.ActWinds.Minm, data, header.AnemoM.ActWinds.MinmCol);
+                curTime = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }));
 
-                anemoM.PriAnemo.Mean = GetVals(anemoM.PriAnemo.Mean, data, header.AnemoM.PriAnemo.MeanCol);
-                anemoM.PriAnemo.Stdv = GetVals(anemoM.PriAnemo.Stdv, data, header.AnemoM.PriAnemo.StdvCol);
-                anemoM.PriAnemo.Maxm = GetVals(anemoM.PriAnemo.Maxm, data, header.AnemoM.PriAnemo.MaxmCol);
-                anemoM.PriAnemo.Minm = GetVals(anemoM.PriAnemo.Minm, data, header.AnemoM.PriAnemo.MinmCol);
+                anemoM.ActWinds.Mean = GetVals(anemoM.ActWinds.Mean, data, header.AnemoM.ActWinds.Mean);
+                anemoM.ActWinds.Stdv = GetVals(anemoM.ActWinds.Stdv, data, header.AnemoM.ActWinds.Stdv);
+                anemoM.ActWinds.Maxm = GetVals(anemoM.ActWinds.Maxm, data, header.AnemoM.ActWinds.Maxm);
+                anemoM.ActWinds.Minm = GetVals(anemoM.ActWinds.Minm, data, header.AnemoM.ActWinds.Minm);
 
-                anemoM.PriWinds.Mean = GetVals(anemoM.PriWinds.Mean, data, header.AnemoM.PriWinds.MeanCol);
-                anemoM.PriWinds.Stdv = GetVals(anemoM.PriWinds.Stdv, data, header.AnemoM.PriWinds.StdvCol);
-                anemoM.PriWinds.Maxm = GetVals(anemoM.PriWinds.Maxm, data, header.AnemoM.PriWinds.MaxmCol);
-                anemoM.PriWinds.Minm = GetVals(anemoM.PriWinds.Minm, data, header.AnemoM.PriWinds.MinmCol);
+                anemoM.PriAnemo.Mean = GetVals(anemoM.PriAnemo.Mean, data, header.AnemoM.PriAnemo.Mean);
+                anemoM.PriAnemo.Stdv = GetVals(anemoM.PriAnemo.Stdv, data, header.AnemoM.PriAnemo.Stdv);
+                anemoM.PriAnemo.Maxm = GetVals(anemoM.PriAnemo.Maxm, data, header.AnemoM.PriAnemo.Maxm);
+                anemoM.PriAnemo.Minm = GetVals(anemoM.PriAnemo.Minm, data, header.AnemoM.PriAnemo.Minm);
 
-                anemoM.SecAnemo.Mean = GetVals(anemoM.SecAnemo.Mean, data, header.AnemoM.SecAnemo.MeanCol);
-                anemoM.SecAnemo.Stdv = GetVals(anemoM.SecAnemo.Stdv, data, header.AnemoM.SecAnemo.StdvCol);
-                anemoM.SecAnemo.Maxm = GetVals(anemoM.SecAnemo.Maxm, data, header.AnemoM.SecAnemo.MaxmCol);
-                anemoM.SecAnemo.Minm = GetVals(anemoM.SecAnemo.Minm, data, header.AnemoM.SecAnemo.MinmCol);
+                anemoM.PriWinds.Mean = GetVals(anemoM.PriWinds.Mean, data, header.AnemoM.PriWinds.Mean);
+                anemoM.PriWinds.Stdv = GetVals(anemoM.PriWinds.Stdv, data, header.AnemoM.PriWinds.Stdv);
+                anemoM.PriWinds.Maxm = GetVals(anemoM.PriWinds.Maxm, data, header.AnemoM.PriWinds.Maxm);
+                anemoM.PriWinds.Minm = GetVals(anemoM.PriWinds.Minm, data, header.AnemoM.PriWinds.Minm);
 
-                anemoM.SecWinds.Mean = GetVals(anemoM.SecWinds.Mean, data, header.AnemoM.SecWinds.MeanCol);
-                anemoM.SecWinds.Stdv = GetVals(anemoM.SecWinds.Stdv, data, header.AnemoM.SecWinds.StdvCol);
-                anemoM.SecWinds.Maxm = GetVals(anemoM.SecWinds.Maxm, data, header.AnemoM.SecWinds.MaxmCol);
-                anemoM.SecWinds.Minm = GetVals(anemoM.SecWinds.Minm, data, header.AnemoM.SecWinds.MinmCol);
+                anemoM.SecAnemo.Mean = GetVals(anemoM.SecAnemo.Mean, data, header.AnemoM.SecAnemo.Mean);
+                anemoM.SecAnemo.Stdv = GetVals(anemoM.SecAnemo.Stdv, data, header.AnemoM.SecAnemo.Stdv);
+                anemoM.SecAnemo.Maxm = GetVals(anemoM.SecAnemo.Maxm, data, header.AnemoM.SecAnemo.Maxm);
+                anemoM.SecAnemo.Minm = GetVals(anemoM.SecAnemo.Minm, data, header.AnemoM.SecAnemo.Minm);
 
-                anemoM.TerAnemo.Mean = GetVals(anemoM.TerAnemo.Mean, data, header.AnemoM.TerAnemo.MeanCol);
-                anemoM.TerAnemo.Stdv = GetVals(anemoM.TerAnemo.Stdv, data, header.AnemoM.TerAnemo.StdvCol);
-                anemoM.TerAnemo.Maxm = GetVals(anemoM.TerAnemo.Maxm, data, header.AnemoM.TerAnemo.MaxmCol);
-                anemoM.TerAnemo.Minm = GetVals(anemoM.TerAnemo.Minm, data, header.AnemoM.TerAnemo.MinmCol);
+                anemoM.SecWinds.Mean = GetVals(anemoM.SecWinds.Mean, data, header.AnemoM.SecWinds.Mean);
+                anemoM.SecWinds.Stdv = GetVals(anemoM.SecWinds.Stdv, data, header.AnemoM.SecWinds.Stdv);
+                anemoM.SecWinds.Maxm = GetVals(anemoM.SecWinds.Maxm, data, header.AnemoM.SecWinds.Maxm);
+                anemoM.SecWinds.Minm = GetVals(anemoM.SecWinds.Minm, data, header.AnemoM.SecWinds.Minm);
 
-                genny.Rpms.Mean = GetVals(genny.Rpms.Mean, data, header.Genny.Rpms.MeanCol);
-                genny.Rpms.Stdv = GetVals(genny.Rpms.Stdv, data, header.Genny.Rpms.StdvCol);
-                genny.Rpms.Maxm = GetVals(genny.Rpms.Maxm, data, header.Genny.Rpms.MaxmCol);
-                genny.Rpms.Minm = GetVals(genny.Rpms.Minm, data, header.Genny.Rpms.MinmCol);
+                anemoM.TerAnemo.Mean = GetVals(anemoM.TerAnemo.Mean, data, header.AnemoM.TerAnemo.Mean);
+                anemoM.TerAnemo.Stdv = GetVals(anemoM.TerAnemo.Stdv, data, header.AnemoM.TerAnemo.Stdv);
+                anemoM.TerAnemo.Maxm = GetVals(anemoM.TerAnemo.Maxm, data, header.AnemoM.TerAnemo.Maxm);
+                anemoM.TerAnemo.Minm = GetVals(anemoM.TerAnemo.Minm, data, header.AnemoM.TerAnemo.Minm);
+
+                genny.Rpms.Mean = GetVals(genny.Rpms.Mean, data, header.Genny.Rpms.Mean);
+                genny.Rpms.Stdv = GetVals(genny.Rpms.Stdv, data, header.Genny.Rpms.Stdv);
+                genny.Rpms.Maxm = GetVals(genny.Rpms.Maxm, data, header.Genny.Rpms.Maxm);
+                genny.Rpms.Minm = GetVals(genny.Rpms.Minm, data, header.Genny.Rpms.Minm);
+
+
 
                 #endregion
             }
 
-            private double GetVals(double value, string[] data, int index)
+            private double GetVals(double value, string[] data, double index)
             {
                 if (value == 0 || value == error)
                 {
-                    return GetVals(data, index);
+                    return Common.GetVals(data, (int)index, error);
                 }
                 else
                 {
                     return value;
                 }
             }
-
-            private double GetVals(string[] data, int index)
-            {
-                return index != -1 && Common.CanConvert<double>(data[index]) ? Convert.ToDouble(data[index]) : error;
-            }
-
+            
             #region Support Classes
 
             #region Base Variables
@@ -1279,6 +1349,10 @@ namespace scada_analyst
 
             #region Properties
 
+            public int Error { get { return error; } set { error = value; } }
+
+            public DateTime CurTime {  get { return curTime; } set { curTime = value; } }
+
             public Ambient AmbTemps { get { return ambTemps; } set { ambTemps = value; } }
             public Anemometry AnemoM { get { return anemoM; } set { anemoM = value; } }
             public Board Boards { get { return board; } set { board = value; } }
@@ -1299,7 +1373,7 @@ namespace scada_analyst
             public Power Powers { get { return power; } set { power = value; } }
             public Reactor React { get { return react; } set { react = value; } }
             public Transformer Transf { get { return transf; } set { transf = value; } }
-            public Voltage Voltag { get { return voltag; } set { voltag = value; } }
+            public Voltage Voltages { get { return voltage; } set { voltage = value; } }
 
             #endregion
         }
