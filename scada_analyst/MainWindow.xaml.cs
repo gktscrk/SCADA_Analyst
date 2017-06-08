@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,7 +35,7 @@ namespace scada_analyst
 
         private List<string> loadedFiles = new List<string>();
 
-        private BackgroundWorker bgW = null;
+        private CancellationTokenSource cts;
 
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
@@ -59,10 +60,11 @@ namespace scada_analyst
 
         private void CancelProgress_Click(object sender, RoutedEventArgs e)
         {
-            if (bgW != null && bgW.IsBusy)
+            if (cts != null)
             {
-                bgW.CancelAsync();
-                TaskCompleted();
+                cts.Cancel();
+
+                ProgressBarInvisible();
             }
         }
 
@@ -99,78 +101,132 @@ namespace scada_analyst
             this.Close();
         }
 
-        private void LoadGeo(object sender, RoutedEventArgs e)
+        private async void LoadGeo(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Location files (*.csv)|*.csv|All files (*.*)|*.*";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog().Value)
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+            var progressHandler = new Progress<string>(value =>
             {
-                ProgressBarVisible();
+                label_ProgressBar.Content = value;
+            });
+            var progress = progressHandler as IProgress<string>;
 
-                string[] fileList = openFileDialog.FileNames;
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "Location files (*.csv)|*.csv|All files (*.*)|*.*";
+                openFileDialog.Multiselect = true;
 
-                bgW = new BackgroundWorker();
+                if (openFileDialog.ShowDialog().Value)
+                {
+                    ProgressBarVisible();
+                    
+                    await Task.Run(() => GeographyLoading(openFileDialog.FileNames));
 
-                bgW.WorkerReportsProgress = true;
-                bgW.WorkerSupportsCancellation = true;
+                    ProgressBarInvisible();
+                }
+            }
+            catch (LoadingCancelledException)
+            {
+                MessageBox.Show("Loading cancelled by user.");
+            }
+            catch (OperationCanceledException)
+            {
 
-                bgW.DoWork += BGW_Geog_DoWork;
-                bgW.ProgressChanged += BGW_ProgressChanged;
-                bgW.RunWorkerCompleted += BGW_Geog_RunWorkerCompleted;
-
-                bgW.RunWorkerAsync(new object[] { fileList });
+            }
+            catch (WrongFileTypeException)
+            {
+                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
         }
 
-        private void LoadMet(object sender, RoutedEventArgs e)
+        private async void LoadMet(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Meteorology files (*.csv)|*.csv|All files (*.*)|*.*";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog().Value)
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+            var progressHandler = new Progress<string>(value =>
             {
-                ProgressBarVisible();
+                label_ProgressBar.Content = value;
+            });
+            var progress = progressHandler as IProgress<string>;
 
-                string[] fileList = openFileDialog.FileNames;
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "Meteorology files (*.csv)|*.csv|All files (*.*)|*.*";
+                openFileDialog.Multiselect = true;
 
-                bgW = new BackgroundWorker();
+                if (openFileDialog.ShowDialog().Value)
+                {
+                    ProgressBarVisible();
 
-                bgW.WorkerReportsProgress = true;
-                bgW.WorkerSupportsCancellation = true;
+                    await Task.Run(() => MeteorologyLoading(meteoFile, openFileDialog.FileNames, meteoLoaded));
 
-                bgW.DoWork += BGW_Meteo_DoWork;
-                bgW.ProgressChanged += BGW_ProgressChanged;
-                bgW.RunWorkerCompleted += BGW_Meteo_RunWorkerCompleted;
+                    ProgressBarInvisible();
+                }
+            }
+            catch (LoadingCancelledException)
+            {
+                MessageBox.Show("Loading cancelled by user.");
+            }
+            catch (OperationCanceledException)
+            {
 
-                bgW.RunWorkerAsync(new object[] { fileList , meteoFile , meteoLoaded });
+            }
+            catch (WrongFileTypeException)
+            {
+                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
         }
 
-        private void LoadScada(object sender, RoutedEventArgs e)
+        private async void LoadScada(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "SCADA files (*.csv)|*.csv|All files (*.*)|*.*";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog().Value)
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+            var progressHandler = new Progress<string>(value =>
             {
-                ProgressBarVisible();
+                label_ProgressBar.Content = value;
+            });
+            var progress = progressHandler as IProgress<string>;
 
-                string[] fileList = openFileDialog.FileNames;
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "SCADA files (*.csv)|*.csv|All files (*.*)|*.*";
+                openFileDialog.Multiselect = true;
 
-                bgW = new BackgroundWorker();
+                if (openFileDialog.ShowDialog().Value)
+                {
+                    ProgressBarVisible();
+                    
+                    await Task.Run(() => ScadaLoading(scadaFile, openFileDialog.FileNames, scadaLoaded));
 
-                bgW.WorkerReportsProgress = true;
-                bgW.WorkerSupportsCancellation = true;
+                    ProgressBarInvisible();
+                }
+            }
+            catch (LoadingCancelledException)
+            {
+                MessageBox.Show("Loading cancelled by user.");
+            }
+            catch (OperationCanceledException)
+            {
 
-                bgW.DoWork += BGW_Scada_DoWork;
-                bgW.ProgressChanged += BGW_ProgressChanged;
-                bgW.RunWorkerCompleted += BGW_Scada_RunWorkerCompleted;
-
-                bgW.RunWorkerAsync(new object[] { fileList , scadaFile , scadaLoaded });
+            }
+            catch (WrongFileTypeException)
+            {
+                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -215,13 +271,8 @@ namespace scada_analyst
             StructureLocations();
         }
 
-        #region BackgroundWorker
-
-        void TaskBegun(BackgroundWorker bgW)
-        {
-            bgW.ReportProgress(0);
-        }
-
+        #region Background Processes
+        
         void ProgressBarVisible()
         {
             progress_ProgressBar.Visibility = Visibility.Visible;
@@ -229,19 +280,9 @@ namespace scada_analyst
             cancel_ProgressBar.Visibility = Visibility.Visible;
             //counter_ProgressBar.Visibility = Visibility.Visible;
         }
-
-        void BGW_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        
+        void ProgressBarInvisible()
         {
-            progress_ProgressBar.Value = e.ProgressPercentage;
-
-            label_ProgressBar.Content = String.Format("{0}%", e.ProgressPercentage);
-        }
-
-        void TaskCompleted()
-        {
-            bgW.Dispose();
-            bgW = null;
-
             progress_ProgressBar.Visibility = Visibility.Collapsed;
             progress_ProgressBar.Value = 0;
 
@@ -253,194 +294,76 @@ namespace scada_analyst
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
         }
 
-        void BGW_Geog_DoWork(object sender, DoWorkEventArgs e)
+        private void GeographyLoading(string[] filenames)
         {
-            BackgroundWorker bgW = (BackgroundWorker)sender;
-
-            Object[] args = (Object[])e.Argument;
-            string[] filenames = (string[])args[0];
-
-            string errors;
-
-            TaskBegun(bgW);
-
             try
             {
                 for (int i = 0; i < filenames.Length; i++)
                 {
                     if (!loadedFiles.Contains(filenames[i]))
                     {
-                        GeoData geography = new GeoData(filenames[i], bgW);
-
-                        e.Result = geography;
+                        geoFile = new GeoData(filenames[i]);
 
                         loadedFiles.Add(filenames[i]);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                if (ex is LoadingCancelledException)
-                {
-                    e.Result = "Loading cancelled by user.";
-                }
-                else if (ex is WrongFileTypeException)
-                {
-                    e.Result = "This file cannot be loaded since it is of an incompatible file type for this function.";
-                }
-                else
-                {
-                    errors = string.Format("File: {0}\n\nError: {1}", filenames, ex.Message);
 
-                    e.Result = errors;
-                }
+                geoLoaded = true;
+            }
+            catch
+            {
+                throw;
             }
         }
 
-        void BGW_Meteo_DoWork(object sender, DoWorkEventArgs e)
+        private void MeteorologyLoading(MeteoData existingData, string[] filenames, bool isLoaded)
         {
-            BackgroundWorker bgW = (BackgroundWorker)sender;
-
-            Object[] args = (Object[])e.Argument;
-            string[] filenames = (string[])args[0];
-            MeteoData existingData = (MeteoData)args[1];
-            bool loaded = (bool)args[2];
-
-            string errors;
-
-            TaskBegun(bgW);
-
             try
             {
                 MeteoData analysis = existingData;
 
-                if (!loaded)
+                if (!isLoaded)
                 {
-                    analysis = new MeteoData(filenames, bgW);
+                    analysis = new MeteoData(filenames);
                 }
                 else
                 {
-                    analysis.AppendFiles(filenames, bgW);
+                    analysis.AppendFiles(filenames);
                 }
 
-                e.Result = analysis;
+                meteoFile = analysis;
+                meteoLoaded = true;
             }
-            catch (Exception ex)
+            catch
             {
-                if (ex is LoadingCancelledException)
-                {
-                    e.Result = "Loading cancelled by user.";
-                }
-                else if (ex is WrongFileTypeException)
-                {
-                    e.Result = "This file cannot be loaded since it is of an incompatible file type for this function.";
-                }
-                else
-                {
-                    errors = string.Format("File: {0}\n\nError: {1}", filenames, ex.Message);
-
-                    e.Result = errors;
-                }
+                throw;
             }
         }
 
-        void BGW_Scada_DoWork(object sender, DoWorkEventArgs e)
+        private void ScadaLoading(ScadaData existingData, string[] filenames, bool isLoaded)
         {
-            BackgroundWorker bgW = (BackgroundWorker)sender;
-
-            Object[] args = (Object[])e.Argument;
-            string[] filenames = (string[])args[0];
-            ScadaData existingData = (ScadaData)args[1];
-            bool loaded = (bool)args[2];
-
-            string errors;
-
-            TaskBegun(bgW);
-
             try
             {
                 ScadaData analysis = existingData;
 
-                if (!loaded)
+                if (!isLoaded)
                 {
-                    analysis = new ScadaData(filenames, bgW);
+                    analysis = new ScadaData(filenames);
                 }
                 else
                 {
-                    analysis.AppendFiles(filenames, bgW);
+                    analysis.AppendFiles(filenames);
                 }
 
-                e.Result = analysis;
-            }
-            catch (Exception ex)
-            {
-                if (ex is LoadingCancelledException)
-                {
-                    e.Result = "Loading cancelled by user.";
-                }
-                else if (ex is WrongFileTypeException)
-                {
-                    e.Result = "This file cannot be loaded since it is of an incompatible file type for this function.";
-                }
-                else
-                {
-                    errors = string.Format("File: {0}\n\nError: {1}", filenames, ex.Message);
-
-                    e.Result = errors;
-                }
-            }
-        }
-
-        void BGW_Geog_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Result is GeoData)
-            {
-                geoFile = (GeoData)e.Result;
-                geoLoaded = true;
-            }
-            else
-            {
-                MessageBox.Show(string.Format("File not loaded:\n\n{0}", (string)e.Result),
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            TaskCompleted();
-        }
-
-        void BGW_Meteo_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Result is MeteoData)
-            {
-                meteoFile = (MeteoData)e.Result;
-                
-                meteoLoaded = true;
-            }
-            else
-            {
-                MessageBox.Show(string.Format("File not loaded:\n\n{0}", (string)e.Result),
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            TaskCompleted();
-        }
-
-        void BGW_Scada_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Result is ScadaData)
-            {
-                scadaFile = (ScadaData)e.Result;
-
+                scadaFile = analysis;
                 scadaLoaded = true;
             }
-            else
+            catch
             {
-                MessageBox.Show(string.Format("File not loaded:\n\n{0}", (string)e.Result),
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
             }
-
-            TaskCompleted();
         }
-
+        
         #endregion
 
         #region Support Classes

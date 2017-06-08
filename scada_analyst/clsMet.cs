@@ -24,129 +24,111 @@ namespace scada_analyst
 
         public MeteoData() { }
 
-        public MeteoData(string[] filenames, BackgroundWorker bgW)
+        public MeteoData(string[] filenames)
         {
-            if (!bgW.CancellationPending)
+            LoadNSortMet(filenames);
+        }
+
+        public void AppendFiles(string[] filenames)
+        {
+            LoadNSortMet(filenames);
+        }
+
+        private void LoadMetFiles(string[] filenames)
+        {
+            for (int i = 0; i < filenames.Length; i++)
             {
-                LoadNSortMet(filenames, bgW);
+                this.FileName = filenames[i];
+
+                LoadMeteorology(filenames.Length, i);
             }
         }
 
-        public void AppendFiles(string[] filenames, BackgroundWorker bgW)
+        private void LoadMeteorology(int numberOfFiles = 1, int i = 0)
         {
-            if (!bgW.CancellationPending)
+            using (StreamReader sR = new StreamReader(FileName))
             {
-                LoadNSortMet(filenames, bgW);
-            }
-        }
-
-        private void LoadMetFiles(string[] filenames, BackgroundWorker bgW)
-        {
-            if (!bgW.CancellationPending)
-            {
-                for (int i = 0; i < filenames.Length; i++)
+                try
                 {
-                    this.FileName = filenames[i];
+                    int count = 0;
+                    bool readHeader = false;
 
-                    LoadMeteorology(bgW, filenames.Length, i);
-                }
-            }
-        }
+                    metMasts = new List<MetMastData>();
 
-        private void LoadMeteorology(BackgroundWorker bgW, int numberOfFiles = 1, int i = 0)
-        {
-            if (!bgW.CancellationPending)
-            {
-                using (StreamReader sR = new StreamReader(FileName))
-                {
-                    try
+                    while (!sR.EndOfStream)
                     {
-                        int count = 0;
-                        bool readHeader = false;
-
-                        metMasts = new List<MetMastData>();
-
-                        while (!sR.EndOfStream)
+                        if (readHeader == false)
                         {
-                            if (!bgW.CancellationPending)
+                            string header = sR.ReadLine();
+                            header = header.ToLower().Replace("\"", String.Empty);
+                            readHeader = true;
+
+                            if (!header.Contains("met")) { throw new WrongFileTypeException(); }
+
+                            metrHeader = new MeteoHeader(header);
+                        }
+
+                        string line = sR.ReadLine();
+
+                        if (!line.Equals(""))
+                        {
+                            line = line.Replace("\"", String.Empty);
+
+                            string[] splits = Common.GetSplits(line, ',');
+
+                            int thisAsset = Common.CanConvert<int>(splits[metrHeader.AssetCol]) ?
+                                Convert.ToInt32(splits[metrHeader.AssetCol]) : throw new FileFormatException();
+
+                            // organise loading so it would check which ones have already
+                            // been loaded; then work around the ones have have been
+
+                            if (inclMetm.Contains(thisAsset))
                             {
-                                if (readHeader == false)
-                                {
-                                    string header = sR.ReadLine();
-                                    header = header.ToLower().Replace("\"", String.Empty);
-                                    readHeader = true;
+                                int index = metMasts.FindIndex(x => x.UnitID == thisAsset);
 
-                                    if (!header.Contains("met")) { throw new WrongFileTypeException(); }
+                                metMasts[index].AddData(splits, metrHeader);
+                            }
+                            else
+                            {
+                                metMasts.Add(new MetMastData(splits, metrHeader));
 
-                                    metrHeader = new MeteoHeader(header);
-                                }
-
-                                string line = sR.ReadLine();
-
-                                if (!line.Equals(""))
-                                {
-                                    line = line.Replace("\"", String.Empty);
-
-                                    string[] splits = Common.GetSplits(line, ',');
-
-                                    int thisAsset = Common.CanConvert<int>(splits[metrHeader.AssetCol]) ?
-                                        Convert.ToInt32(splits[metrHeader.AssetCol]) : throw new FileFormatException();
-
-                                    // organise loading so it would check which ones have already
-                                    // been loaded; then work around the ones have have been
-
-                                    if (inclMetm.Contains(thisAsset))
-                                    {
-                                        int index = metMasts.FindIndex(x => x.UnitID == thisAsset);
-
-                                        metMasts[index].AddData(splits, metrHeader);
-                                    }
-                                    else
-                                    {
-                                        metMasts.Add(new MetMastData(splits, metrHeader));
-
-                                        inclMetm.Add(Convert.ToInt32(splits[metrHeader.AssetCol]));
-                                    }
-                                }
-
-                                count++;
-
-                                if (count % 500 == 0)
-                                {
-                                    bgW.ReportProgress((int)
-                                        ((double)100 / numberOfFiles * i +
-                                        (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
-                                }
+                                inclMetm.Add(Convert.ToInt32(splits[metrHeader.AssetCol]));
                             }
                         }
+
+                        count++;
+
+                        if (count % 500 == 0)
+                        {
+                            //bgW.ReportProgress((int)
+                            //    ((double)100 / numberOfFiles * i +
+                            //    (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
+                        }
                     }
-                    catch
-                    {
-                        throw;
-                    }
-                    finally
-                    {
-                        sR.Close();
-                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sR.Close();
                 }
             }
         }
 
-        private void LoadNSortMet(string[] filenames, BackgroundWorker bgW)
+        private void LoadNSortMet(string[] filenames)
         {
-            LoadMetFiles(filenames, bgW);
+            LoadMetFiles(filenames);
 
-            SortMeteorology(bgW);
+            SortMeteorology();
         }
 
-        private void SortMeteorology(BackgroundWorker bgW)
+        private void SortMeteorology()
         {
-            if (!bgW.CancellationPending)
+            for (int i = 0; i < metMasts.Count; i++)
             {
-                for (int i = 0; i < metMasts.Count; i++)
-                {
-                    metMasts[i].MetDataSorted = metMasts[i].MetData.OrderBy(o => o.TimeStamp).ToList();
-                }
+                metMasts[i].MetDataSorted = metMasts[i].MetData.OrderBy(o => o.TimeStamp).ToList();
             }
         }
 

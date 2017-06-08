@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 using scada_analyst.Shared;
 
-
 namespace scada_analyst
 {
     public class GeoData : BaseMetaData
@@ -22,71 +21,62 @@ namespace scada_analyst
 
         #endregion
 
-        public GeoData(string filename, BackgroundWorker bgW)
+        public GeoData(string filename)
         {
-            if (!bgW.CancellationPending)
-            {
-                this.FileName = filename;
+            this.FileName = filename;
 
-                LoadGeography(bgW);
-            }
+            LoadGeography();
         }
 
-        private void LoadGeography(BackgroundWorker bgW)
+        private void LoadGeography()
         {
-            if (!bgW.CancellationPending)
+            using (StreamReader sR = new StreamReader(FileName))
             {
-                using (StreamReader sR = new StreamReader(FileName))
+                try
                 {
-                    try
+                    int count = 0;
+                    bool readHeader = false;
+
+                    geoInfo = new List<GeoSample>();
+
+                    while (!sR.EndOfStream)
                     {
-                        int count = 0;
-                        bool readHeader = false;
-
-                        geoInfo = new List<GeoSample>();
-
-                        while (!sR.EndOfStream)
+                        if (readHeader == false)
                         {
-                            if (!bgW.CancellationPending)
-                            {
-                                if (readHeader == false)
-                                {
-                                    string header = sR.ReadLine();
-                                    header = header.ToLower().Replace("\"", String.Empty);
-                                    readHeader = true;
+                            string header = sR.ReadLine();
+                            header = header.ToLower().Replace("\"", String.Empty);
+                            readHeader = true;
 
-                                    if (!Common.ContainsAny(header, geoNames)) { throw new WrongFileTypeException(); }
-                                }
+                            if (!Common.ContainsAny(header, geoNames)) { throw new WrongFileTypeException(); }
+                        }
 
-                                string line = sR.ReadLine();
+                        string line = sR.ReadLine();
 
-                                if (!line.Equals(""))
-                                {
-                                    line = line.Replace("\"", String.Empty);
+                        if (!line.Equals(""))
+                        {
+                            line = line.Replace("\"", String.Empty);
 
-                                    string[] splits = Common.GetSplits(line, ',');
+                            string[] splits = Common.GetSplits(line, ',');
 
-                                    geoInfo.Add(new GeoSample(splits));
-                                }
+                            geoInfo.Add(new GeoSample(splits));
+                        }
 
-                                count++;
+                        count++;
 
-                                if (count % 1 == 0)
-                                {
-                                    bgW.ReportProgress((int)
-                                        ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
-                                }
-                            }
+                        if (count % 1 == 0)
+                        {
+                            //bgW.ReportProgress((int)
+                            //    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
                         }
                     }
-                    catch
-                    {
-                        throw;
-                    }
-                    finally
-                    {
-                        sR.Close();
-                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sR.Close();
                 }
             }
         }

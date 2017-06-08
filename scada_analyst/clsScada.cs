@@ -23,137 +23,116 @@ namespace scada_analyst
 
         public ScadaData() { }
 
-        public ScadaData(string filename, BackgroundWorker bgW)
+        public ScadaData(string filename)
         {
-            if (!bgW.CancellationPending)
-            {
-                this.FileName = filename;
+            this.FileName = filename;
 
-                LoadScada(bgW);
+            LoadScada();
+        }
+
+        public ScadaData(string[] filenames)
+        {
+            LoadNSort(filenames);
+        }
+
+        public void AppendFiles(string[] filenames)
+        {
+            LoadNSort(filenames);
+        }
+
+        private void LoadFiles(string[] filenames)
+        {
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                this.FileName = filenames[i];
+
+                LoadScada(filenames.Length, i);
             }
         }
 
-        public ScadaData(string[] filenames, BackgroundWorker bgW)
+        private void LoadNSort(string[] filenames)
         {
-            if (!bgW.CancellationPending)
-            {
-                LoadNSort(filenames, bgW);
-            }
+            LoadFiles(filenames);
+
+            SortScada();
         }
 
-        public void AppendFiles(string[] filenames, BackgroundWorker bgW)
+        private void LoadScada(int numberOfFiles = 1, int i = 0)
         {
-            if (!bgW.CancellationPending)
+            using (StreamReader sR = new StreamReader(FileName))
             {
-                LoadNSort(filenames, bgW);
-            }
-        }
-
-        private void LoadFiles(string[] filenames, BackgroundWorker bgW)
-        {
-            if (!bgW.CancellationPending)
-            {
-                for (int i = 0; i < filenames.Length; i++)
+                try
                 {
-                    this.FileName = filenames[i];
+                    int count = 0;
+                    bool readHeader = false;
 
-                    LoadScada(bgW, filenames.Length, i);
-                }
-            }
-        }
-        
-        private void LoadNSort(string[] filenames, BackgroundWorker bgW)
-        {
-            LoadFiles(filenames, bgW);
-
-            SortScada(bgW);
-        }
-
-        private void LoadScada(BackgroundWorker bgW, int numberOfFiles = 1, int i = 0)
-        {
-            if (!bgW.CancellationPending)
-            {
-                using (StreamReader sR = new StreamReader(FileName))
-                {
-                    try
+                    while (!sR.EndOfStream)
                     {
-                        int count = 0;
-                        bool readHeader = false;
-
-                        while (!sR.EndOfStream)
+                        if (readHeader == false)
                         {
-                            if (!bgW.CancellationPending)
+                            string header = sR.ReadLine();
+                            header = header.ToLower().Replace("\"", String.Empty);
+                            readHeader = true;
+
+                            if (!header.Contains("wtc")) { throw new WrongFileTypeException(); }
+
+                            fileHeader = new ScadaHeader(header);
+                        }
+
+                        string line = sR.ReadLine();
+
+                        if (!line.Equals(""))
+                        {
+                            line = line.Replace("\"", String.Empty);
+
+                            string[] splits = Common.GetSplits(line, ',');
+
+                            int thisAsset = Common.CanConvert<int>(splits[fileHeader.AssetCol]) ?
+                                Convert.ToInt32(splits[fileHeader.AssetCol]) : throw new FileFormatException();
+
+                            // organise loading so it would check which ones have already
+                            // been loaded; then work around the ones have have been
+
+                            if (inclTrbn.Contains(thisAsset))
                             {
-                                if (readHeader == false)
-                                {
-                                    string header = sR.ReadLine();
-                                    header = header.ToLower().Replace("\"", String.Empty);
-                                    readHeader = true;
+                                int index = windFarm.FindIndex(x => x.UnitID == thisAsset);
 
-                                    if (!header.Contains("wtc")) { throw new WrongFileTypeException(); }
+                                windFarm[index].AddData(splits, fileHeader);
+                            }
+                            else
+                            {
+                                windFarm.Add(new TurbineData(splits, fileHeader));
 
-                                    fileHeader = new ScadaHeader(header);
-                                }
-
-                                string line = sR.ReadLine();
-
-                                if (!line.Equals(""))
-                                {
-                                    line = line.Replace("\"", String.Empty);
-
-                                    string[] splits = Common.GetSplits(line, ',');
-
-                                    int thisAsset = Common.CanConvert<int>(splits[fileHeader.AssetCol]) ? 
-                                        Convert.ToInt32(splits[fileHeader.AssetCol]) : throw new FileFormatException();
-
-                                    // organise loading so it would check which ones have already
-                                    // been loaded; then work around the ones have have been
-
-                                    if (inclTrbn.Contains(thisAsset))
-                                    {
-                                        int index = windFarm.FindIndex(x => x.UnitID == thisAsset);
-
-                                        windFarm[index].AddData(splits, fileHeader);
-                                    }
-                                    else
-                                    {
-                                        windFarm.Add(new TurbineData(splits, fileHeader));
-
-                                        inclTrbn.Add(Convert.ToInt32(splits[fileHeader.AssetCol]));
-                                    }                                          
-                                }
-
-                                count++;
-
-                                if (count % 1000 == 0)
-                                {
-                                    bgW.ReportProgress((int)
-                                        ((double)100 / numberOfFiles * i +
-                                        (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
-                                }
+                                inclTrbn.Add(Convert.ToInt32(splits[fileHeader.AssetCol]));
                             }
                         }
+
+                        count++;
+
+                        if (count % 1000 == 0)
+                        {
+                            //bgW.ReportProgress((int)
+                            //    ((double)100 / numberOfFiles * i +
+                            //    (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
+                        }
                     }
-                    catch
-                    {
-                        throw;
-                    }
-                    finally
-                    {
-                        sR.Close();
-                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sR.Close();
                 }
             }
         }
 
-        private void SortScada(BackgroundWorker bgW)
+        private void SortScada()
         {
-            if (!bgW.CancellationPending)
+            for (int i = 0; i < windFarm.Count; i++)
             {
-                for (int i = 0; i < windFarm.Count; i++)
-                {
-                    windFarm[i].DataSorted = windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
-                }
+                windFarm[i].DataSorted = windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
             }
         }
 
