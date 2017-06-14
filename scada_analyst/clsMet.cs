@@ -24,27 +24,27 @@ namespace scada_analyst
 
         public MeteoData() { }
 
-        public MeteoData(string[] filenames)
+        public MeteoData(string[] filenames, IProgress<int> progress)
         {
-            LoadNSortMet(filenames);
+            LoadNSortMet(filenames, progress);
         }
 
-        public void AppendFiles(string[] filenames)
+        public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
-            LoadNSortMet(filenames);
+            LoadNSortMet(filenames, progress);
         }
 
-        private void LoadMetFiles(string[] filenames)
+        private void LoadMetFiles(string[] filenames, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 this.FileName = filenames[i];
 
-                LoadMeteorology(filenames.Length, i);
+                LoadMeteorology(progress, filenames.Length, i);
             }
         }
 
-        private void LoadMeteorology(int numberOfFiles = 1, int i = 0)
+        private void LoadMeteorology(IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(FileName))
             {
@@ -100,9 +100,11 @@ namespace scada_analyst
 
                         if (count % 500 == 0)
                         {
-                            //bgW.ReportProgress((int)
-                            //    ((double)100 / numberOfFiles * i +
-                            //    (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
+                            if (progress != null)
+                            {
+                                progress.Report((int)((double)100 / numberOfFiles * i +
+                                 (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
+                            }
                         }
                     }
                 }
@@ -117,9 +119,9 @@ namespace scada_analyst
             }
         }
 
-        private void LoadNSortMet(string[] filenames)
+        private void LoadNSortMet(string[] filenames, IProgress<int> progress)
         {
-            LoadMetFiles(filenames);
+            LoadMetFiles(filenames, progress);
 
             SortMeteorology();
         }
@@ -194,6 +196,7 @@ namespace scada_analyst
 
             #region Variables
 
+            private int noVal = -1;
             private int assetCol = -1, sampleCol = -1, stationCol = -1, timeCol = -1;
 
             #endregion
@@ -202,7 +205,32 @@ namespace scada_analyst
 
             public MeteoHeader(string header)
             {
+                HeaderNoValues();
+
                 HeaderSeparation(header);
+            }
+
+            private void HeaderNoValues()
+            {
+                Humid.Mean = noVal;
+                Humid.Stdv = noVal;
+                Humid.Maxm = noVal;
+                Humid.Minm = noVal;
+
+                Tempr.Mean = noVal;
+                Tempr.Stdv = noVal;
+                Tempr.Maxm = noVal;
+                Tempr.Minm = noVal;
+
+                WDirc.Mean = noVal;
+                WDirc.Stdv = noVal;
+                WDirc.Maxm = noVal;
+                WDirc.Minm = noVal;
+
+                WSpdR.Mean = noVal;
+                WSpdR.Stdv = noVal;
+                WSpdR.Maxm = noVal;
+                WSpdR.Minm = noVal;
             }
 
             private void HeaderSeparation(string headerLine)

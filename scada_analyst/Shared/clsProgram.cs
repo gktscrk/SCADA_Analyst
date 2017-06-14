@@ -14,6 +14,11 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0120 = new ProgramVersion(0120, new DateTime(2017, 06, 14));
+            v0120.AddChange("Task.Run methodology now implements proper progress tracking.");
+            results.Add(v0120);
+
+
             ProgramVersion v0101 = new ProgramVersion(0101, new DateTime(2017, 06, 07));
             v0101.AddChange("Improved loading methodology for meteorology files.");
             v0101.AddChange("Improving turbine data loading with regards to empty variables and unknown info.");

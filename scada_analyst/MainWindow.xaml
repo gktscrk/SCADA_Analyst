@@ -31,9 +31,9 @@
                 <MenuItem Header="_Exit" Click="Exit" />
             </MenuItem>
             <MenuItem Header="_Load">
-                <MenuItem Header="_SCADA" Click="LoadScada" />
-                <MenuItem Header="_Geographic" Click="LoadGeo" />
-                <MenuItem Header="_Meteorologic" Click="LoadMet" />
+                <MenuItem Header="_SCADA" Click="LoadScadaAsync" />
+                <MenuItem Header="_Geographic" Click="LoadGeoAsync" />
+                <MenuItem Header="_Meteorologic" Click="LoadMetAsync" />
             </MenuItem>
             <MenuItem Header="_Data Management">
                 <MenuItem Header="_Add Position Data" Click="StructureLocations" />

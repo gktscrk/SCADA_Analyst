@@ -22,42 +22,35 @@ namespace scada_analyst
         #endregion
 
         public ScadaData() { }
-
-        public ScadaData(string filename)
+        
+        public ScadaData(string[] filenames, IProgress<int> progress)
         {
-            this.FileName = filename;
-
-            LoadScada();
+            LoadNSort(filenames, progress);
         }
 
-        public ScadaData(string[] filenames)
+        public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
-            LoadNSort(filenames);
+            LoadNSort(filenames, progress);
         }
 
-        public void AppendFiles(string[] filenames)
-        {
-            LoadNSort(filenames);
-        }
-
-        private void LoadFiles(string[] filenames)
+        private void LoadFiles(string[] filenames, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 this.FileName = filenames[i];
 
-                LoadScada(filenames.Length, i);
+                LoadScada(progress, filenames.Length, i);
             }
         }
 
-        private void LoadNSort(string[] filenames)
+        private void LoadNSort(string[] filenames, IProgress<int> progress)
         {
-            LoadFiles(filenames);
+            LoadFiles(filenames, progress);
 
             SortScada();
         }
 
-        private void LoadScada(int numberOfFiles = 1, int i = 0)
+        private void LoadScada(IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(FileName))
             {
@@ -111,9 +104,11 @@ namespace scada_analyst
 
                         if (count % 1000 == 0)
                         {
-                            //bgW.ReportProgress((int)
-                            //    ((double)100 / numberOfFiles * i +
-                            //    (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
+                            if (progress != null)
+                            {
+                                progress.Report((int)((double)100 / numberOfFiles * i +
+                                 (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
+                            }
                         }
                     }
                 }

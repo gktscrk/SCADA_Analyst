@@ -21,14 +21,14 @@ namespace scada_analyst
 
         #endregion
 
-        public GeoData(string filename)
+        public GeoData(string filename, IProgress<int> progress)
         {
             this.FileName = filename;
 
-            LoadGeography();
+            LoadGeography(progress);
         }
 
-        private void LoadGeography()
+        private void LoadGeography(IProgress<int> progress)
         {
             using (StreamReader sR = new StreamReader(FileName))
             {
@@ -65,8 +65,11 @@ namespace scada_analyst
 
                         if (count % 1 == 0)
                         {
-                            //bgW.ReportProgress((int)
-                            //    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                            if (progress != null)
+                            {
+                                progress.Report((int)
+                                    ((double)sR.BaseStream.Position * 100 / sR.BaseStream.Length));
+                            }
                         }
                     }
                 }

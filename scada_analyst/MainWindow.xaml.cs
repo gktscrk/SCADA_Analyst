@@ -101,15 +101,15 @@ namespace scada_analyst
             this.Close();
         }
 
-        private async void LoadGeo(object sender, RoutedEventArgs e)
+        private async void LoadGeoAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
             var token = cts.Token;
-            var progressHandler = new Progress<string>(value =>
+
+            var progress = new Progress<int>(value =>
             {
-                label_ProgressBar.Content = value;
+                UpdateProgress(value);
             });
-            var progress = progressHandler as IProgress<string>;
 
             try
             {
@@ -121,7 +121,7 @@ namespace scada_analyst
                 {
                     ProgressBarVisible();
                     
-                    await Task.Run(() => GeographyLoading(openFileDialog.FileNames));
+                    await Task.Run(() => GeographyLoading(openFileDialog.FileNames, progress));
 
                     ProgressBarInvisible();
                 }
@@ -144,15 +144,15 @@ namespace scada_analyst
             }
         }
 
-        private async void LoadMet(object sender, RoutedEventArgs e)
+        private async void LoadMetAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
             var token = cts.Token;
-            var progressHandler = new Progress<string>(value =>
+
+            var progress = new Progress<int>(value =>
             {
-                label_ProgressBar.Content = value;
+                UpdateProgress(value);
             });
-            var progress = progressHandler as IProgress<string>;
 
             try
             {
@@ -164,7 +164,8 @@ namespace scada_analyst
                 {
                     ProgressBarVisible();
 
-                    await Task.Run(() => MeteorologyLoading(meteoFile, openFileDialog.FileNames, meteoLoaded));
+                    await Task.Run(() => MeteorologyLoading(meteoFile, openFileDialog.FileNames, meteoLoaded,
+                        progress));
 
                     ProgressBarInvisible();
                 }
@@ -187,15 +188,21 @@ namespace scada_analyst
             }
         }
 
-        private async void LoadScada(object sender, RoutedEventArgs e)
+        private void UpdateProgress(int value)
+        {
+            label_ProgressBar.Content = value + "%";
+            progress_ProgressBar.Value = value;
+        }
+
+        private async void LoadScadaAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
-            var token = cts.Token;
-            var progressHandler = new Progress<string>(value =>
+            var token = cts.Token;    
+
+            var progress = new Progress<int>(value =>
             {
-                label_ProgressBar.Content = value;
+                UpdateProgress(value);
             });
-            var progress = progressHandler as IProgress<string>;
 
             try
             {
@@ -207,7 +214,7 @@ namespace scada_analyst
                 {
                     ProgressBarVisible();
                     
-                    await Task.Run(() => ScadaLoading(scadaFile, openFileDialog.FileNames, scadaLoaded));
+                    await Task.Run(() => ScadaLoading(scadaFile, openFileDialog.FileNames, scadaLoaded, progress));
 
                     ProgressBarInvisible();
                 }
@@ -294,7 +301,7 @@ namespace scada_analyst
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
         }
 
-        private void GeographyLoading(string[] filenames)
+        private void GeographyLoading(string[] filenames, IProgress<int> progress)
         {
             try
             {
@@ -302,7 +309,7 @@ namespace scada_analyst
                 {
                     if (!loadedFiles.Contains(filenames[i]))
                     {
-                        geoFile = new GeoData(filenames[i]);
+                        geoFile = new GeoData(filenames[i], progress);
 
                         loadedFiles.Add(filenames[i]);
                     }
@@ -316,7 +323,7 @@ namespace scada_analyst
             }
         }
 
-        private void MeteorologyLoading(MeteoData existingData, string[] filenames, bool isLoaded)
+        private void MeteorologyLoading(MeteoData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
         {
             try
             {
@@ -324,11 +331,11 @@ namespace scada_analyst
 
                 if (!isLoaded)
                 {
-                    analysis = new MeteoData(filenames);
+                    analysis = new MeteoData(filenames, progress);
                 }
                 else
                 {
-                    analysis.AppendFiles(filenames);
+                    analysis.AppendFiles(filenames, progress);
                 }
 
                 meteoFile = analysis;
@@ -340,7 +347,7 @@ namespace scada_analyst
             }
         }
 
-        private void ScadaLoading(ScadaData existingData, string[] filenames, bool isLoaded)
+        private void ScadaLoading(ScadaData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
         {
             try
             {
@@ -348,11 +355,11 @@ namespace scada_analyst
 
                 if (!isLoaded)
                 {
-                    analysis = new ScadaData(filenames);
+                    analysis = new ScadaData(filenames, progress);
                 }
                 else
                 {
-                    analysis.AppendFiles(filenames);
+                    analysis.AppendFiles(filenames, progress);
                 }
 
                 scadaFile = analysis;
@@ -364,83 +371,6 @@ namespace scada_analyst
             }
         }
         
-        #endregion
-
-        #region Support Classes
-
-        public class ProcessList : INotifyPropertyChanged
-        {
-            private string fileName, displayName;
-            private int mergeIndex, mergeGroup, fileIndex, fileID;
-
-            public ProcessList(string filename, bool splitName = false)
-            {
-                fileName = filename;
-                displayName = System.IO.Path.GetFileNameWithoutExtension(filename);
-
-                if (splitName)
-                {
-                    string[] nameParts = Common.GetSplits(displayName, new char[] { ' ', '-', '_' });
-
-                    fileID = Convert.ToInt16(nameParts[nameParts.Length - 2]);
-
-                    if (Convert.ToInt16(nameParts[nameParts.Length - 1]) < 99)
-                    {
-                        fileIndex = Convert.ToInt16(nameParts[nameParts.Length - 1]);
-
-                        displayName = displayName.Replace(nameParts[nameParts.Length - 1], "");
-                        displayName = displayName.Replace(" - ", "");
-                    }
-                }
-
-                mergeIndex = -1;
-                mergeGroup = -1;
-            }
-
-            #region Properties
-
-            public string FileName { get { return fileName; } }
-            public string DisplayName { get { return displayName; } set { displayName = value; } }
-            public int FileIndex { get { return fileIndex; } set { fileIndex = value; } }
-            public int FileID { get { return fileID; } set { fileID = value; } }
-
-            public int MergeIndex
-            {
-                get { return mergeIndex; }
-                set
-                {
-                    mergeIndex = value;
-                    NotifyPropertyChanged("MergeIndex");
-                }
-            }
-
-            public int MergeGroup
-            {
-                get { return mergeGroup; }
-                set
-                {
-                    mergeGroup = value;
-                    NotifyPropertyChanged("MergeGroup");
-                }
-            }
-
-            #endregion
-
-            #region Property changed
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            protected void NotifyPropertyChanged(string property)
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs(property));
-                }
-            }
-
-            #endregion
-        }
-
         #endregion
 
         #region Properties
