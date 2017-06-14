@@ -12,17 +12,19 @@ namespace scada_analyst
     {
         #region Variables
 
+        private string outputName;
+
         private ScadaHeader fileHeader = new ScadaHeader();
 
         // a list for including the asset IDs for all loaded turbines
-        private List<int> inclTrbn = new List<int>(); 
+        private List<int> inclTrbn = new List<int>();
 
         private List<TurbineData> windFarm = new List<TurbineData>();
 
         #endregion
 
         public ScadaData() { }
-        
+
         public ScadaData(string[] filenames, IProgress<int> progress)
         {
             LoadNSort(filenames, progress);
@@ -31,6 +33,24 @@ namespace scada_analyst
         public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
             LoadNSort(filenames, progress);
+        }
+
+        public void ExportFiles(IProgress<int> progress,
+            bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
+            bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
+            bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
+            bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
+            bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv)
+        {
+            WriteSCADA(progress,
+                exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
+                exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
+                exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
+                exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
+                exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv);
+
+            // feed in proper arguments for this output file name
+            outputName = string.Format("{0}\\{1}_{2}.csv", "temp", "temp", "temp");
         }
 
         private void LoadFiles(string[] filenames, IProgress<int> progress)
@@ -128,6 +148,26 @@ namespace scada_analyst
             for (int i = 0; i < windFarm.Count; i++)
             {
                 windFarm[i].DataSorted = windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
+            }
+        }
+
+        private void WriteSCADA(IProgress<int> progress,
+            bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
+            bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
+            bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
+            bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
+            bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv)
+        {
+            using (StreamWriter sW = new StreamWriter(outputName))
+            {
+                try
+                {
+
+                }
+                finally
+                {
+                    sW.Close();
+                }
             }
         }
 

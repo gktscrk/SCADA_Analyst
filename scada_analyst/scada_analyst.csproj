@@ -94,6 +94,9 @@
     <Compile Include="Windows\Window_About.xaml.cs">
       <DependentUpon>Window_About.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Window_ExportControl.xaml.cs">
+      <DependentUpon>Window_ExportControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\Window_VersionHistory.xaml.cs">
       <DependentUpon>Window_VersionHistory.xaml</DependentUpon>
     </Compile>
@@ -115,6 +118,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Windows\Window_About.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window_ExportControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

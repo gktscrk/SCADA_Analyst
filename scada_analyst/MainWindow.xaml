@@ -44,6 +44,11 @@
                 <MenuItem Header="_Clear Meteorologic" Click="ClearMeteoData" />
                 <MenuItem Header="_Clear SCADA Data" Click="ClearScadaData" />
             </MenuItem>
+            <MenuItem Header="_Export">
+                <MenuItem Header="_Export SCADA" Click="ExportData" />
+                <Separator/>
+                <MenuItem Header="_Export Settings" Click="SetExportVars" />
+            </MenuItem>
         </Menu>
 
 

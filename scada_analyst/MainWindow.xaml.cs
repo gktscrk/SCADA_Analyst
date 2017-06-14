@@ -33,6 +33,16 @@ namespace scada_analyst
         private bool posnsCombnd = false;
         private bool scadaLoaded = false;
 
+        private bool exportPowMaxm = false, exportAmbMaxm = false, exportWSpMaxm = false;
+        private bool exportPowMinm = false, exportAmbMinm = false, exportWSpMinm = false;
+        private bool exportPowMean = false, exportAmbMean = false, exportWSpMean = false;
+        private bool exportPowStdv = false, exportAmbStdv = false, exportWSpStdv = false;
+
+        private bool exportGenMaxm = false, exportMBrMaxm = false;
+        private bool exportGenMinm = false, exportMBrMinm = false;
+        private bool exportGenMean = false, exportMBrMean = false;
+        private bool exportGenStdv = false, exportMBrStdv = false;
+
         private List<string> loadedFiles = new List<string>();
 
         private CancellationTokenSource cts;
@@ -99,6 +109,47 @@ namespace scada_analyst
         private void Exit(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void ExportData(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void SetExportVars(object sender, RoutedEventArgs e)
+        {
+            Window_ExportControl exportOptions = new Window_ExportControl(this);
+
+            if (exportOptions.ShowDialog().Value)
+            {
+                exportPowMaxm = exportOptions.ExportPowMaxm;
+                exportPowMinm = exportOptions.ExportPowMinm;
+                exportPowMean = exportOptions.ExportPowMean;
+                exportPowStdv = exportOptions.ExportPowStdv;
+
+                exportAmbMaxm = exportOptions.ExportAmbMaxm;
+                exportAmbMinm = exportOptions.ExportAmbMinm;
+                exportAmbMean = exportOptions.ExportAmbMean;
+                exportAmbStdv = exportOptions.ExportAmbStdv;
+
+                exportWSpMaxm = exportOptions.ExportWSpMaxm;
+                exportWSpMinm = exportOptions.ExportWSpMinm;
+                exportWSpMean = exportOptions.ExportWSpMean;
+                exportWSpStdv = exportOptions.ExportWSpStdv;
+
+                exportGenMaxm = exportOptions.ExportGenMaxm;
+                exportGenMinm = exportOptions.ExportGenMinm;
+                exportGenMean = exportOptions.ExportGenMean;
+                exportGenStdv = exportOptions.ExportGenStdv;
+
+                exportMBrMaxm = exportOptions.ExportMBrMaxm;
+                exportMBrMinm = exportOptions.ExportMBrMinm;
+                exportMBrMean = exportOptions.ExportMBrMean;
+                exportMBrStdv = exportOptions.ExportMBrStdv;
+
+                // these must be used by the async task that doesn't yet exist
+                // the async task will lead into the writing method
+            }
         }
 
         private async void LoadGeoAsync(object sender, RoutedEventArgs e)
@@ -186,12 +237,6 @@ namespace scada_analyst
             {
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
-        }
-
-        private void UpdateProgress(int value)
-        {
-            label_ProgressBar.Content = value + "%";
-            progress_ProgressBar.Value = value;
         }
 
         private async void LoadScadaAsync(object sender, RoutedEventArgs e)
@@ -299,6 +344,12 @@ namespace scada_analyst
 
             //counter_ProgressBar.Content = "";
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdateProgress(int value)
+        {
+            label_ProgressBar.Content = value + "%";
+            progress_ProgressBar.Value = value;
         }
 
         private void GeographyLoading(string[] filenames, IProgress<int> progress)

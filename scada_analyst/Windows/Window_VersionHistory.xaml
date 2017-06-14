@@ -48,7 +48,7 @@
             </ListView.View>
         </ListView>
 
-        <Button Grid.Column="1" Grid.Row="1" Margin="3,3,12,12" Width="75" IsDefault="True"
+        <Button Grid.Column="1" Grid.Row="1" Margin="3,3,12,12" Width="80" IsDefault="True"
                 Click="OK_Button_Click">OK</Button>
     </Grid>
 </Window>

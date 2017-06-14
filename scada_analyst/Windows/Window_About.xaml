@@ -5,7 +5,7 @@
         ResizeMode="NoResize" 
         SizeToContent="WidthAndHeight"
         SnapsToDevicePixels="True"
-        Title="About Dragon"
+        Title="About"
         WindowStartupLocation="CenterOwner">
 
     <Grid>
@@ -44,8 +44,9 @@
             <Hyperlink NavigateUri ="mailto:koit.rikson@gmail.com" RequestNavigate="SupportLink_RequestNavigate">the programmer</Hyperlink>
         </TextBlock>
 
-        <Button Grid.Column="0" Grid.Row="5" Content="Version history" Margin="12,3,3,12" Width="100" 
+        <Button Grid.Column="0" Grid.Row="5" Content="Version history" Margin="15,5,5,15" Width="100" 
                 HorizontalAlignment="Left" Click="VersionHistory_Button_Click"/>
-        <Button Grid.Column="2" Grid.Row="5" Content="OK" Margin="3,3,12,12" IsCancel="True" IsDefault="True" Width="75"/>
+        <Button Grid.Column="2" Grid.Row="5" Content="OK" Margin="5,5,15,15" IsCancel="True" 
+                IsDefault="True" Width="80"/>
     </Grid>
 </Window>
