@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 using scada_analyst.Shared;
 
@@ -35,22 +36,25 @@ namespace scada_analyst
             LoadNSort(filenames, progress);
         }
 
-        public void ExportFiles(IProgress<int> progress,
+        public void ExportFiles(IProgress<int> progress, string output,
             bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
             bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
             bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
+            bool exportGBxMaxm, bool exportGBxMinm, bool exportGBxMean, bool exportGBxStdv,
             bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
             bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv)
         {
+            // feed in proper arguments for this output file name and assign these
+            outputName = output;
+
+            // write the SCADA file out in a reasonable method
             WriteSCADA(progress,
                 exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
                 exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
                 exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
+                exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
                 exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
                 exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv);
-
-            // feed in proper arguments for this output file name
-            outputName = string.Format("{0}\\{1}_{2}.csv", "temp", "temp", "temp");
         }
 
         private void LoadFiles(string[] filenames, IProgress<int> progress)
@@ -155,6 +159,7 @@ namespace scada_analyst
             bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
             bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
             bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
+            bool exportGBxMaxm, bool exportGBxMinm, bool exportGBxMean, bool exportGBxStdv,
             bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
             bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv)
         {
@@ -162,7 +167,160 @@ namespace scada_analyst
             {
                 try
                 {
+                    int count = 0;
+                    bool header = false;
 
+                    for (int i = 0; i < windFarm.Count; i++)
+                    {
+                        for (int j = 0; j < windFarm[i].DataSorted.Count; j++)
+                        {
+                            StringBuilder hB = new StringBuilder();
+                            StringBuilder sB = new StringBuilder();
+
+                            ScadaSample unit = windFarm[i].DataSorted[j];
+
+                            hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ",");
+                            hB.Append("TimeStamp" + ",");
+
+                            sB.Append(unit.TimeStamp.Year + "-");
+
+                            if (10 <= unit.TimeStamp.Month) { sB.Append(unit.TimeStamp.Month); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Month); }
+                            sB.Append("-");
+
+                            if (10 <= unit.TimeStamp.Day) { sB.Append(unit.TimeStamp.Day); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Day); }
+                            sB.Append(" ");
+
+                            if (10 <= unit.TimeStamp.Hour) { sB.Append(unit.TimeStamp.Hour); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Hour); }
+                            sB.Append(":");
+
+                            if (10 <= unit.TimeStamp.Minute) { sB.Append(unit.TimeStamp.Minute); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Minute); }
+                            sB.Append(":");
+
+                            if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
+
+                            if (exportPowMaxm) { hB.Append("wtc_ActPower_max" + ","); sB.Append(unit.Powers.Maxm + ","); }
+                            if (exportPowMinm) { hB.Append("wtc_ActPower_min" + ","); sB.Append(unit.Powers.Minm + ","); }
+                            if (exportPowMean) { hB.Append("wtc_ActPower_mean" + ","); sB.Append(unit.Powers.Mean + ","); }
+                            if (exportPowStdv) { hB.Append("wtc_ActPower_stddev" + ","); sB.Append(unit.Powers.Stdv + ","); }
+                            if (exportPowMean) { hB.Append("wtc_ActPower_endvalue" + ","); sB.Append(unit.Powers.EndVal + ","); }
+                            if (exportPowMean) { hB.Append("wtc_ActPower_Quality_endvalue" + ","); sB.Append(unit.Powers.QualEndVal + ","); }
+
+                            if (exportAmbMaxm) { hB.Append("wtc_AmbieTmp_max" + ","); sB.Append(unit.AmbTemps.Maxm + ","); }
+                            if (exportAmbMinm) { hB.Append("wtc_AmbieTmp_min" + ","); sB.Append(unit.AmbTemps.Minm + ","); }
+                            if (exportAmbMean) { hB.Append("wtc_AmbieTmp_mean" + ","); sB.Append(unit.AmbTemps.Mean + ","); }
+                            if (exportAmbStdv) { hB.Append("wtc_AmbieTmp_stddev" + ","); sB.Append(unit.AmbTemps.Stdv + ","); }
+                            if (exportAmbMean) { hB.Append("wtc_twrhumid_mean" + ","); sB.Append(unit.Towers.Humid.Mean + ","); }
+
+                            if (exportWSpMaxm) { hB.Append("wtc_AcWindSp_max" + ","); sB.Append(unit.AnemoM.ActWinds.Maxm + ","); }
+                            if (exportWSpMinm) { hB.Append("wtc_AcWindSp_min" + ","); sB.Append(unit.AnemoM.ActWinds.Minm + ","); }
+                            if (exportWSpMean) { hB.Append("wtc_AcWindSp_mean" + ","); sB.Append(unit.AnemoM.ActWinds.Mean + ","); }
+                            if (exportWSpStdv) { hB.Append("wtc_AcWindSp_stddev" + ","); sB.Append(unit.AnemoM.ActWinds.Stdv + ","); }
+                            if (exportWSpMaxm) { hB.Append("wtc_PriAnemo_max" + ","); sB.Append(unit.AnemoM.PriAnemo.Maxm + ","); }
+                            if (exportWSpMinm) { hB.Append("wtc_PriAnemo_min" + ","); sB.Append(unit.AnemoM.PriAnemo.Minm + ","); }
+                            if (exportWSpMean) { hB.Append("wtc_PriAnemo_mean" + ","); sB.Append(unit.AnemoM.PriAnemo.Mean + ","); }
+                            if (exportWSpStdv) { hB.Append("wtc_PriAnemo_stddev" + ","); sB.Append(unit.AnemoM.PriAnemo.Stdv + ","); }
+                            if (exportWSpMaxm) { hB.Append("wtc_SecAnemo_max" + ","); sB.Append(unit.AnemoM.SecAnemo.Maxm + ","); }
+                            if (exportWSpMinm) { hB.Append("wtc_SecAnemo_min" + ","); sB.Append(unit.AnemoM.SecAnemo.Minm + ","); }
+                            if (exportWSpMean) { hB.Append("wtc_SecAnemo_mean" + ","); sB.Append(unit.AnemoM.SecAnemo.Mean + ","); }
+                            if (exportWSpStdv) { hB.Append("wtc_SecAnemo_stddev" + ","); sB.Append(unit.AnemoM.SecAnemo.Stdv + ","); }
+                            if (exportWSpMaxm) { hB.Append("wtc_TetAnemo_max" + ","); sB.Append(unit.AnemoM.TerAnemo.Maxm + ","); }
+                            if (exportWSpMinm) { hB.Append("wtc_TetAnemo_min" + ","); sB.Append(unit.AnemoM.TerAnemo.Minm + ","); }
+                            if (exportWSpMean) { hB.Append("wtc_TetAnemo_mean" + ","); sB.Append(unit.AnemoM.TerAnemo.Mean + ","); }
+                            if (exportWSpStdv) { hB.Append("wtc_TetAnemo_stddev" + ","); sB.Append(unit.AnemoM.TerAnemo.Stdv + ","); }
+
+                            if (exportWSpMaxm) { hB.Append("wtc_PrWindSp_max" + ","); sB.Append(unit.AnemoM.PriWinds.Maxm + ","); }
+                            if (exportWSpMinm) { hB.Append("wtc_PrWindSp_min" + ","); sB.Append(unit.AnemoM.PriWinds.Minm + ","); }
+                            if (exportWSpMean) { hB.Append("wtc_PrWindSp_mean" + ","); sB.Append(unit.AnemoM.PriWinds.Mean + ","); }
+                            if (exportWSpStdv) { hB.Append("wtc_PrWindSp_stddev" + ","); sB.Append(unit.AnemoM.PriWinds.Stdv + ","); }
+                            if (exportWSpMaxm) { hB.Append("wtc_SeWindSp_max" + ","); sB.Append(unit.AnemoM.SecWinds.Maxm + ","); }
+                            if (exportWSpMinm) { hB.Append("wtc_SeWindSp_min" + ","); sB.Append(unit.AnemoM.SecWinds.Minm + ","); }
+                            if (exportWSpMean) { hB.Append("wtc_SeWindSp_mean" + ","); sB.Append(unit.AnemoM.SecWinds.Mean + ","); }
+                            if (exportWSpStdv) { hB.Append("wtc_SeWindSp_stddev" + ","); sB.Append(unit.AnemoM.SecWinds.Stdv + ","); }
+
+                            if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(unit.Genny.bearingG.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(unit.Genny.bearingG.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_GenBeGTm_mean" + ","); sB.Append(unit.Genny.bearingG.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_GenBeGTm_stddev" + ","); sB.Append(unit.Genny.bearingG.Stdv + ","); }
+                            if (exportGenMaxm) { hB.Append("wtc_GenBeRTm_max" + ","); sB.Append(unit.Genny.bearingR.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_GenBeRTm_min" + ","); sB.Append(unit.Genny.bearingR.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_GenBeRTm_mean" + ","); sB.Append(unit.Genny.bearingR.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_GenBeRTm_stddev" + ","); sB.Append(unit.Genny.bearingR.Stdv + ","); }
+
+                            if (exportGenMaxm) { hB.Append("wtc_Gen1U1Tm_max" + ","); sB.Append(unit.Genny.G1u1.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_Gen1U1Tm_min" + ","); sB.Append(unit.Genny.G1u1.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_Gen1U1Tm_mean" + ","); sB.Append(unit.Genny.G1u1.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_Gen1U1Tm_stddev" + ","); sB.Append(unit.Genny.G1u1.Stdv + ","); }
+                            if (exportGenMaxm) { hB.Append("wtc_Gen1V1Tm_max" + ","); sB.Append(unit.Genny.G1v1.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_Gen1V1Tm_min" + ","); sB.Append(unit.Genny.G1v1.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_Gen1V1Tm_mean" + ","); sB.Append(unit.Genny.G1v1.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_Gen1V1Tm_stddev" + ","); sB.Append(unit.Genny.G1v1.Stdv + ","); }
+                            if (exportGenMaxm) { hB.Append("wtc_Gen1W1Tm_max" + ","); sB.Append(unit.Genny.G1w1.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_Gen1W1Tm_min" + ","); sB.Append(unit.Genny.G1w1.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_Gen1W1Tm_mean" + ","); sB.Append(unit.Genny.G1w1.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_Gen1W1Tm_stddev" + ","); sB.Append(unit.Genny.G1w1.Stdv + ","); }
+                            if (exportGenMaxm) { hB.Append("wtc_Gen2U1Tm_max" + ","); sB.Append(unit.Genny.G2u1.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_Gen2U1Tm_min" + ","); sB.Append(unit.Genny.G2u1.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_Gen2U1Tm_mean"  + ","); sB.Append(unit.Genny.G2u1.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_Gen2U1Tm_stddev" + ","); sB.Append(unit.Genny.G2u1.Stdv + ","); }
+                            if (exportGenMaxm) { hB.Append("wtc_Gen2V1Tm_max" + ","); sB.Append(unit.Genny.G2v1.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_Gen2V1Tm_min" + ","); sB.Append(unit.Genny.G2v1.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_Gen2V1Tm_mean" + ","); sB.Append(unit.Genny.G2v1.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_Gen2V1Tm_stddev" + ","); sB.Append(unit.Genny.G2v1.Stdv + ","); }
+                            if (exportGenMaxm) { hB.Append("wtc_Gen2W1Tm_max" + ","); sB.Append(unit.Genny.G2w1.Maxm + ","); }
+                            if (exportGenMinm) { hB.Append("wtc_Gen2W1Tm_min" + ","); sB.Append(unit.Genny.G2w1.Minm + ","); }
+                            if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_mean" + ","); sB.Append(unit.Genny.G2w1.Mean + ","); }
+                            if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(unit.Genny.G2w1.Stdv + ","); }
+
+                            if (exportMBrMaxm) { hB.Append("wtc_MainBTmp_max" + ","); sB.Append(unit.MainBear.Standards.Maxm + ","); }
+                            if (exportMBrMinm) { hB.Append("wtc_MainBTmp_mean" + ","); sB.Append(unit.MainBear.Standards.Minm + ","); }
+                            if (exportMBrMean) { hB.Append("wtc_MainBTmp_min" + ","); sB.Append(unit.MainBear.Standards.Mean + ","); }
+                            if (exportMBrStdv) { hB.Append("wtc_MainBTmp_stddev" + ","); sB.Append(unit.MainBear.Standards.Stdv + ","); }
+
+                            if (exportMBrMaxm) { hB.Append("wtc_MBearGTm_max" + ","); sB.Append(unit.MainBear.Gs.Maxm + ","); }
+                            if (exportMBrMinm) { hB.Append("wtc_MBearGTm_mean" + ","); sB.Append(unit.MainBear.Gs.Minm + ","); }
+                            if (exportMBrMean) { hB.Append("wtc_MBearGTm_min" + ","); sB.Append(unit.MainBear.Gs.Mean + ","); }
+                            if (exportMBrStdv) { hB.Append("wtc_MBearGTm_stddev" + ","); sB.Append(unit.MainBear.Gs.Stdv + ","); }
+                            if (exportMBrMaxm) { hB.Append("wtc_MBearHTm_max" + ","); sB.Append(unit.MainBear.Hs.Maxm + ","); }
+                            if (exportMBrMinm) { hB.Append("wtc_MBearHTm_mean" + ","); sB.Append(unit.MainBear.Hs.Minm + ","); }
+                            if (exportMBrMean) { hB.Append("wtc_MBearHTm_min" + ","); sB.Append(unit.MainBear.Hs.Mean + ","); }
+                            if (exportMBrStdv) { hB.Append("wtc_MBearHTm_stddev" + ","); sB.Append(unit.MainBear.Hs.Stdv + ","); }
+
+                            if (exportGBxMaxm) { hB.Append("wtc_HSGenTmp_max" + ","); sB.Append(unit.Gearbox.Hs.Gens.Maxm + ","); }
+                            if (exportGBxMinm) { hB.Append("wtc_HSGenTmp_min" + ","); sB.Append(unit.Gearbox.Hs.Gens.Minm + ","); }
+                            if (exportGBxMean) { hB.Append("wtc_HSGenTmp_mean" + ","); sB.Append(unit.Gearbox.Hs.Gens.Mean + ","); }
+                            if (exportGBxStdv) { hB.Append("wtc_HSGenTmp_stddev" + ","); sB.Append(unit.Gearbox.Hs.Gens.Stdv + ","); }
+                            if (exportGBxMaxm) { hB.Append("wtc_HSRotTmp_max" + ","); sB.Append(unit.Gearbox.Hs.Rots.Maxm + ","); }
+                            if (exportGBxMinm) { hB.Append("wtc_HSRotTmp_min" + ","); sB.Append(unit.Gearbox.Hs.Rots.Minm + ","); }
+                            if (exportGBxMean) { hB.Append("wtc_HSRotTmp_mean" + ","); sB.Append(unit.Gearbox.Hs.Rots.Mean + ","); }
+                            if (exportGBxStdv) { hB.Append("wtc_HSRotTmp_stddev" + ","); sB.Append(unit.Gearbox.Hs.Rots.Stdv + ","); }
+                            if (exportGBxMaxm) { hB.Append("wtc_IMSGenTm_max" + ","); sB.Append(unit.Gearbox.Ims.Gens.Maxm + ","); }
+                            if (exportGBxMinm) { hB.Append("wtc_IMSGenTm_min" + ","); sB.Append(unit.Gearbox.Ims.Gens.Minm + ","); }
+                            if (exportGBxMean) { hB.Append("wtc_IMSGenTm_mean" + ","); sB.Append(unit.Gearbox.Ims.Gens.Mean + ","); }
+                            if (exportGBxStdv) { hB.Append("wtc_IMSGenTm_stddev" + ","); sB.Append(unit.Gearbox.Ims.Gens.Stdv + ","); }
+                            if (exportGBxMaxm) { hB.Append("wtc_IMSRotTm_max" + ","); sB.Append(unit.Gearbox.Ims.Rots.Maxm + ","); }
+                            if (exportGBxMinm) { hB.Append("wtc_IMSRotTm_min" + ","); sB.Append(unit.Gearbox.Ims.Rots.Minm + ","); }
+                            if (exportGBxMean) { hB.Append("wtc_IMSRotTm_mean" + ","); sB.Append(unit.Gearbox.Ims.Rots.Mean + ","); }
+                            if (exportGBxStdv) { hB.Append("wtc_IMSRotTm_stddev" + ","); sB.Append(unit.Gearbox.Ims.Rots.Stdv + ","); }
+
+                            if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
+                            sW.WriteLine(sB.ToString());
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / windFarm.Count + (double)j / windFarm[i].DataSorted.Count / windFarm.Count) * 100));
+                                }
+                            }
+                        }
+                    }
                 }
                 finally
                 {
@@ -460,12 +618,12 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Powers.Stdv = i; }
                                 else if (parts[2] == "max") { Powers.Maxm = i; }
                                 else if (parts[2] == "min") { Powers.Minm = i; }
-                                else if (parts[2] == "endvalue") { Powers.EndVal = i; }
-                                else if (parts[2] == "quality") { Powers.QualEndVal = i; }
+                                else if (parts[2] == "endvalue") { Powers.EndValCol = i; }
+                                else if (parts[2] == "quality") { Powers.QualEndValCol = i; }
                             }
                             else if (parts[1] == "actregst")
                             {
-                                if (parts[2] == "endvalue") { Powers.RgStEndVal = i; }
+                                if (parts[2] == "endvalue") { Powers.RgStEndValCol = i; }
                             }
                             else if (parts[1] == "ampphr")
                             {
@@ -494,7 +652,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Powers.PowrFact.Stdv = i; }
                                 else if (parts[2] == "max") { Powers.PowrFact.Maxm = i; }
                                 else if (parts[2] == "min") { Powers.PowrFact.Minm = i; }
-                                else if (parts[2] == "endvalue") { Powers.PowrFact.EndVal = i; }
+                                else if (parts[2] == "endvalue") { Powers.PowrFact.EndValCol = i; }
                             }
                             else if (parts[1] == "gridfreq")
                             {
@@ -509,7 +667,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Powers.Reactives.Stdv = i; }
                                 else if (parts[2] == "max") { Powers.Reactives.Maxm = i; }
                                 else if (parts[2] == "min") { Powers.Reactives.Minm = i; }
-                                else if (parts[2] == "endvalue") { Powers.Reactives.EndVal = i; }
+                                else if (parts[2] == "endvalue") { Powers.Reactives.EndValCol = i; }
                             }
                             else if (parts[1] == "voltphr")
                             {
@@ -875,9 +1033,9 @@ namespace scada_analyst
                 power.Stdv = GetVals(power.Stdv, data, header.Powers.Stdv);
                 power.Maxm = GetVals(power.Maxm, data, header.Powers.Maxm);
                 power.Minm = GetVals(power.Minm, data, header.Powers.Minm);
-                power.EndVal = GetVals(power.EndVal, data, header.Powers.EndValCol);
-                power.QualEndVal = GetVals(power.QualEndVal, data, header.Powers.QualEndValCol);
-                power.RgStEndVal = GetVals(power.RgStEndVal, data, header.Powers.RgStEndValCol);
+                power.EndVal = GetVals(power.EndVal, data, header.Powers.EndValCol); 
+                power.QualEndVal = GetVals(power.QualEndVal, data, header.Powers.QualEndValCol); 
+                power.RgStEndVal = GetVals(power.RgStEndVal, data, header.Powers.RgStEndValCol); 
 
                 power.GridFreq.Mean = GetVals(power.GridFreq.Mean, data, header.Powers.GridFreq.Mean);
                 power.GridFreq.Stdv = GetVals(power.GridFreq.Stdv, data, header.Powers.GridFreq.Stdv);
@@ -1477,10 +1635,10 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected double endValue;
-                protected double qualEndVal;
-                protected double rgStEndVal;
-                protected int endValCol, qualEndValCol, rgStEndValCol;
+                protected double endValue = -9999;
+                protected double qualEndVal = -9999;
+                protected double rgStEndVal = -9999;
+                protected int endValCol = -1, qualEndValCol = -1, rgStEndValCol = -1;
 
                 protected GridFrequency gridFreq = new GridFrequency();
                 protected PowerFactor powrFact = new PowerFactor();
@@ -1494,8 +1652,8 @@ namespace scada_analyst
                 {
                     #region Variables
 
-                    protected double endVal;
-                    protected int endValCol;
+                    protected double endVal = -9999;
+                    protected int endValCol = -1;
 
                     #endregion
 
@@ -1511,8 +1669,8 @@ namespace scada_analyst
                 {
                     #region Variables
 
-                    protected double endValue;
-                    protected int endValCol;
+                    protected double endValue = -9999;
+                    protected int endValCol = -1;
 
                     #endregion
 
@@ -1528,8 +1686,8 @@ namespace scada_analyst
                 {
                     #region Variables
 
-                    protected double endVal;
-                    protected int endValCol;
+                    protected double endVal = -9999;
+                    protected int endValCol = -1;
 
                     #endregion
 

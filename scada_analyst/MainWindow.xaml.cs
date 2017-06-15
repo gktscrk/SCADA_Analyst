@@ -38,10 +38,10 @@ namespace scada_analyst
         private bool exportPowMean = false, exportAmbMean = false, exportWSpMean = false;
         private bool exportPowStdv = false, exportAmbStdv = false, exportWSpStdv = false;
 
-        private bool exportGenMaxm = false, exportMBrMaxm = false;
-        private bool exportGenMinm = false, exportMBrMinm = false;
-        private bool exportGenMean = false, exportMBrMean = false;
-        private bool exportGenStdv = false, exportMBrStdv = false;
+        private bool exportGBxMaxm = false, exportGenMaxm = false, exportMBrMaxm = false;
+        private bool exportGBxMinm = false, exportGenMinm = false, exportMBrMinm = false;
+        private bool exportGBxMean = false, exportGenMean = false, exportMBrMean = false;
+        private bool exportGBxStdv = false, exportGenStdv = false, exportMBrStdv = false;
 
         private List<string> loadedFiles = new List<string>();
 
@@ -111,44 +111,42 @@ namespace scada_analyst
             this.Close();
         }
 
-        private void ExportData(object sender, RoutedEventArgs e)
+        private async void ExportDataAsync(object sender, RoutedEventArgs e)
         {
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
 
-        }
-
-        private void SetExportVars(object sender, RoutedEventArgs e)
-        {
-            Window_ExportControl exportOptions = new Window_ExportControl(this);
-
-            if (exportOptions.ShowDialog().Value)
+            var progress = new Progress<int>(value =>
             {
-                exportPowMaxm = exportOptions.ExportPowMaxm;
-                exportPowMinm = exportOptions.ExportPowMinm;
-                exportPowMean = exportOptions.ExportPowMean;
-                exportPowStdv = exportOptions.ExportPowStdv;
+                UpdateProgress(value);
+            });
 
-                exportAmbMaxm = exportOptions.ExportAmbMaxm;
-                exportAmbMinm = exportOptions.ExportAmbMinm;
-                exportAmbMean = exportOptions.ExportAmbMean;
-                exportAmbStdv = exportOptions.ExportAmbStdv;
+            try
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                // set a default file name
+                saveFileDialog.FileName = ".csv";
+                // set filters
+                saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
 
-                exportWSpMaxm = exportOptions.ExportWSpMaxm;
-                exportWSpMinm = exportOptions.ExportWSpMinm;
-                exportWSpMean = exportOptions.ExportWSpMean;
-                exportWSpStdv = exportOptions.ExportWSpStdv;
+                if (saveFileDialog.ShowDialog().Value)
+                {
+                    ProgressBarVisible();
 
-                exportGenMaxm = exportOptions.ExportGenMaxm;
-                exportGenMinm = exportOptions.ExportGenMinm;
-                exportGenMean = exportOptions.ExportGenMean;
-                exportGenStdv = exportOptions.ExportGenStdv;
+                    await Task.Run(() => scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                        exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
+                        exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
+                        exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
+                        exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
+                        exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
+                        exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv));
 
-                exportMBrMaxm = exportOptions.ExportMBrMaxm;
-                exportMBrMinm = exportOptions.ExportMBrMinm;
-                exportMBrMean = exportOptions.ExportMBrMean;
-                exportMBrStdv = exportOptions.ExportMBrStdv;
-
-                // these must be used by the async task that doesn't yet exist
-                // the async task will lead into the writing method
+                    ProgressBarInvisible();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -279,6 +277,77 @@ namespace scada_analyst
             catch (Exception ex)
             {
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        private void SetExportVars(object sender, RoutedEventArgs e)
+        {
+            Window_ExportControl exportOptions = new Window_ExportControl(this);
+
+            exportOptions.ExportAmbMaxm = exportAmbMaxm;
+            exportOptions.ExportAmbMinm = exportAmbMinm;
+            exportOptions.ExportAmbMean = exportAmbMean;
+            exportOptions.ExportAmbStdv = exportAmbStdv;
+
+            exportOptions.ExportPowMaxm = exportPowMaxm;
+            exportOptions.ExportPowMinm = exportPowMinm;
+            exportOptions.ExportPowMean = exportPowMean;
+            exportOptions.ExportPowStdv = exportPowStdv;
+
+            exportOptions.ExportWSpMaxm = exportWSpMaxm;
+            exportOptions.ExportWSpMinm = exportWSpMinm;
+            exportOptions.ExportWSpMean = exportWSpMean;
+            exportOptions.ExportWSpStdv = exportWSpStdv;
+
+            exportOptions.ExportGBxMaxm = exportGBxMaxm;
+            exportOptions.ExportGBxMinm = exportGBxMinm;
+            exportOptions.ExportGBxMean = exportGBxMean;
+            exportOptions.ExportGBxStdv = exportGBxStdv;
+
+            exportOptions.ExportGenMaxm = exportGenMaxm;
+            exportOptions.ExportGenMinm = exportGenMinm;
+            exportOptions.ExportGenMean = exportGenMean;
+            exportOptions.ExportGenStdv = exportGenStdv;
+
+            exportOptions.ExportMBrMaxm = exportMBrMaxm;
+            exportOptions.ExportMBrMinm = exportMBrMinm;
+            exportOptions.ExportMBrMean = exportMBrMean;
+            exportOptions.ExportMBrStdv = exportMBrStdv;
+
+            if (exportOptions.ShowDialog().Value)
+            {
+                exportPowMaxm = exportOptions.ExportPowMaxm;
+                exportPowMinm = exportOptions.ExportPowMinm;
+                exportPowMean = exportOptions.ExportPowMean;
+                exportPowStdv = exportOptions.ExportPowStdv;
+
+                exportAmbMaxm = exportOptions.ExportAmbMaxm;
+                exportAmbMinm = exportOptions.ExportAmbMinm;
+                exportAmbMean = exportOptions.ExportAmbMean;
+                exportAmbStdv = exportOptions.ExportAmbStdv;
+
+                exportWSpMaxm = exportOptions.ExportWSpMaxm;
+                exportWSpMinm = exportOptions.ExportWSpMinm;
+                exportWSpMean = exportOptions.ExportWSpMean;
+                exportWSpStdv = exportOptions.ExportWSpStdv;
+
+                exportGBxMaxm = exportOptions.ExportGBxMaxm;
+                exportGBxMinm = exportOptions.ExportGBxMinm;
+                exportGBxMean = exportOptions.ExportGBxMean;
+                exportGBxStdv = exportOptions.ExportGBxStdv;
+
+                exportGenMaxm = exportOptions.ExportGenMaxm;
+                exportGenMinm = exportOptions.ExportGenMinm;
+                exportGenMean = exportOptions.ExportGenMean;
+                exportGenStdv = exportOptions.ExportGenStdv;
+
+                exportMBrMaxm = exportOptions.ExportMBrMaxm;
+                exportMBrMinm = exportOptions.ExportMBrMinm;
+                exportMBrMean = exportOptions.ExportMBrMean;
+                exportMBrStdv = exportOptions.ExportMBrStdv;
+
+                // these must be used by the async task that doesn't yet exist
+                // the async task will lead into the writing method
             }
         }
 

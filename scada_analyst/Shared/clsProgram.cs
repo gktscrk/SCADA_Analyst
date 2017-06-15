@@ -14,6 +14,16 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0123 = new ProgramVersion(0123, new DateTime(2017, 06, 15));
+            v0123.AddChange("Export option - feeds back and forth the export options.");
+            v0123.AddChange("Export option - fixed TimeStamp properties for the export and load.");
+            results.Add(v0123);
+
+            ProgramVersion v0122 = new ProgramVersion(0122, new DateTime(2017, 06, 15));
+            v0122.AddChange("Export option - added gearbox options.");
+            v0122.AddChange("Export option - save file with properties.");
+            results.Add(v0122);
+
             ProgramVersion v0121 = new ProgramVersion(0121, new DateTime(2017, 06, 14));
             v0121.AddChange("Export option beginning - choose which variables are useful.");
             results.Add(v0121);
