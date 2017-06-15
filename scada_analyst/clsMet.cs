@@ -10,7 +10,7 @@ using scada_analyst.Shared;
 
 namespace scada_analyst
 {
-    class MeteoData : BaseMetaData
+    public class MeteoData : BaseMetaData
     {
         #region Variables
 

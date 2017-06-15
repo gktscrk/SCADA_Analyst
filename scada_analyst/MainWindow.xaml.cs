@@ -47,6 +47,7 @@ namespace scada_analyst
 
         private CancellationTokenSource cts;
 
+        private List<Asset> assetList = new List<Asset>();
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
@@ -61,6 +62,8 @@ namespace scada_analyst
             label_ProgressBar.Visibility = Visibility.Collapsed;
             cancel_ProgressBar.Visibility = Visibility.Collapsed;
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
+
+            LView_Overview.IsEnabled = false;
         }
 
         private void AboutClick(object sender, RoutedEventArgs e)
@@ -97,6 +100,7 @@ namespace scada_analyst
             meteoFile = null; meteoLoaded = false;
 
             StructureLocations();
+            UnPopulateOverview();
         }
 
         private void ClearScadaData(object sender, RoutedEventArgs e)
@@ -104,6 +108,7 @@ namespace scada_analyst
             scadaFile = null; scadaLoaded = false;
 
             StructureLocations();
+            UnPopulateOverview();
         }
 
         private void Exit(object sender, RoutedEventArgs e)
@@ -217,6 +222,8 @@ namespace scada_analyst
                         progress));
 
                     ProgressBarInvisible();
+
+                    PopulateOverview();
                 }
             }
             catch (LoadingCancelledException)
@@ -260,6 +267,8 @@ namespace scada_analyst
                     await Task.Run(() => ScadaLoading(scadaFile, openFileDialog.FileNames, scadaLoaded, progress));
 
                     ProgressBarInvisible();
+
+                    PopulateOverview();
                 }
             }
             catch (LoadingCancelledException)
@@ -278,6 +287,29 @@ namespace scada_analyst
             {
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
+        }
+
+        private void PopulateOverview()
+        {
+            LView_Overview.IsEnabled = true;
+
+            if (meteoFile.MetMasts.Count != 0)
+            {
+                for (int i = 0; i < meteoFile.MetMasts.Count; i++)
+                {
+                    assetList.Add((Asset)meteoFile.MetMasts[i]);
+                }
+            }
+
+            if (scadaFile.WindFarm.Count != 0)
+            {
+                for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                {
+                    assetList.Add((Asset)scadaFile.WindFarm[i]);
+                }
+            }
+
+            LView_Overview.ItemsSource = assetList;
         }
 
         private void SetExportVars(object sender, RoutedEventArgs e)
@@ -392,6 +424,12 @@ namespace scada_analyst
             StructureLocations();
         }
 
+        private void UnPopulateOverview()
+        {
+            LView_Overview.Items.Clear();
+            LView_Overview.IsEnabled = false;
+        }
+
         #region Background Processes
         
         void ProgressBarVisible()
@@ -490,7 +528,76 @@ namespace scada_analyst
                 throw;
             }
         }
+
+        #endregion
+
+        #region Support Classes
         
+        public class Asset : BaseStructure
+        {
+            #region Variables
+
+            private DateTime startTime;
+            private DateTime endTime;
+
+            #endregion
+
+            public Asset() { }
+
+            private Asset(MeteoData.MetMastData metMast)
+            {
+                UnitID = metMast.UnitID;
+                Type = metMast.Type;
+
+                startTime = GetFirstOrLast(metMast.InclDtTm, true);
+                endTime = GetFirstOrLast(metMast.InclDtTm, false);
+            }
+
+            private Asset(ScadaData.TurbineData turbine)
+            {
+                UnitID = turbine.UnitID;
+                Type = turbine.Type;
+
+                startTime = GetFirstOrLast(turbine.InclDtTm, true);
+                endTime = GetFirstOrLast(turbine.InclDtTm, false);
+            }
+
+            private DateTime GetFirstOrLast(List<DateTime> times, bool getFirst)
+            {
+                DateTime result;
+
+                List<DateTime> sortedTimes = times.OrderBy( s => s).ToList();
+
+                if (getFirst)
+                {
+                    result = sortedTimes[0];
+                }
+                else
+                {
+                    result = sortedTimes[sortedTimes.Count - 1];
+                }
+
+                return result;
+            }
+
+            public static explicit operator Asset(MeteoData.MetMastData metMast)
+            {
+                return new Asset(metMast);
+            }
+            
+            public static explicit operator Asset(ScadaData.TurbineData turbine)
+            {
+                return new Asset(turbine);
+            }
+
+            #region Properties
+
+            public DateTime StartTime {  get { return startTime; } set { startTime = value; } }
+            public DateTime EndTime { get { return endTime; } set { endTime = value; } }
+
+            #endregion
+        }
+
         #endregion
 
         #region Properties

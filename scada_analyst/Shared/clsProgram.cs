@@ -14,6 +14,10 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0130 = new ProgramVersion(0130, new DateTime(2017, 06, 15));
+            v0130.AddChange("Visualised list with information on basic loaded data.");
+            results.Add(v0130);
+
             ProgramVersion v0123 = new ProgramVersion(0123, new DateTime(2017, 06, 15));
             v0123.AddChange("Export option - feeds back and forth the export options.");
             v0123.AddChange("Export option - fixed TimeStamp properties for the export and load.");
