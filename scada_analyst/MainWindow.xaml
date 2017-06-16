@@ -53,9 +53,14 @@
 
         <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,5,15" MinHeight="200" MinWidth="400"
                   Name="LView_Overview" >
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                    <GridViewColumn Header="Asset ID" Width="80">
+                    <GridViewColumn Header="Asset ID" Width="80" >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Label Content="{Binding UnitID, Mode=OneWay}" />
@@ -69,17 +74,17 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Start Time" Width="100">
+                    <GridViewColumn Header="Start Time" Width="120">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Label Content="{Binding StartTime, Mode=OneWay}" />
+                                <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="End Time" Width="100">
+                    <GridViewColumn Header="End Time" Width="120">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Label Content="{Binding EndTime, Mode=OneWay}" />
+                                <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

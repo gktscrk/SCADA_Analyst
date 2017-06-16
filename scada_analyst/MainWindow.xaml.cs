@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -43,11 +44,12 @@ namespace scada_analyst
         private bool exportGBxMean = false, exportGenMean = false, exportMBrMean = false;
         private bool exportGBxStdv = false, exportGenStdv = false, exportMBrStdv = false;
 
+        private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
 
         private CancellationTokenSource cts;
 
-        private List<Asset> assetList = new List<Asset>();
+        private ObservableCollection<Asset> assetList = new ObservableCollection<Asset>();
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
@@ -297,7 +299,12 @@ namespace scada_analyst
             {
                 for (int i = 0; i < meteoFile.MetMasts.Count; i++)
                 {
-                    assetList.Add((Asset)meteoFile.MetMasts[i]);
+                    if (!loadedAsset.Contains(meteoFile.MetMasts[i].UnitID))
+                    {
+                        assetList.Add((Asset)meteoFile.MetMasts[i]);
+
+                        loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
+                    }
                 }
             }
 
@@ -305,11 +312,17 @@ namespace scada_analyst
             {
                 for (int i = 0; i < scadaFile.WindFarm.Count; i++)
                 {
-                    assetList.Add((Asset)scadaFile.WindFarm[i]);
+                    if (!loadedAsset.Contains(scadaFile.WindFarm[i].UnitID))
+                    {
+                        assetList.Add((Asset)scadaFile.WindFarm[i]);
+
+                        loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
+                    }
                 }
             }
 
             LView_Overview.ItemsSource = assetList;
+            LView_Overview.Items.Refresh();
         }
 
         private void SetExportVars(object sender, RoutedEventArgs e)
@@ -426,7 +439,7 @@ namespace scada_analyst
 
         private void UnPopulateOverview()
         {
-            LView_Overview.Items.Clear();
+            LView_Overview.ItemsSource = null;
             LView_Overview.IsEnabled = false;
         }
 
