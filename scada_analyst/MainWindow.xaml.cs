@@ -44,15 +44,19 @@ namespace scada_analyst
         private bool exportGBxMean = false, exportGenMean = false, exportMBrMean = false;
         private bool exportGBxStdv = false, exportGenStdv = false, exportMBrStdv = false;
 
+        private float cutIn = 4, cutOut = 25;
+
         private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
 
         private CancellationTokenSource cts;
 
-        private ObservableCollection<Asset> assetList = new ObservableCollection<Asset>();
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
+
+        private ObservableCollection<Event> eventList = new ObservableCollection<Event>();
+        private ObservableCollection<Structure> assetList = new ObservableCollection<Structure>();
 
         #endregion
 
@@ -118,7 +122,12 @@ namespace scada_analyst
             this.Close();
         }
 
-        private async void ExportDataAsync(object sender, RoutedEventArgs e)
+        private async void ExportMeteoDataAsync(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private async void ExportScadaDataAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
             var token = cts.Token;
@@ -154,6 +163,165 @@ namespace scada_analyst
             catch (Exception ex)
             {
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        private async void FindEventsAsync(object sender, RoutedEventArgs e)
+        {
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                ProgressBarVisible();
+
+                await Task.Run(() => FindEvents(progress));
+
+                ProgressBarInvisible();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        private void FindEvents(IProgress<int> progress)
+        {
+            FindFailure(progress);
+            FindWeatherMeteo(progress);
+            FindWeatherScada(progress);
+        }
+
+        private void FindFailure(IProgress<int> progress)
+        {
+            if (scadaFile.WindFarm != null)
+            {
+
+            }
+        }
+
+        private void FindWeatherMeteo(IProgress<int> progress)
+        {
+            if (meteoFile.MetMasts != null)
+            {
+                int count = 0;
+
+                for (int i = 0; i < meteoFile.MetMasts.Count; i++)
+                {
+                    for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
+                    {
+                        if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < cutIn)
+                        {
+                            List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                            thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
+
+                            for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                            {
+                                if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > cutIn)
+                                {
+                                    j = k; break;
+                                }
+
+                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                            }
+
+                            eventList.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                        }
+                        else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > cutOut)
+                        {
+                            List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                            thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
+
+                            for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                            {
+                                if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < cutOut)
+                                {
+                                    j = k; break;
+                                }
+
+                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                            }
+
+                            eventList.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                        }
+
+                        count++;
+
+                        if (count % 1000 == 0)
+                        {
+                            if (progress != null)
+                            {
+                                progress.Report((int)(((double)i / meteoFile.MetMasts.Count + 
+                                    (double)j / meteoFile.MetMasts[i].MetDataSorted.Count / meteoFile.MetMasts.Count) * 100));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void FindWeatherScada(IProgress<int> progress)
+        {
+            if (scadaFile.WindFarm != null)
+            {
+                int count = 0;
+
+                for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                {
+                    for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                    {
+                        if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < cutIn)
+                        {
+                            List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                            thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                            for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                            {
+                                if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > cutIn)
+                                {
+                                    j = k; break;
+                                }
+
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                            }
+                            
+                            eventList.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                        }
+                        else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > cutOut)
+                        {
+                            List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                            thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                            for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                            {
+                                if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < cutOut)
+                                {
+                                    j = k; break;
+                                }
+
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                            }
+
+                            eventList.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                        }
+
+                        count++;
+
+                        if (count % 1000 == 0)
+                        {
+                            if (progress != null)
+                            {
+                                progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
+                                    (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -301,7 +469,7 @@ namespace scada_analyst
                 {
                     if (!loadedAsset.Contains(meteoFile.MetMasts[i].UnitID))
                     {
-                        assetList.Add((Asset)meteoFile.MetMasts[i]);
+                        assetList.Add((Structure)meteoFile.MetMasts[i]);
 
                         loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
                     }
@@ -314,7 +482,7 @@ namespace scada_analyst
                 {
                     if (!loadedAsset.Contains(scadaFile.WindFarm[i].UnitID))
                     {
-                        assetList.Add((Asset)scadaFile.WindFarm[i]);
+                        assetList.Add((Structure)scadaFile.WindFarm[i]);
 
                         loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
                     }
@@ -546,7 +714,68 @@ namespace scada_analyst
 
         #region Support Classes
         
-        public class Asset : BaseStructure
+        public class Event : BaseEvent
+        {
+            #region Variables
+
+            private FailureTime failure;
+            private WeatherType weather;
+
+            #endregion
+
+            public Event() { }
+
+            public Event(List<MeteoData.MeteoSample> data, WeatherType input)
+            {
+                FromAsset = data[0].AssetID;
+
+                Start = data[0].TimeStamp;
+                Finit = data[data.Count - 1].TimeStamp;
+
+                Durat = Finit - Start;
+
+                Type = Types.WEATHER;
+                weather = input;
+            }
+
+            public Event(List<ScadaData.ScadaSample> data, WeatherType input)
+            {
+                FromAsset = data[0].AssetID;
+
+                Start = data[0].TimeStamp;
+                Finit = data[data.Count - 1].TimeStamp;
+
+                Durat = Finit - Start;
+
+                Type = Types.WEATHER;
+                weather = input;
+            }
+
+            public enum FailureTime
+            {
+                NONE,
+                DMNS, // deciminutes
+                HORS, // hours
+                DHRS, // decihours
+                DAYS // days
+            }
+
+            public enum WeatherType
+            {
+                NORMAL,
+                LOW_SP, // below cutin
+                HI_SPD  // above cutout
+            }
+
+            #region Properties
+
+            public FailureTime Failure { get { return failure; } set { failure = value; } }
+            public WeatherType Weather { get { return weather; } set { weather = value; } }
+
+            #endregion
+        }
+
+        public class Structure : BaseStructure
         {
             #region Variables
 
@@ -555,9 +784,9 @@ namespace scada_analyst
 
             #endregion
 
-            public Asset() { }
+            public Structure() { }
 
-            private Asset(MeteoData.MetMastData metMast)
+            private Structure(MeteoData.MetMastData metMast)
             {
                 UnitID = metMast.UnitID;
                 Type = metMast.Type;
@@ -566,7 +795,7 @@ namespace scada_analyst
                 endTime = GetFirstOrLast(metMast.InclDtTm, false);
             }
 
-            private Asset(ScadaData.TurbineData turbine)
+            private Structure(ScadaData.TurbineData turbine)
             {
                 UnitID = turbine.UnitID;
                 Type = turbine.Type;
@@ -593,14 +822,14 @@ namespace scada_analyst
                 return result;
             }
 
-            public static explicit operator Asset(MeteoData.MetMastData metMast)
+            public static explicit operator Structure(MeteoData.MetMastData metMast)
             {
-                return new Asset(metMast);
+                return new Structure(metMast);
             }
             
-            public static explicit operator Asset(ScadaData.TurbineData turbine)
+            public static explicit operator Structure(ScadaData.TurbineData turbine)
             {
-                return new Asset(turbine);
+                return new Structure(turbine);
             }
 
             #region Properties
@@ -619,6 +848,9 @@ namespace scada_analyst
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
         public bool PosnsCombnd { get { return posnsCombnd; } set { posnsCombnd = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
+
+        public float CutIn { get { return cutIn; } set { cutIn = value; } }
+        public float CutOut { get { return cutOut; } set { cutOut = value; } }
 
         #endregion
 

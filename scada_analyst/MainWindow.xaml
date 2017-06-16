@@ -31,23 +31,27 @@
                 <MenuItem Header="_Exit" Click="Exit" />
             </MenuItem>
             <MenuItem Header="_Load">
-                <MenuItem Header="_SCADA" Click="LoadScadaAsync" />
-                <MenuItem Header="_Geographic" Click="LoadGeoAsync" />
-                <MenuItem Header="_Meteorologic" Click="LoadMetAsync" />
+                <MenuItem Header="_Geography Data" Click="LoadGeoAsync" />
+                <MenuItem Header="_Meteorology Data" Click="LoadMetAsync" />
+                <MenuItem Header="_SCADA Data" Click="LoadScadaAsync" />
             </MenuItem>
             <MenuItem Header="_Data Management">
-                <MenuItem Header="_Add Position Data" Click="StructureLocations" />
+                <MenuItem Header="_Add Position Data to Structures" Click="StructureLocations" />
                 <Separator/>
                 <MenuItem Header="_Clear All" Click="ClearAllData" />
                 <Separator/>
-                <MenuItem Header="_Clear Geographic" Click="ClearGeoData" />
-                <MenuItem Header="_Clear Meteorologic" Click="ClearMeteoData" />
+                <MenuItem Header="_Clear Geographic Data" Click="ClearGeoData" />
+                <MenuItem Header="_Clear Meteorology Data" Click="ClearMeteoData" />
                 <MenuItem Header="_Clear SCADA Data" Click="ClearScadaData" />
             </MenuItem>
             <MenuItem Header="_Export">
-                <MenuItem Header="_Export SCADA" Click="ExportDataAsync" />
+                <MenuItem Header="_Meteorologic Data" Click="ExportMeteoDataAsync" />
+                <MenuItem Header="_SCADA Data" Click="ExportScadaDataAsync" />
                 <Separator/>
-                <MenuItem Header="_Export Settings" Click="SetExportVars" />
+                <MenuItem Header="_Settings" Click="SetExportVars" />
+            </MenuItem>
+            <MenuItem Header="_Analysis">
+                <MenuItem Header="Process Events" Click="FindEventsAsync" />
             </MenuItem>
         </Menu>
 

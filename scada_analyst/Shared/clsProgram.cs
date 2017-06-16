@@ -14,6 +14,14 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0140 = new ProgramVersion(0140, new DateTime(2017, 06, 16));
+            v0140.AddChange("Began event detection work - failures and weather events included.");
+            results.Add(v0140);
+
+            ProgramVersion v0131 = new ProgramVersion(0130, new DateTime(2017, 06, 16));
+            v0131.AddChange("Affected improvements on the listview for data display.");
+            results.Add(v0131);
+
             ProgramVersion v0130 = new ProgramVersion(0130, new DateTime(2017, 06, 15));
             v0130.AddChange("Visualised list with information on basic loaded data.");
             results.Add(v0130);

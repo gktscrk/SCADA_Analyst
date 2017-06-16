@@ -23,6 +23,42 @@ namespace scada_analyst.Shared
         #endregion
     }
 
+    public class BaseEvent
+    {
+        #region Variables
+
+        private int fromAsset;
+
+        private DateTime start;
+        private DateTime finit;
+        private TimeSpan durat;
+
+        private Types type;
+
+        #endregion
+
+        public BaseEvent() { }
+            
+        public enum Types
+        {
+            UNKNOWN,
+            FAILURE,
+            WEATHER
+        }
+
+        #region Properties
+
+        public int FromAsset { get { return fromAsset; } set { fromAsset = value; } }
+
+        public DateTime Start { get { return start; } set { start = value; } }
+        public DateTime Finit { get { return finit; } set { finit = value; } }
+        public TimeSpan Durat { get { return durat; } set { durat = value; } }
+
+        public Types Type { get { return type; } set { type = value; } }
+
+        #endregion
+    }
+
     public class BaseStructure
     {
         #region Variables
