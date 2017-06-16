@@ -44,7 +44,7 @@ namespace scada_analyst
         private bool exportGBxMean = false, exportGenMean = false, exportMBrMean = false;
         private bool exportGBxStdv = false, exportGenStdv = false, exportMBrStdv = false;
 
-        private float cutIn = 4, cutOut = 25;
+        private double cutIn = 4, cutOut = 25, powerLim = 0;
 
         private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
@@ -201,7 +201,42 @@ namespace scada_analyst
         {
             if (scadaFile.WindFarm != null)
             {
+                int count = 0;
 
+                for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                {
+                    for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                    {
+                        if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean == powerLim)
+                        {
+                            List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                            thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                            for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                            {
+                                if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean != powerLim)
+                                {
+                                    j = k; break;
+                                }
+
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                            }
+
+                            eventList.Add(new Event(thisEvent));
+                        }
+
+                        count++;
+
+                        if (count % 1000 == 0)
+                        {
+                            if (progress != null)
+                            {
+                                progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
+                                    (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -493,6 +528,18 @@ namespace scada_analyst
             LView_Overview.Items.Refresh();
         }
 
+        private void SetAnalysisSets(object sender, RoutedEventArgs e)
+        {
+            Window_NumberTwo setSpdLims = new Window_NumberTwo(this, "Turbine Operating Limits",
+                "Cut In", "Cut Out", true, false, cutIn, cutOut);
+
+            if (setSpdLims.ShowDialog().Value)
+            {
+                cutIn = setSpdLims.NumericValue1;
+                cutOut = setSpdLims.NumericValue2;
+            }
+        }
+
         private void SetExportVars(object sender, RoutedEventArgs e)
         {
             Window_ExportControl exportOptions = new Window_ExportControl(this);
@@ -718,7 +765,10 @@ namespace scada_analyst
         {
             #region Variables
 
-            private FailureTime failure;
+            private double extrmSpd = 0;
+            private double minmmPow = 0;
+
+            private NoPowerTime noPowTm;
             private WeatherType weather;
 
             #endregion
@@ -736,6 +786,46 @@ namespace scada_analyst
 
                 Type = Types.WEATHER;
                 weather = input;
+                
+                for (int i = 0; i < data.Count; i++)
+                {
+                    if (input == WeatherType.LOW_SP)
+                    {
+                        extrmSpd = data[i].WSpdR.Mean;
+
+                        if (data[i].WSpdR.Mean < extrmSpd) { extrmSpd = data[i].WSpdR.Mean; }
+                    }
+                    else if (input == WeatherType.HI_SPD)
+                    {
+                        extrmSpd = data[i].WSpdR.Mean;
+
+                        if (data[i].WSpdR.Mean > extrmSpd) { extrmSpd = data[i].WSpdR.Mean; }
+                    }
+                }
+            }
+
+            public Event(List<ScadaData.ScadaSample> data)
+            {
+                FromAsset = data[0].AssetID;
+
+                Start = data[0].TimeStamp;
+                Finit = data[data.Count - 1].TimeStamp;
+
+                Durat = Finit - Start;
+
+                Type = Types.NOPOWER;
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    minmmPow = data[i].Powers.Mean;
+
+                    if (data[i].Powers.Mean < extrmSpd) { extrmSpd = data[i].Powers.Mean; }
+                }
+
+                if (Durat.TotalMinutes < 60) { noPowTm = NoPowerTime.DMNS; }
+                else if (Durat.TotalMinutes < 60*5) { noPowTm = NoPowerTime.HORS; }
+                else if (Durat.TotalMinutes < 60*10) { noPowTm = NoPowerTime.DHRS; }
+                else if (Durat.TotalMinutes < 60*24) { noPowTm = NoPowerTime.DAYS; }
             }
 
             public Event(List<ScadaData.ScadaSample> data, WeatherType input)
@@ -749,9 +839,25 @@ namespace scada_analyst
 
                 Type = Types.WEATHER;
                 weather = input;
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    if (input == WeatherType.LOW_SP)
+                    {
+                        extrmSpd = data[i].AnemoM.ActWinds.Mean;
+
+                        if (data[i].AnemoM.ActWinds.Mean < extrmSpd) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
+                    }
+                    else if (input == WeatherType.HI_SPD)
+                    {
+                        extrmSpd = data[i].AnemoM.ActWinds.Mean;
+
+                        if (data[i].AnemoM.ActWinds.Mean > extrmSpd) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
+                    }
+                }
             }
 
-            public enum FailureTime
+            public enum NoPowerTime
             {
                 NONE,
                 DMNS, // deciminutes
@@ -769,7 +875,10 @@ namespace scada_analyst
 
             #region Properties
 
-            public FailureTime Failure { get { return failure; } set { failure = value; } }
+            public double ExtrmSpd { get { return extrmSpd; } set { extrmSpd = value; } }
+            public double MinmmPow { get { return minmmPow; } set { minmmPow = value; } }
+
+            public NoPowerTime NoPowTm { get { return noPowTm; } set { noPowTm = value; } }
             public WeatherType Weather { get { return weather; } set { weather = value; } }
 
             #endregion
@@ -849,8 +958,8 @@ namespace scada_analyst
         public bool PosnsCombnd { get { return posnsCombnd; } set { posnsCombnd = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
 
-        public float CutIn { get { return cutIn; } set { cutIn = value; } }
-        public float CutOut { get { return cutOut; } set { cutOut = value; } }
+        public double CutIn { get { return cutIn; } set { cutIn = value; } }
+        public double CutOut { get { return cutOut; } set { cutOut = value; } }
 
         #endregion
 

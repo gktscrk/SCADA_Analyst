@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:scada_analyst"
         mc:Ignorable="d"
-        Title="Export Options Dialogue" SizeToContent="WidthAndHeight" >
+        Title="Export Options Dialogue" SizeToContent="WidthAndHeight" MinWidth="350" >
     
     <Grid>
         <Grid.ColumnDefinitions>
@@ -32,7 +32,7 @@
         <Label Grid.Column="1" Grid.Row="0" Margin="5,15,5,5" Content="Max" />
         <Label Grid.Column="2" Grid.Row="0" Margin="5,15,5,5" Content="Min" />
         <Label Grid.Column="3" Grid.Row="0" Margin="5,15,5,5" Content="Mean" />
-        <Label Grid.Column="4" Grid.Row="0" Margin="5,15,15,5" Content="StDv" />
+        <Label Grid.Column="4" Grid.Row="0" Margin="5,15,15,5" Content="StDev" />
 
         <Label Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="5" Margin="15,5,15,5" 
                Content="Performance Variables" FontWeight="Bold" FontSize="14" />

@@ -42,7 +42,7 @@ namespace scada_analyst.Shared
         public enum Types
         {
             UNKNOWN,
-            FAILURE,
+            NOPOWER,
             WEATHER
         }
 

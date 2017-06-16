@@ -90,7 +90,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\NumericTextBox.cs" />
     <Compile Include="Shared\clsProgram.cs" />
+    <Compile Include="Shared\Window_NumberTwo.xaml.cs">
+      <DependentUpon>Window_NumberTwo.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\Window_About.xaml.cs">
       <DependentUpon>Window_About.xaml</DependentUpon>
     </Compile>
@@ -117,6 +121,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Shared\Window_NumberTwo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\Window_About.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

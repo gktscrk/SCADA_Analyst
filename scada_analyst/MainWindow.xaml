@@ -51,7 +51,9 @@
                 <MenuItem Header="_Settings" Click="SetExportVars" />
             </MenuItem>
             <MenuItem Header="_Analysis">
-                <MenuItem Header="Process Events" Click="FindEventsAsync" />
+                <MenuItem Header="_Process Events" Click="FindEventsAsync" />
+                <Separator/>
+                <MenuItem Header="_Settings" Click="SetAnalysisSets" />
             </MenuItem>
         </Menu>
 
