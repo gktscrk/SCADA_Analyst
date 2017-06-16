@@ -55,7 +55,11 @@ namespace scada_analyst
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
 
-        private ObservableCollection<Event> eventList = new ObservableCollection<Event>();
+        private ObservableCollection<Event> allEvents = new ObservableCollection<Event>();
+        private ObservableCollection<Event> loSpEvents = new ObservableCollection<Event>();
+        private ObservableCollection<Event> hiSpEvents = new ObservableCollection<Event>();
+        private ObservableCollection<Event> failEvents = new ObservableCollection<Event>();
+
         private ObservableCollection<Structure> assetList = new ObservableCollection<Structure>();
 
         #endregion
@@ -70,6 +74,10 @@ namespace scada_analyst
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
 
             LView_Overview.IsEnabled = false;
+
+            LView_WSpdEvLo.IsEnabled = false;
+            LView_WSpdEvHi.IsEnabled = false;
+            LView_PowrNone.IsEnabled = false;
         }
 
         private void AboutClick(object sender, RoutedEventArgs e)
@@ -92,6 +100,23 @@ namespace scada_analyst
             ClearGeoData(sender, e);
             ClearMeteoData(sender, e);
             ClearScadaData(sender, e);
+        }
+
+        private void ClearEvents(object sender, RoutedEventArgs e)
+        {
+            allEvents = new ObservableCollection<Event>();
+            loSpEvents = new ObservableCollection<Event>();
+            hiSpEvents = new ObservableCollection<Event>();
+            failEvents = new ObservableCollection<Event>();
+
+            LView_PowrNone.ItemsSource = null;
+            LView_PowrNone.IsEnabled = false;
+
+            LView_WSpdEvLo.ItemsSource = null;
+            LView_WSpdEvLo.IsEnabled = false;
+
+            LView_WSpdEvHi.ItemsSource = null;
+            LView_WSpdEvHi.IsEnabled = false;
         }
 
         private void ClearGeoData(object sender, RoutedEventArgs e)
@@ -124,7 +149,42 @@ namespace scada_analyst
 
         private async void ExportMeteoDataAsync(object sender, RoutedEventArgs e)
         {
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
 
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                if (meteoFile.MetMasts.Count != 0)
+                {
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    // set a default file name
+                    saveFileDialog.FileName = ".csv";
+                    // set filters
+                    saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+                    if (saveFileDialog.ShowDialog().Value)
+                    {
+                        ProgressBarVisible();
+
+                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName));
+
+                        ProgressBarInvisible();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(this, "No data of this type has been loaded yet. Please load data before trying to export.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+            }
         }
 
         private async void ExportScadaDataAsync(object sender, RoutedEventArgs e)
@@ -139,25 +199,32 @@ namespace scada_analyst
 
             try
             {
-                SaveFileDialog saveFileDialog = new SaveFileDialog();
-                // set a default file name
-                saveFileDialog.FileName = ".csv";
-                // set filters
-                saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-
-                if (saveFileDialog.ShowDialog().Value)
+                if (scadaFile.WindFarm.Count != 0)
                 {
-                    ProgressBarVisible();
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    // set a default file name
+                    saveFileDialog.FileName = ".csv";
+                    // set filters
+                    saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
 
-                    await Task.Run(() => scadaFile.ExportFiles(progress, saveFileDialog.FileName,
-                        exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
-                        exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
-                        exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
-                        exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
-                        exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
-                        exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv));
+                    if (saveFileDialog.ShowDialog().Value)
+                    {
+                        ProgressBarVisible();
 
-                    ProgressBarInvisible();
+                        await Task.Run(() => scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                            exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
+                            exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
+                            exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
+                            exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
+                            exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
+                            exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv));
+
+                        ProgressBarInvisible();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(this, "No data of this type has been loaded yet. Please load data before trying to export.");
                 }
             }
             catch (Exception ex)
@@ -183,6 +250,8 @@ namespace scada_analyst
                 await Task.Run(() => FindEvents(progress));
 
                 ProgressBarInvisible();
+
+                EventsRefresh();
             }
             catch (Exception ex)
             {
@@ -190,15 +259,53 @@ namespace scada_analyst
             }
         }
 
+        private void EventsRefresh()
+        {
+            if (failEvents.Count != 0)
+            {
+                LView_PowrNone.IsEnabled = true;
+                LView_PowrNone.ItemsSource = failEvents;
+            }
+
+            if (loSpEvents.Count != 0)
+            {
+                LView_WSpdEvLo.IsEnabled = true;
+                LView_WSpdEvLo.ItemsSource = loSpEvents;
+                LView_WSpdEvLo.Items.Refresh();
+            }
+
+            if (hiSpEvents.Count != 0)
+            {
+                LView_WSpdEvHi.IsEnabled = true;
+                LView_WSpdEvHi.ItemsSource = hiSpEvents;
+                LView_WSpdEvHi.Items.Refresh();
+            }
+        }
+
         private void FindEvents(IProgress<int> progress)
         {
-            FindFailure(progress);
+            // all of the find events methods follow a similar methodology
+            //
+            // firstly the full set of applicable data is taken to investigate
+            // the criteria these are tested against are defined based on wind speed or power output
+            // and a certain number of if-conditions need to be passed for the testing to take place
+            //
+            // namely whether the dataset is continuous in time, whether it doesn't end with the file,
+            // and whether all of the tested samples meet the same conditions
+
+            FindNoPower(progress);
             FindWeatherMeteo(progress);
             FindWeatherScada(progress);
         }
 
-        private void FindFailure(IProgress<int> progress)
+        private void FindNoPower(IProgress<int> progress)
         {
+            // this method investigates all loaded scada files for low power (defined as below 0)
+            // times in order to determine when the turbine may have been inactive --
+            // which will be carried out in a different method later on
+
+            // purpose of this is to find all suitable events
+
             if (scadaFile.WindFarm != null)
             {
                 int count = 0;
@@ -207,22 +314,29 @@ namespace scada_analyst
                 {
                     for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                     {
-                        if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean == powerLim)
+                        if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean < powerLim &&
+                            scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
                         {
                             List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                             thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
 
                             for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                             {
-                                if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean != powerLim)
+                                if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
                                 {
                                     j = k; break;
                                 }
 
+                                if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > powerLim)
+                                {
+                                    j = k; break;
+                                }
+                                else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
                                 thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                             }
 
-                            eventList.Add(new Event(thisEvent));
+                            failEvents.Add(new Event(thisEvent));
                         }
 
                         count++;
@@ -242,6 +356,12 @@ namespace scada_analyst
 
         private void FindWeatherMeteo(IProgress<int> progress)
         {
+            // this method investigates all loaded meteorologic files for low and high wind speed
+            // times in order to determine when the turbine may have been inactive due to that --
+            // which will be carried out in a different method later on
+
+            // purpose of this is to find all suitable events
+
             if (meteoFile.MetMasts != null)
             {
                 int count = 0;
@@ -250,22 +370,30 @@ namespace scada_analyst
                 {
                     for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
                     {
-                        if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < cutIn)
+                        if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < cutIn &&
+                            meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean >= 0)
                         {
                             List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
                             thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
 
                             for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
                             {
-                                if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > cutIn)
+                                if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0,10,0))
                                 {
                                     j = k; break;
                                 }
 
+                                if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > cutIn)
+                                {
+                                    j = k; break;
+                                }
+                                else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
                                 thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                             }
 
-                            eventList.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                            loSpEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                            allEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
                         }
                         else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > cutOut)
                         {
@@ -274,15 +402,22 @@ namespace scada_analyst
 
                             for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
                             {
-                                if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < cutOut)
+                                if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
                                 {
                                     j = k; break;
                                 }
 
+                                if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < cutOut)
+                                {
+                                    j = k; break;
+                                }
+                                else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
                                 thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                             }
 
-                            eventList.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                            hiSpEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                            allEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
                         }
 
                         count++;
@@ -302,6 +437,12 @@ namespace scada_analyst
 
         private void FindWeatherScada(IProgress<int> progress)
         {
+            // this method investigates all loaded scada files for low and high wind speed
+            // times in order to determine when the turbine may have been inactive due to that --
+            // which will be carried out in a different method later on
+
+            // purpose of this is to find all suitable events
+
             if (scadaFile.WindFarm != null)
             {
                 int count = 0;
@@ -310,22 +451,30 @@ namespace scada_analyst
                 {
                     for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                     {
-                        if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < cutIn)
+                        if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < cutIn &&
+                            scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean >= 0)
                         {
                             List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                             thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
 
                             for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                             {
-                                if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > cutIn)
+                                if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
                                 {
                                     j = k; break;
                                 }
 
+                                if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > cutIn)
+                                {
+                                    j = k; break;
+                                }
+                                else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
                                 thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                             }
-                            
-                            eventList.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+
+                            loSpEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                            allEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
                         }
                         else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > cutOut)
                         {
@@ -334,15 +483,22 @@ namespace scada_analyst
 
                             for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                             {
-                                if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < cutOut)
+                                if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
                                 {
                                     j = k; break;
                                 }
 
+                                if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < cutOut)
+                                {
+                                    j = k; break;
+                                }
+                                else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
                                 thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                             }
 
-                            eventList.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                            hiSpEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                            allEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
                         }
 
                         count++;
@@ -768,6 +924,8 @@ namespace scada_analyst
             private double extrmSpd = 0;
             private double minmmPow = 0;
 
+            private TimeSpan sampleLen = new TimeSpan( 0, 9, 59);
+
             private NoPowerTime noPowTm;
             private WeatherType weather;
 
@@ -780,7 +938,7 @@ namespace scada_analyst
                 FromAsset = data[0].AssetID;
 
                 Start = data[0].TimeStamp;
-                Finit = data[data.Count - 1].TimeStamp;
+                Finit = data[data.Count - 1].TimeStamp.Add(sampleLen);
 
                 Durat = Finit - Start;
 
@@ -809,7 +967,7 @@ namespace scada_analyst
                 FromAsset = data[0].AssetID;
 
                 Start = data[0].TimeStamp;
-                Finit = data[data.Count - 1].TimeStamp;
+                Finit = data[data.Count - 1].TimeStamp.Add(sampleLen);
 
                 Durat = Finit - Start;
 
@@ -819,7 +977,7 @@ namespace scada_analyst
                 {
                     minmmPow = data[i].Powers.Mean;
 
-                    if (data[i].Powers.Mean < extrmSpd) { extrmSpd = data[i].Powers.Mean; }
+                    if (data[i].Powers.Mean < minmmPow) { minmmPow = data[i].Powers.Mean; }
                 }
 
                 if (Durat.TotalMinutes < 60) { noPowTm = NoPowerTime.DMNS; }
@@ -833,7 +991,7 @@ namespace scada_analyst
                 FromAsset = data[0].AssetID;
 
                 Start = data[0].TimeStamp;
-                Finit = data[data.Count - 1].TimeStamp;
+                Finit = data[data.Count - 1].TimeStamp.Add(sampleLen);
 
                 Durat = Finit - Start;
 

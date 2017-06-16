@@ -14,6 +14,8 @@ namespace scada_analyst
     {
         #region Variables
 
+        private string outputName;
+
         private List<int> inclMetm = new List<int>();
 
         private MeteoHeader metrHeader = new MeteoHeader();
@@ -32,6 +34,15 @@ namespace scada_analyst
         public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
             LoadNSortMet(filenames, progress);
+        }
+
+        public void ExportFiles(IProgress<int> progress, string output)
+        {
+            // feed in proper arguments for this output file name and assign these
+            outputName = output;
+
+            // write the SCADA file out in a reasonable method
+            WriteMeteo(progress);
         }
 
         private void LoadMetFiles(string[] filenames, IProgress<int> progress)
@@ -124,6 +135,18 @@ namespace scada_analyst
             LoadMetFiles(filenames, progress);
 
             SortMeteorology();
+            PopulateTimeDif();
+        }
+
+        private void PopulateTimeDif()
+        {
+            for (int i = 0; i < metMasts.Count; i++)
+            {
+                for (int j = 1; j < metMasts[i].MetDataSorted.Count; j++)
+                {
+                    metMasts[i].MetDataSorted[j].DeltaTime = metMasts[i].MetDataSorted[j].TimeStamp - metMasts[i].MetDataSorted[j - 1].TimeStamp;
+                }
+            }
         }
 
         private void SortMeteorology()
@@ -131,6 +154,78 @@ namespace scada_analyst
             for (int i = 0; i < metMasts.Count; i++)
             {
                 metMasts[i].MetDataSorted = metMasts[i].MetData.OrderBy(o => o.TimeStamp).ToList();
+            }
+        }
+
+        private void WriteMeteo(IProgress<int> progress)
+        {
+            using (StreamWriter sW = new StreamWriter(outputName))
+            {
+                try
+                {
+                    int count = 0;
+                    bool header = false;
+
+                    for (int i = 0; i < metMasts.Count; i++)
+                    {
+                        for (int j = 0; j < metMasts[i].MetDataSorted.Count; j++)
+                        {
+                            StringBuilder hB = new StringBuilder();
+                            StringBuilder sB = new StringBuilder();
+
+                            MeteoSample unit = metMasts[i].MetDataSorted[j];
+
+                            hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ",");
+                            hB.Append("TimeStamp" + ",");
+
+                            sB.Append(unit.TimeStamp.Year + "-");
+
+                            if (10 <= unit.TimeStamp.Month) { sB.Append(unit.TimeStamp.Month); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Month); }
+                            sB.Append("-");
+
+                            if (10 <= unit.TimeStamp.Day) { sB.Append(unit.TimeStamp.Day); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Day); }
+                            sB.Append(" ");
+
+                            if (10 <= unit.TimeStamp.Hour) { sB.Append(unit.TimeStamp.Hour); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Hour); }
+                            sB.Append(":");
+
+                            if (10 <= unit.TimeStamp.Minute) { sB.Append(unit.TimeStamp.Minute); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Minute); }
+                            sB.Append(":");
+
+                            if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
+                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
+
+                            // need to add in the respective actual meteorology file columns to make
+                            // this work properly
+
+                            hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(unit.WSpdR.Mean + ","); 
+                            hB.Append("met_Winddirection10_mean" + ","); sB.Append(unit.WDirc.Mean + ","); 
+                            hB.Append("met_TemperatureTen_mean" + ","); sB.Append(unit.Tempr.Mean + ","); 
+                            hB.Append("met_Humidity_mean" + ","); sB.Append(unit.Humid.Mean + ","); 
+
+                            if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
+                            sW.WriteLine(sB.ToString());
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / metMasts.Count + (double)j / metMasts[i].MetDataSorted.Count / metMasts.Count) * 100));
+                                }
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    sW.Close();
+                }
             }
         }
 

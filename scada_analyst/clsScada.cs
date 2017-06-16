@@ -72,6 +72,7 @@ namespace scada_analyst
             LoadFiles(filenames, progress);
 
             SortScada();
+            PopulateTimeDif();
         }
 
         private void LoadScada(IProgress<int> progress, int numberOfFiles = 1, int i = 0)
@@ -143,6 +144,17 @@ namespace scada_analyst
                 finally
                 {
                     sR.Close();
+                }
+            }
+        }
+        
+        private void PopulateTimeDif()
+        {
+            for (int i = 0; i < windFarm.Count; i++)
+            {
+                for (int j = 1; j < windFarm[i].DataSorted.Count; j++)
+                {
+                    windFarm[i].DataSorted[j].DeltaTime = windFarm[i].DataSorted[j].TimeStamp - windFarm[i].DataSorted[j - 1].TimeStamp;
                 }
             }
         }

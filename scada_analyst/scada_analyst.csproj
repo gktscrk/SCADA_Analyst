@@ -112,9 +112,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="clsMet.cs" />
+    <Compile Include="clsMeteo.cs" />
     <Compile Include="Shared\clsBackground.cs" />
-    <Compile Include="clsGeog.cs" />
+    <Compile Include="clsGeo.cs" />
     <Compile Include="clsScada.cs" />
     <Compile Include="Shared\clsShared.cs" />
     <Compile Include="MainWindow.xaml.cs">

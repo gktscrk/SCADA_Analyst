@@ -14,6 +14,15 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0150 = new ProgramVersion(0150, new DateTime(2017, 06, 16));
+            v0150.AddChange("Event detection - displays all found events at the end of the method.");
+            v0150.AddChange("Event detection - notices larger timesteps than 10min and breaks events.");
+            v0150.AddChange("Event detection - notices end of series of file and breaks events appropriately.");
+            v0150.AddChange("Event detection - assigns durations to failure events based on length.");
+            v0150.AddChange("Event detection - events with values similar to 'no value' are ignored.");
+            v0150.AddChange("Export option - meteorology data.");
+            results.Add(v0150);
+
             ProgramVersion v0140 = new ProgramVersion(0140, new DateTime(2017, 06, 16));
             v0140.AddChange("Began event detection work - failures and weather events included.");
             results.Add(v0140);

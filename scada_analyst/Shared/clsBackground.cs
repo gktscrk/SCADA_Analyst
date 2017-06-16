@@ -13,9 +13,7 @@ namespace scada_analyst.Shared
         private string fileName = "";
 
         #endregion
-
-        public BaseMetaData() { }
-
+        
         #region Properties
 
         public string FileName { get { return fileName; } set { fileName = value; } }
@@ -36,9 +34,7 @@ namespace scada_analyst.Shared
         private Types type;
 
         #endregion
-
-        public BaseEvent() { }
-            
+        
         public enum Types
         {
             UNKNOWN,
@@ -71,9 +67,7 @@ namespace scada_analyst.Shared
         private Types type = Types.UNKNOWN;
 
         #endregion
-
-        public BaseStructure() { }
-
+        
         public enum Types
         {
             UNKNOWN,
@@ -102,6 +96,7 @@ namespace scada_analyst.Shared
         private int stationID = 0;
 
         private DateTime timeStamp;
+        private TimeSpan deltaTime;
         
         #endregion
         
@@ -110,7 +105,9 @@ namespace scada_analyst.Shared
         public int AssetID { get { return assetID; } set { assetID = value; } }
         public int SampleID { get { return sampleID; } set { sampleID = value; } }
         public int StationID { get { return stationID; } set { stationID = value; } }
+
         public DateTime TimeStamp { get { return timeStamp; } set { timeStamp = value; } }
+        public TimeSpan DeltaTime { get { return deltaTime; } set { deltaTime = value; } }
 
         #endregion
     }
