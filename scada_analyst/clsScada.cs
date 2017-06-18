@@ -26,6 +26,19 @@ namespace scada_analyst
 
         public ScadaData() { }
 
+        public ScadaData(ScadaData existingFiles)
+        {
+            for (int i = 0; i < existingFiles.WindFarm.Count; i++)
+            {
+                windFarm.Add(existingFiles.WindFarm[i]);
+            }
+
+            for (int i = 0; i< existingFiles.InclTrbn.Count; i++)
+            {
+                inclTrbn.Add(existingFiles.InclTrbn[i]);
+            }
+        }
+        
         public ScadaData(string[] filenames, IProgress<int> progress)
         {
             LoadNSort(filenames, progress);

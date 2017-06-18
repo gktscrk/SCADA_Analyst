@@ -58,7 +58,7 @@ namespace scada_analyst
         private ObservableCollection<Event> allEvents = new ObservableCollection<Event>();
         private ObservableCollection<Event> loSpEvents = new ObservableCollection<Event>();
         private ObservableCollection<Event> hiSpEvents = new ObservableCollection<Event>();
-        private ObservableCollection<Event> failEvents = new ObservableCollection<Event>();
+        private ObservableCollection<Event> noPwEvents = new ObservableCollection<Event>();
 
         private ObservableCollection<Structure> assetList = new ObservableCollection<Structure>();
 
@@ -101,13 +101,13 @@ namespace scada_analyst
             ClearMeteoData(sender, e);
             ClearScadaData(sender, e);
         }
-
+        
         private void ClearEvents(object sender, RoutedEventArgs e)
         {
             allEvents = new ObservableCollection<Event>();
             loSpEvents = new ObservableCollection<Event>();
             hiSpEvents = new ObservableCollection<Event>();
-            failEvents = new ObservableCollection<Event>();
+            noPwEvents = new ObservableCollection<Event>();
 
             LView_PowrNone.ItemsSource = null;
             LView_PowrNone.IsEnabled = false;
@@ -247,6 +247,8 @@ namespace scada_analyst
             {
                 ProgressBarVisible();
 
+                ClearEvents(sender, e);
+
                 await Task.Run(() => FindEvents(progress));
 
                 ProgressBarInvisible();
@@ -261,10 +263,11 @@ namespace scada_analyst
 
         private void EventsRefresh()
         {
-            if (failEvents.Count != 0)
+            if (noPwEvents.Count != 0)
             {
                 LView_PowrNone.IsEnabled = true;
-                LView_PowrNone.ItemsSource = failEvents;
+                LView_PowrNone.ItemsSource = noPwEvents;
+                LView_PowrNone.Items.Refresh();
             }
 
             if (loSpEvents.Count != 0)
@@ -292,7 +295,7 @@ namespace scada_analyst
             //
             // namely whether the dataset is continuous in time, whether it doesn't end with the file,
             // and whether all of the tested samples meet the same conditions
-
+            
             FindNoPower(progress);
             FindWeatherMeteo(progress);
             FindWeatherScada(progress);
@@ -336,7 +339,7 @@ namespace scada_analyst
                                 thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                             }
 
-                            failEvents.Add(new Event(thisEvent));
+                            noPwEvents.Add(new Event(thisEvent));
                         }
 
                         count++;
@@ -869,7 +872,7 @@ namespace scada_analyst
         {
             try
             {
-                MeteoData analysis = existingData;
+                MeteoData analysis = new MeteoData(existingData);
 
                 if (!isLoaded)
                 {
@@ -893,7 +896,7 @@ namespace scada_analyst
         {
             try
             {
-                ScadaData analysis = existingData;
+                ScadaData analysis = new ScadaData(existingData);
 
                 if (!isLoaded)
                 {
@@ -926,6 +929,7 @@ namespace scada_analyst
 
             private TimeSpan sampleLen = new TimeSpan( 0, 9, 59);
 
+            private EventSource eSource;
             private NoPowerTime noPowTm;
             private WeatherType weather;
 
@@ -942,6 +946,7 @@ namespace scada_analyst
 
                 Durat = Finit - Start;
 
+                eSource = EventSource.METMAST;
                 Type = Types.WEATHER;
                 weather = input;
                 
@@ -971,6 +976,7 @@ namespace scada_analyst
 
                 Durat = Finit - Start;
 
+                eSource = EventSource.TURBINE;
                 Type = Types.NOPOWER;
 
                 for (int i = 0; i < data.Count; i++)
@@ -995,6 +1001,7 @@ namespace scada_analyst
 
                 Durat = Finit - Start;
 
+                eSource = EventSource.TURBINE;
                 Type = Types.WEATHER;
                 weather = input;
 
@@ -1024,6 +1031,13 @@ namespace scada_analyst
                 DAYS // days
             }
 
+            public enum EventSource
+            {
+                UNKNOWN,
+                METMAST,
+                TURBINE
+            }
+
             public enum WeatherType
             {
                 NORMAL,
@@ -1036,6 +1050,7 @@ namespace scada_analyst
             public double ExtrmSpd { get { return extrmSpd; } set { extrmSpd = value; } }
             public double MinmmPow { get { return minmmPow; } set { minmmPow = value; } }
 
+            public EventSource ESource { get { return eSource; } set { eSource = value; } }
             public NoPowerTime NoPowTm { get { return noPowTm; } set { noPowTm = value; } }
             public WeatherType Weather { get { return weather; } set { weather = value; } }
 

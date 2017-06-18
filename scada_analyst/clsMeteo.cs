@@ -26,6 +26,19 @@ namespace scada_analyst
 
         public MeteoData() { }
 
+        public MeteoData(MeteoData existingFiles)
+        {
+            for (int i = 0; i < existingFiles.MetMasts.Count; i++)
+            {
+                metMasts.Add(existingFiles.MetMasts[i]);
+            }
+
+            for (int i = 0; i < existingFiles.InclMetm.Count; i++)
+            {
+                inclMetm.Add(existingFiles.InclMetm[i]);
+            }
+        }
+
         public MeteoData(string[] filenames, IProgress<int> progress)
         {
             LoadNSortMet(filenames, progress);
@@ -496,6 +509,8 @@ namespace scada_analyst
         #region Properties
 
         public MeteoHeader MetrHeader { get { return metrHeader; } }
+
+        public List<int> InclMetm { get { return inclMetm; } }
 
         public List<MetMastData> MetMasts { get { return metMasts; } }
 

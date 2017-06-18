@@ -14,6 +14,10 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0151 = new ProgramVersion(0151, new DateTime(2017, 06, 18));
+            v0151.AddChange("Tweaked loading of files to make it programmatically better.");
+            results.Add(v0151);
+
             ProgramVersion v0150 = new ProgramVersion(0150, new DateTime(2017, 06, 16));
             v0150.AddChange("Event detection - displays all found events at the end of the method.");
             v0150.AddChange("Event detection - notices larger timesteps than 10min and breaks events.");
