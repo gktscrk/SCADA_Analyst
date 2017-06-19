@@ -43,14 +43,12 @@ namespace scada_analyst.Shared
             this.DialogResult = true;
         }
 
-        public double NumericValue1
-        {
-            get { return Number1.NumericValue; }
-        }
+        #region Properties
 
-        public double NumericValue2
-        {
-            get { return Number2.NumericValue; }
-        }
+        public double NumericValue1 { get { return Number1.NumericValue; } }
+
+        public double NumericValue2 { get { return Number2.NumericValue; } }
+
+        #endregion
     }
 }

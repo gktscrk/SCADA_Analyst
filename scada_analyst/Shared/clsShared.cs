@@ -91,18 +91,32 @@ namespace scada_analyst.Shared
             return input;
         }
 
-        public static DateTime StringToDateTime(string[] dateinfo)
+        public static DateTime StringToDateTime(string[] dateinfo, bool correctYearOrder = true)
         {
             DateTime result = new DateTime();
 
-            string[] tempDate = Common.GetSplits(dateinfo[0], new char[] { '-' });
+            string[] tempDate = Common.GetSplits(dateinfo[0], new char[] { '-', '/' });
             string[] tempTime = Common.GetSplits(dateinfo[1], new char[] { ':', '.' });
 
-            result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]),
-                Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]),
-                Convert.ToInt16(tempTime[2]));
+            if (correctYearOrder)
+            {
+                result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]),
+                  Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]),
+                  Convert.ToInt16(tempTime[2]));
+            }
+            else
+            {
+                result = new DateTime(Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempDate[1]),
+                  Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]),
+                  Convert.ToInt16(tempTime[2]));
+            }
 
             return result;
+        }
+
+        public static DateTime StringToDateTime(string dateInfo, bool correctYeardOrder = true)
+        {
+            return StringToDateTime(GetSplits(dateInfo,' '), correctYeardOrder);
         }
 
         public static DateTime StringToDateTime(string lengthSix, string lengthEight)

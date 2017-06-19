@@ -49,13 +49,13 @@ namespace scada_analyst
             LoadNSortMet(filenames, progress);
         }
 
-        public void ExportFiles(IProgress<int> progress, string output)
+        public void ExportFiles(IProgress<int> progress, string output, DateTime startExp, DateTime endExprt)
         {
             // feed in proper arguments for this output file name and assign these
             outputName = output;
 
             // write the SCADA file out in a reasonable method
-            WriteMeteo(progress);
+            WriteMeteo(progress, startExp, endExprt);
         }
 
         private void LoadMetFiles(string[] filenames, IProgress<int> progress)
@@ -170,7 +170,7 @@ namespace scada_analyst
             }
         }
 
-        private void WriteMeteo(IProgress<int> progress)
+        private void WriteMeteo(IProgress<int> progress, DateTime startExp, DateTime endExprt)
         {
             using (StreamWriter sW = new StreamWriter(outputName))
             {
@@ -188,40 +188,43 @@ namespace scada_analyst
 
                             MeteoSample unit = metMasts[i].MetDataSorted[j];
 
-                            hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ",");
-                            hB.Append("TimeStamp" + ",");
+                            if (unit.TimeStamp >= startExp && unit.TimeStamp <= endExprt)
+                            {
+                                hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ",");
+                                hB.Append("TimeStamp" + ",");
 
-                            sB.Append(unit.TimeStamp.Year + "-");
+                                sB.Append(unit.TimeStamp.Year + "-");
 
-                            if (10 <= unit.TimeStamp.Month) { sB.Append(unit.TimeStamp.Month); }
-                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Month); }
-                            sB.Append("-");
+                                if (10 <= unit.TimeStamp.Month) { sB.Append(unit.TimeStamp.Month); }
+                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Month); }
+                                sB.Append("-");
 
-                            if (10 <= unit.TimeStamp.Day) { sB.Append(unit.TimeStamp.Day); }
-                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Day); }
-                            sB.Append(" ");
+                                if (10 <= unit.TimeStamp.Day) { sB.Append(unit.TimeStamp.Day); }
+                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Day); }
+                                sB.Append(" ");
 
-                            if (10 <= unit.TimeStamp.Hour) { sB.Append(unit.TimeStamp.Hour); }
-                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Hour); }
-                            sB.Append(":");
+                                if (10 <= unit.TimeStamp.Hour) { sB.Append(unit.TimeStamp.Hour); }
+                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Hour); }
+                                sB.Append(":");
 
-                            if (10 <= unit.TimeStamp.Minute) { sB.Append(unit.TimeStamp.Minute); }
-                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Minute); }
-                            sB.Append(":");
+                                if (10 <= unit.TimeStamp.Minute) { sB.Append(unit.TimeStamp.Minute); }
+                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Minute); }
+                                sB.Append(":");
 
-                            if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
-                            else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
+                                if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
+                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
 
-                            // need to add in the respective actual meteorology file columns to make
-                            // this work properly
+                                // need to add in the respective actual meteorology file columns to make
+                                // this work properly
 
-                            hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(unit.WSpdR.Mean + ","); 
-                            hB.Append("met_Winddirection10_mean" + ","); sB.Append(unit.WDirc.Mean + ","); 
-                            hB.Append("met_TemperatureTen_mean" + ","); sB.Append(unit.Tempr.Mean + ","); 
-                            hB.Append("met_Humidity_mean" + ","); sB.Append(unit.Humid.Mean + ","); 
+                                hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(unit.WSpdR.Mean + ",");
+                                hB.Append("met_Winddirection10_mean" + ","); sB.Append(unit.WDirc.Mean + ",");
+                                hB.Append("met_TemperatureTen_mean" + ","); sB.Append(unit.Tempr.Mean + ",");
+                                hB.Append("met_Humidity_mean" + ","); sB.Append(unit.Humid.Mean + ",");
 
-                            if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
-                            sW.WriteLine(sB.ToString());
+                                if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
+                                sW.WriteLine(sB.ToString());
+                            }
 
                             count++;
 

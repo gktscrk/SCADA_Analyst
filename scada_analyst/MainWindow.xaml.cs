@@ -50,6 +50,8 @@ namespace scada_analyst
         private List<string> loadedFiles = new List<string>();
 
         private CancellationTokenSource cts;
+        private DateTime expStart = new DateTime();
+        private DateTime expEnd = new DateTime();
         private TimeSpan duratFilter = new TimeSpan(0,10,0);
 
         private GeoData geoFile;
@@ -156,6 +158,11 @@ namespace scada_analyst
             ClearGeoData(sender, e);
             ClearMeteoData(sender, e);
             ClearScadaData(sender, e);
+
+            ClearEvents(sender, e);
+
+            expStart = new DateTime();
+            expEnd = new DateTime();
         }
         
         private void ClearEvents(object sender, RoutedEventArgs e)
@@ -269,7 +276,23 @@ namespace scada_analyst
                     {
                         ProgressBarVisible();
 
-                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName));
+                        if (CBox_DateRangeExport.IsChecked)
+                        {
+                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", expStart);
+                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", expEnd);
+
+                            if (startCal.ShowDialog().Value)
+                            {
+                                expStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
+                            }
+
+                            if (endCal.ShowDialog().Value)
+                            {
+                                expEnd = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
+                            }
+                        }
+
+                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName,expStart,expEnd));
 
                         ProgressBarInvisible();
                     }
@@ -309,13 +332,30 @@ namespace scada_analyst
                     {
                         ProgressBarVisible();
 
+                        if (CBox_DateRangeExport.IsChecked)
+                        {
+                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", expStart);
+                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", expEnd);
+
+                            if (startCal.ShowDialog().Value)
+                            {
+                                expStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
+                            }
+
+                            if (endCal.ShowDialog().Value)
+                            {
+                                expEnd = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
+                            }
+                        }
+
                         await Task.Run(() => scadaFile.ExportFiles(progress, saveFileDialog.FileName,
                             exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
                             exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
                             exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
                             exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
                             exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
-                            exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv));
+                            exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
+                            expStart, expEnd));
 
                         ProgressBarInvisible();
                     }
@@ -819,6 +859,9 @@ namespace scada_analyst
             {
                 noPwEvents.Add(alPwEvents[i]);
             }
+
+            duratFilter = new TimeSpan(0, 10, 0);
+            LBL_DurationFilter.Content = duratFilter.ToString();
         }
 
         private void SetAnalysisSets(object sender, RoutedEventArgs e)
@@ -1033,6 +1076,18 @@ namespace scada_analyst
 
             LView_Overview.ItemsSource = assetList;
             LView_Overview.Items.Refresh();
+
+            if (assetList != null && assetList.Count > 0)
+            {
+                expStart = assetList[0].StartTime;
+                expEnd = assetList[0].EndTime;
+
+                for (int i = 1; i < assetList.Count; i++)
+                {
+                    if (assetList[i].StartTime < expStart) { expStart = assetList[i].StartTime; }
+                    if (assetList[i].EndTime > expEnd) { expEnd = assetList[i].EndTime; }
+                }
+            }
         }
 
         private void UnPopulateOverview()
