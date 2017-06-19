@@ -5,19 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
+using MahApps.Metro.Controls;
+
 namespace scada_analyst
 {
     /// <summary>
     /// Interaction logic for Window_AnalysisSettings.xaml
     /// </summary>
-    public partial class Window_AnalysisSettings : Window
+    public partial class Window_AnalysisSettings : MetroWindow
     {
         #region Variables
         
 
         #endregion 
 
-        public Window_AnalysisSettings(Window owner, double spdIns, double spdOut)
+        public Window_AnalysisSettings(MetroWindow owner, double spdIns, double spdOut)
         {
             InitializeComponent();
 

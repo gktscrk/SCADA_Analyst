@@ -5,44 +5,55 @@
              xmlns:local="clr-namespace:scada_analyst"
              xmlns:component="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              StartupUri="MainWindow.xaml">
-    
+
     <Application.Resources>
-        
-        <SolidColorBrush x:Key="GTGroupBrush_Background" Color="LightSteelBlue" />
-        <SolidColorBrush x:Key="GTGroupBrush_Foreground" Color="White" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                <!-- Accent and AppTheme setting -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <shared:BoolToOppositeConverter x:Key="BoolToOppositeConverter"/>
-        <shared:TabControlViewModel x:Key="tabVM" />
-        <shared:ColourToBrushConverter x:Key="ColourToBrushConverter" />
+            <SolidColorBrush x:Key="GTGroupBrush_Background" Color="LightSteelBlue" />
+            <SolidColorBrush x:Key="GTGroupBrush_Foreground" Color="White" />
 
-        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
+            <shared:BoolToOppositeConverter x:Key="BoolToOppositeConverter"/>
+            <shared:TabControlViewModel x:Key="tabVM" />
+            <shared:ColourToBrushConverter x:Key="ColourToBrushConverter" />
 
-        <CollectionViewSource x:Key="LatestChanges">
-            <CollectionViewSource.SortDescriptions>
-                <component:SortDescription PropertyName="Version" Direction="Descending"/>
-            </CollectionViewSource.SortDescriptions>
-            <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="VersionAndDate"/>
-            </CollectionViewSource.GroupDescriptions>
-        </CollectionViewSource>
+            <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
-        <Style x:Key="hiddenHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
-            <Setter Property="Visibility" Value="Collapsed" />
-        </Style>
+            <CollectionViewSource x:Key="LatestChanges">
+                <CollectionViewSource.SortDescriptions>
+                    <component:SortDescription PropertyName="Version" Direction="Descending"/>
+                </CollectionViewSource.SortDescriptions>
+                <CollectionViewSource.GroupDescriptions>
+                    <PropertyGroupDescription PropertyName="VersionAndDate"/>
+                </CollectionViewSource.GroupDescriptions>
+            </CollectionViewSource>
 
-        <Style x:Key="CustomHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
-            <Setter Property="ContentTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <Grid HorizontalAlignment="Center" VerticalAlignment="Center" >
-                            <TextBlock TextWrapping="Wrap" Text="{Binding}" 
+            <Style x:Key="hiddenHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </Style>
+
+            <Style x:Key="CustomHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" >
+                                <TextBlock TextWrapping="Wrap" Text="{Binding}" 
                                    HorizontalAlignment="Center" 
                                    VerticalAlignment="Center"/>
-                        </Grid>
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
+                            </Grid>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

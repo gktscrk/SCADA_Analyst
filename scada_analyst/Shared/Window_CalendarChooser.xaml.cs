@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
 
+using MahApps.Metro.Controls;
+
 using scada_analyst.Controls;
 
 namespace scada_analyst.Shared
@@ -8,9 +10,9 @@ namespace scada_analyst.Shared
     /// <summary>
     /// Interaction logic for Window_CalendarChooser.xaml
     /// </summary>
-    public partial class Window_CalendarChooser : Window
+    public partial class Window_CalendarChooser : MetroWindow
     {
-        public Window_CalendarChooser(Window owner, string windowTitle, DateTime inputDate)
+        public Window_CalendarChooser(MetroWindow owner, string windowTitle, DateTime inputDate)
         {
             InitializeComponent();
 

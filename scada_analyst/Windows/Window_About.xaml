@@ -1,12 +1,13 @@
-﻿<Window x:Name="winAbt" 
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        x:Class="scada_analyst.Shared.Window_About"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        ResizeMode="NoResize" 
-        SizeToContent="WidthAndHeight"
-        SnapsToDevicePixels="True"
-        Title="About"
-        WindowStartupLocation="CenterOwner">
+﻿<Metro:MetroWindow x:Name="winAbt" 
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   x:Class="scada_analyst.Shared.Window_About"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
+                   ResizeMode="NoResize" 
+                   SizeToContent="WidthAndHeight"
+                   SnapsToDevicePixels="True"
+                   Title="About"
+                   WindowStartupLocation="CenterOwner">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -49,4 +50,4 @@
         <Button Grid.Column="2" Grid.Row="5" Content="OK" Margin="5,5,15,15" IsCancel="True" 
                 IsDefault="True" Width="80"/>
     </Grid>
-</Window>
+</Metro:MetroWindow>

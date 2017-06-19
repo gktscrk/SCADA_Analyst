@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
+using MahApps.Metro.Controls;
+
 namespace scada_analyst
 {
     /// <summary>
     /// Interaction logic for Window_ExportControl.xaml
     /// </summary>
-    public partial class Window_ExportControl : Window
+    public partial class Window_ExportControl : MetroWindow
     {
         #region Variables
 
@@ -18,7 +20,7 @@ namespace scada_analyst
 
         #endregion
 
-        public Window_ExportControl(Window owner)
+        public Window_ExportControl(MetroWindow owner)
         {
             InitializeComponent();
 

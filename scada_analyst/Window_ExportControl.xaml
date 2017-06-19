@@ -1,11 +1,13 @@
-﻿<Window x:Class="scada_analyst.Window_ExportControl"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:scada_analyst"
-        mc:Ignorable="d"
-        Title="Export Options" SizeToContent="WidthAndHeight" MinWidth="350" >
+﻿<Metro:MetroWindow x:Class="scada_analyst.Window_ExportControl"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:local="clr-namespace:scada_analyst"
+                   xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
+                   mc:Ignorable="d"
+                   Title="Export Options" SizeToContent="WidthAndHeight" MinWidth="350"
+                   WindowStyle="ToolWindow" >
     
     <Grid>
         <Grid.ColumnDefinitions>
@@ -85,4 +87,4 @@
         <CheckBox Grid.Column="4" Grid.Row="7" Margin="5,5,15,5" Name="CBox_GBx_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
     </Grid>
-</Window>
+</Metro:MetroWindow>

@@ -12,6 +12,15 @@ namespace scada_analyst.Shared
         {
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
+            #region Version 0.200
+
+            ProgramVersion v0200 = new ProgramVersion(0200, new DateTime(2017, 06, 19));
+            v0200.AddChange("Radical changes to UI design (MahApps Modern).");
+            v0200.AddChange("Implementation of visualisation library (LiveGraphs).");
+            results.Add(v0200);
+
+            #endregion 
+
             #region Version 0.100
 
             ProgramVersion v0160 = new ProgramVersion(0160, new DateTime(2017, 06, 19));

@@ -18,6 +18,8 @@ using System.Windows.Shapes;
 
 using Microsoft.Win32;
 
+using MahApps.Metro.Controls;
+
 using scada_analyst.Shared;
 
 namespace scada_analyst
@@ -25,7 +27,7 @@ namespace scada_analyst
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : MetroWindow, INotifyPropertyChanged
     {
         #region Variables
 
@@ -249,7 +251,7 @@ namespace scada_analyst
 
         private void Exit(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            this.Close();            
         }
 
         private async void ExportMeteoDataAsync(object sender, RoutedEventArgs e)
@@ -1088,6 +1090,46 @@ namespace scada_analyst
                     if (assetList[i].EndTime > expEnd) { expEnd = assetList[i].EndTime; }
                 }
             }
+        }
+
+        private void TWI_Structures_Click(object sender, MouseButtonEventArgs e)
+        {
+            Tab_Assets.IsSelected = true;
+        }
+
+        private void TWI_Ev_LoSp_Click(object sender, MouseButtonEventArgs e)
+        {
+            Tab_LoWinds.IsSelected = true;
+        }
+
+        private void TWI_Ev_HiSp_Click(object sender, MouseButtonEventArgs e)
+        {
+            Tab_HiWinds.IsSelected = true;
+        }
+
+        private void TWI_Ev_NoPw_Click(object sender, MouseButtonEventArgs e)
+        {
+            Tab_NoPower.IsSelected = true;
+        }
+
+        private void TWI_Structures_Click(object sender, RoutedEventArgs e)
+        {
+            Tab_Assets.IsSelected = true;
+        }
+
+        private void TWI_Ev_LoSp_Click(object sender, RoutedEventArgs e)
+        {
+            Tab_LoWinds.IsSelected = true;
+        }
+
+        private void TWI_Ev_HiSp_Click(object sender, RoutedEventArgs e)
+        {
+            Tab_HiWinds.IsSelected = true;
+        }
+
+        private void TWI_Ev_NoPw_Click(object sender, RoutedEventArgs e)
+        {
+            Tab_NoPower.IsSelected = true;
         }
 
         private void UnPopulateOverview()

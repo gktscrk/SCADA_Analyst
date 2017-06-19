@@ -5,11 +5,13 @@ using System.Windows.Navigation;
 using System.Diagnostics;
 using System.Reflection;
 
+using MahApps.Metro.Controls;
+
 namespace scada_analyst.Shared
 {
-    public partial class Window_About : Window
+    public partial class Window_About : MetroWindow
     {
-        public Window_About(Window owner)
+        public Window_About(MetroWindow owner)
         {
             InitializeComponent();
 

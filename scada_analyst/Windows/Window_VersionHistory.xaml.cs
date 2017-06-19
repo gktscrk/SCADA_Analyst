@@ -12,17 +12,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
+using MahApps.Metro.Controls;
+
 namespace scada_analyst.Shared
 {
-    public partial class Window_VersionHistory : Window
+    public partial class Window_VersionHistory : MetroWindow
     {
-        public Window_VersionHistory(Window owner)
+        public Window_VersionHistory(MetroWindow owner)
             : this(owner, VersionHistory.GetChanges(-1))
         {
             Title = "Version history";
         }
 
-        private Window_VersionHistory(Window owner, List<VersionHistory.ProgramVersion> changes)
+        private Window_VersionHistory(MetroWindow owner, List<VersionHistory.ProgramVersion> changes)
         {
             InitializeComponent();
 

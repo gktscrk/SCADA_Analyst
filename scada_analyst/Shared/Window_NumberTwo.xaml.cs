@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
 
+using MahApps.Metro.Controls;
+
 using scada_analyst.Controls;
 
 namespace scada_analyst.Shared
@@ -8,9 +10,9 @@ namespace scada_analyst.Shared
     /// <summary>
     /// Interaction logic for Window_NumberTwo.xaml
     /// </summary>
-    public partial class Window_NumberTwo : Window
+    public partial class Window_NumberTwo : MetroWindow
     {
-        public Window_NumberTwo(Window owner, string windowTitle, string inputA, string inputB, bool allowDecs = false,
+        public Window_NumberTwo(MetroWindow owner, string windowTitle, string inputA, string inputB, bool allowDecs = false,
             bool allowNegatives = false, double input1 = 0, double input2 = 0)
         {
             InitializeComponent();
