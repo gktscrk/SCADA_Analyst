@@ -71,7 +71,7 @@
                     </Grid.RowDefinitions>
 
                     <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="300" MinWidth="400"
-                        Name="LView_Overview" MaxHeight="300" >
+                        Name="LView_Overview" MaxHeight="300" SelectionChanged="LView_Overview_SelectionChanged"  >
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Center" />

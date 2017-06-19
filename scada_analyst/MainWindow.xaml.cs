@@ -811,40 +811,6 @@ namespace scada_analyst
             }
         }
 
-        private void PopulateOverview()
-        {
-            LView_Overview.IsEnabled = true;
-
-            if (meteoFile.MetMasts.Count != 0)
-            {
-                for (int i = 0; i < meteoFile.MetMasts.Count; i++)
-                {
-                    if (!loadedAsset.Contains(meteoFile.MetMasts[i].UnitID))
-                    {
-                        assetList.Add((Structure)meteoFile.MetMasts[i]);
-
-                        loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
-                    }
-                }
-            }
-
-            if (scadaFile.WindFarm.Count != 0)
-            {
-                for (int i = 0; i < scadaFile.WindFarm.Count; i++)
-                {
-                    if (!loadedAsset.Contains(scadaFile.WindFarm[i].UnitID))
-                    {
-                        assetList.Add((Structure)scadaFile.WindFarm[i]);
-
-                        loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
-                    }
-                }
-            }
-
-            LView_Overview.ItemsSource = assetList;
-            LView_Overview.Items.Refresh();
-        }
-
         private void ResetPowerEvents(object sender, RoutedEventArgs e)
         {
             noPwEvents.Clear();
@@ -993,12 +959,6 @@ namespace scada_analyst
             StructureLocations();
         }
 
-        private void UnPopulateOverview()
-        {
-            LView_Overview.ItemsSource = null;
-            LView_Overview.IsEnabled = false;
-        }
-
         #region Background Processes
         
         void ProgressBarVisible()
@@ -1020,6 +980,65 @@ namespace scada_analyst
 
             //counter_ProgressBar.Content = "";
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
+        }
+
+        private void DePopulateOverview(int toRemove)
+        {
+            if (assetList.Count != 0)
+            {
+                for (int i = assetList.Count - 1; i >= 0; i--)
+                {
+                    if (assetList[i].UnitID == toRemove)
+                    {
+                        App.Current.Dispatcher.Invoke((Action)delegate // 
+                        {
+                            assetList.RemoveAt(i);
+                        });
+                    }
+                }
+            }
+
+            LView_Overview.Items.Refresh();
+        }
+
+        private void PopulateOverview()
+        {
+            LView_Overview.IsEnabled = true;
+
+            if (meteoFile.MetMasts.Count != 0)
+            {
+                for (int i = 0; i < meteoFile.MetMasts.Count; i++)
+                {
+                    if (!loadedAsset.Contains(meteoFile.MetMasts[i].UnitID))
+                    {
+                        assetList.Add((Structure)meteoFile.MetMasts[i]);
+
+                        loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
+                    }
+                }
+            }
+
+            if (scadaFile.WindFarm.Count != 0)
+            {
+                for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                {
+                    if (!loadedAsset.Contains(scadaFile.WindFarm[i].UnitID))
+                    {
+                        assetList.Add((Structure)scadaFile.WindFarm[i]);
+
+                        loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
+                    }
+                }
+            }
+
+            LView_Overview.ItemsSource = assetList;
+            LView_Overview.Items.Refresh();
+        }
+
+        private void UnPopulateOverview()
+        {
+            LView_Overview.ItemsSource = null;
+            LView_Overview.IsEnabled = false;
         }
 
         private void OnPropertyChanged(PropertyChangedEventArgs e)
@@ -1108,8 +1127,58 @@ namespace scada_analyst
 
         #endregion
 
+        #region ContextMenu
+
+        private void LView_Overview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SetContextMenuLocationBox();
+        }
+
+        private void SetContextMenuLocationBox()
+        {
+            ContextMenu menu = null;
+
+            if (LView_Overview.SelectedItems.Count == 1)
+            {
+                menu = new ContextMenu();
+
+                MenuItem removeAsset_MenuItem = new MenuItem();
+                removeAsset_MenuItem.Header = "Remove Asset";
+                removeAsset_MenuItem.Click += RemoveAsset_MenuItem_Click;
+                menu.Items.Add(removeAsset_MenuItem);
+            }
+
+            LView_Overview.ContextMenu = menu;
+        }
+
+        private void RemoveAsset_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (LView_Overview.SelectedItems.Count == 1)
+            {
+                Structure struc = (Structure)LView_Overview.SelectedItem;
+                
+                if (struc.Type == BaseStructure.Types.METMAST)
+                {
+                    int index = meteoFile.MetMasts.FindIndex(x => x.UnitID == struc.UnitID);
+                    meteoFile.MetMasts.RemoveAt(index);
+                    meteoFile.InclMetm.Remove(struc.UnitID);
+                }
+                else if (struc.Type == BaseStructure.Types.TURBINE)
+                {
+                    int index = scadaFile.WindFarm.FindIndex(x => x.UnitID == struc.UnitID);
+                    scadaFile.WindFarm.RemoveAt(index);
+                    scadaFile.InclTrbn.Remove(struc.UnitID);
+                }
+
+                loadedAsset.Remove(struc.UnitID);
+                DePopulateOverview(struc.UnitID);
+            }
+        }
+
+        #endregion
+
         #region Support Classes
-        
+
         public class Event : BaseEvent
         {
             #region Variables
