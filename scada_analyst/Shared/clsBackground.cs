@@ -33,6 +33,8 @@ namespace scada_analyst.Shared
 
         private Types type;
 
+        private List<DateTime> evTimes = new List<DateTime>();
+
         #endregion
         
         public enum Types
@@ -51,6 +53,8 @@ namespace scada_analyst.Shared
         public TimeSpan Durat { get { return durat; } set { durat = value; } }
 
         public Types Type { get { return type; } set { type = value; } }
+
+        public List<DateTime> EvTimes { get { return evTimes; } set { evTimes = value; } }
 
         #endregion
     }

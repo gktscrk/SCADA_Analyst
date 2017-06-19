@@ -9,7 +9,7 @@
         SizeToContent="WidthAndHeight"
         SnapsToDevicePixels="True" 
         WindowStartupLocation="CenterScreen" 
-        MinWidth="200" MinHeight="250" 
+        MinWidth="300" MinHeight="250" 
         MaxWidth="600" MaxHeight="500" >
 
     <Grid>
@@ -52,6 +52,7 @@
             </MenuItem>
             <MenuItem Header="_Analysis">
                 <MenuItem Header="_Process Events" Click="FindEventsAsync" />
+                <MenuItem Header="_Match Events Across Types" Click="MatchEventsAsync" />
                 <Separator/>
                 <MenuItem Header="_Clear Events" Click="ClearEvents" />
                 <Separator/>
@@ -69,7 +70,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="200" MinWidth="400"
+                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="300" MinWidth="400"
                         Name="LView_Overview" MaxHeight="300" >
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -121,7 +122,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="200" MinWidth="400"
+                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="300" MinWidth="400"
                         Name="LView_WSpdEvLo" MaxHeight="300" >
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -181,7 +182,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="200" MinWidth="400"
+                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="300" MinWidth="400"
                         Name="LView_WSpdEvHi" MaxHeight="300" >
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -236,12 +237,13 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,15,15" MinHeight="200" MinWidth="400"
+                    <ListView Grid.Column="0" Grid.Row="1" Margin="15,15,5,15" MinHeight="300" MinWidth="400"
                         Name="LView_PowrNone" MaxHeight="300" >
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
@@ -250,7 +252,7 @@
                         </ListView.ItemContainerStyle>
                         <ListView.View>
                             <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                <GridViewColumn Header="Asset ID" Width="80" >
+                                <GridViewColumn Header="Asset ID" Width="60" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Label Content="{Binding FromAsset, Mode=OneWay}" />
@@ -264,14 +266,14 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Duration" Width="120">
+                                <GridViewColumn Header="Duration" Width="100">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Durat, Mode=OneWay}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Min Power" Width="80" >
+                                <GridViewColumn Header="Min Power" Width="70" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding MinmmPow, StringFormat={}{0:0.##}, 
@@ -279,9 +281,44 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
+                                <GridViewColumn Header="Association" Width="70" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Label Content="{Binding AssocEv, Mode=OneWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                             </GridView>
                         </ListView.View>
                     </ListView>
+
+                    <Grid Grid.Column="1" Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Column="0" Grid.Row="0" Margin="5,15,15,5" Text="Duration filtering:" />
+
+                        <Label Grid.Column="0" Grid.Row="2" Margin="5,5,15,5" Name="LBL_DurationFilter"
+                                   HorizontalAlignment="Center" HorizontalContentAlignment="Center" />
+                        
+                        <Button Grid.Column="0" Grid.Row="1" Margin="5,5,15,5" Width="80"
+                                Content="Edit duration" Click="EditDurationFilter" />                        
+                        <Button Grid.Column="0" Grid.Row="3" Margin="5,5,15,5" Width="80" Name="BTN_ProcessFilter"
+                                Content="Process filter" Click="ProcessDurationFilter" />
+
+                        <Button Grid.Column="0" Grid.Row="10" Margin="5,5,15,15" Width="80"
+                                Content="Reset" Click="ResetPowerEvents" />
+                    </Grid>
+                    
                 </Grid>
             </TabItem>
         </TabControl>

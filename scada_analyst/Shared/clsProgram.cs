@@ -14,6 +14,11 @@ namespace scada_analyst.Shared
 
             #region Version 0.100
 
+            ProgramVersion v0160 = new ProgramVersion(0160, new DateTime(2017, 06, 19));
+            v0160.AddChange("Events - associates power and wind events.");
+            v0160.AddChange("Events - filter by duration.");
+            results.Add(v0160);
+
             ProgramVersion v0151 = new ProgramVersion(0151, new DateTime(2017, 06, 18));
             v0151.AddChange("Tweaked loading of files to make it programmatically better.");
             results.Add(v0151);

@@ -98,6 +98,9 @@
     <Compile Include="Windows\Window_About.xaml.cs">
       <DependentUpon>Window_About.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Window_AnalysisSettings.xaml.cs">
+      <DependentUpon>Window_AnalysisSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Window_ExportControl.xaml.cs">
       <DependentUpon>Window_ExportControl.xaml</DependentUpon>
     </Compile>
@@ -126,6 +129,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\Window_About.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window_AnalysisSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
