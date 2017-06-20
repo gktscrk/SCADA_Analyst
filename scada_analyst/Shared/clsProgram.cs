@@ -14,6 +14,11 @@ namespace scada_analyst.Shared
 
             #region Version 0.200
 
+            ProgramVersion v0210 = new ProgramVersion(0210, new DateTime(2017, 06, 20));
+            v0210.AddChange("Added time of day comparison to remove events during the day in case they are scheduled maintenance events.");
+            v0210.AddChange("User can choose when time of day events are most likely to be maintenance. Should probably add a time filter as well.");
+            results.Add(v0210);
+
             ProgramVersion v0200 = new ProgramVersion(0200, new DateTime(2017, 06, 19));
             v0200.AddChange("Radical changes to UI design (MahApps Modern).");
             v0200.AddChange("Implementation of visualisation library (LiveGraphs).");

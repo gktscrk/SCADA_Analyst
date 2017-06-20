@@ -103,6 +103,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\NumericTextBox.cs" />
+    <Compile Include="Controls\Sunriset.cs" />
     <Compile Include="Shared\clsProgram.cs" />
     <Compile Include="Shared\Window_CalendarChooser.xaml.cs">
       <DependentUpon>Window_CalendarChooser.xaml</DependentUpon>
@@ -191,7 +192,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
       <Visible>False</Visible>
