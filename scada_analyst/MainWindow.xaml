@@ -32,9 +32,9 @@
                 <MenuItem Header="_Exit" Click="Exit" />
             </MenuItem>
             <MenuItem Header="_Load">
-                <MenuItem Header="_Geography Data" Click="LoadGeoAsync" />
-                <MenuItem Header="_Meteorology Data" Click="LoadMetAsync" />
-                <MenuItem Header="_SCADA Data" Click="LoadScadaAsync" />
+                <MenuItem Header="_Geographic Data" Click="LoadGeoDataAsync" />
+                <MenuItem Header="_Meteorologic Data" Click="LoadMeteoDataAsync" />
+                <MenuItem Header="_SCADA Data" Click="LoadScadaDataAsync" />
             </MenuItem>
             <MenuItem Header="_Data Management">
                 <MenuItem Header="_Add Position Data to Structures" Click="StructureLocations" />
@@ -42,7 +42,7 @@
                 <MenuItem Header="_Clear All" Click="ClearAllData" />
                 <Separator/>
                 <MenuItem Header="_Clear Geographic Data" Click="ClearGeoData" />
-                <MenuItem Header="_Clear Meteorology Data" Click="ClearMeteoData" />
+                <MenuItem Header="_Clear Meteorologic Data" Click="ClearMeteoData" />
                 <MenuItem Header="_Clear SCADA Data" Click="ClearScadaData" />
             </MenuItem>
             <MenuItem Header="_Export">
@@ -62,48 +62,110 @@
             </MenuItem>
         </Menu>
 
-        <Grid Grid.Column="0" Grid.Row="1" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <TabControl Grid.Column="0" Grid.Row="1" Margin="15,5,5,5"
+                    DataContext="{StaticResource tabVM}">
 
-            <GroupBox Grid.Column="0" Grid.Row="0" Margin="15,15,5,5" Header="Navigation" >
-                
-            <TreeView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Width="150" >
-            <TreeView.Resources>
-                <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
-                    <Setter Property="Padding" Value="3"/>
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Visibility"
+                            Value="Collapsed" />
                 </Style>
-            </TreeView.Resources>
+            </TabControl.ItemContainerStyle>
 
-            <TreeViewItem Header="Structures" Name="TWI_Structures"
+            <TabItem>
+                <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+            
+                    <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Header="Navigation" >
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TreeView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Width="150" >
+                                <TreeView.Resources>
+                                    <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
+                                        <Setter Property="Padding" Value="3"/>
+                                    </Style>
+                                </TreeView.Resources>
+
+                                <TreeViewItem Header="Structures" Name="TWI_Structures"
                           Selected="TWI_Structures_Click" MouseDoubleClick="TWI_Structures_Click" />
 
-            <TreeViewItem Header="Events" Name="TWI_Events" Focusable="False" IsExpanded="True" >
-                
-                <TreeViewItem Header="Low Wind Speed" Name="TWI_Ev_LoSp" 
-                              Selected="TWI_Ev_LoSp_Click" MouseDoubleClick="TWI_Ev_LoSp_Click" />
-                <TreeViewItem Header="High Wind Speed" Name="TWI_Ev_HiSp" 
-                              Selected="TWI_Ev_HiSp_Click" MouseDoubleClick="TWI_Ev_HiSp_Click" />
-                <TreeViewItem Header="No Power" Name="TWI_Ev_NoPw" 
-                              Selected="TWI_Ev_NoPw_Click" MouseDoubleClick="TWI_Ev_NoPw_Click" />
-                
-            </TreeViewItem>
+                                <TreeViewItem Header="Events" Name="TWI_Events" Focusable="False" IsExpanded="True" >
 
-        </TreeView>
+                                    <TreeViewItem Header="Low Wind Speed" Name="TWI_Ev_LoSp" 
+                              Selected="TWI_Ev_LoSp_Click" MouseDoubleClick="TWI_Ev_LoSp_Click" />
+                                    <TreeViewItem Header="High Wind Speed" Name="TWI_Ev_HiSp" 
+                              Selected="TWI_Ev_HiSp_Click" MouseDoubleClick="TWI_Ev_HiSp_Click" />
+                                    <TreeViewItem Header="No Power" Name="TWI_Ev_NoPw" 
+                              Selected="TWI_Ev_NoPw_Click" MouseDoubleClick="TWI_Ev_NoPw_Click" />
+
+                                </TreeViewItem>
+
+                            </TreeView>
+
+                        </Grid>
                 
             </GroupBox>
 
+                    <GroupBox Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" Header="Summary">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
+                            <ListView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
+                                      Height="120" Name="LView_LoadedOverview"
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource hiddenHeaderStyle}">
+                                        <GridViewColumn Header="Type" Width="90" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding StringData, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Number" Width="60">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding IntegerData, Mode=OneWay}"
+                                                           HorizontalContentAlignment="Center" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </GroupBox>
+                    
+                </Grid>
+                
+            </TabItem>
             
-        </Grid>
+        </TabControl>
         
-        <TabControl Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="1" Margin="5,6,15,15"
+        <TabControl Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="1" Margin="5,5,15,5"
                     DataContext="{StaticResource tabVM}" >
             
             <TabControl.ItemContainerStyle>
@@ -123,14 +185,20 @@
                     </Grid.RowDefinitions>
 
                     <GroupBox Grid.Column="0" Grid.Row="1" Header="Loaded Assets Overview" Margin="5,5,5,5" >
-                        <ListView Margin="5,5,5,5" MinHeight="300" MinWidth="400"
-                        Name="LView_Overview" MaxHeight="300" SelectionChanged="LView_Overview_SelectionChanged"  >
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.View>
+                        <ListView Margin="5,5,5,5" Height="300" Width="500"
+                                  Name="LView_Overview" SelectionChanged="LView_Overview_SelectionChanged"
+                                  ScrollViewer.CanContentScroll="True" >
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
                             <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
                                 <GridViewColumn Header="Asset ID" Width="80" >
                                     <GridViewColumn.CellTemplate>
@@ -162,7 +230,7 @@
                                 </GridViewColumn>
                             </GridView>
                         </ListView.View>
-                    </ListView>
+                        </ListView>
                     </GroupBox>
                 </Grid>
             </TabItem>
@@ -178,8 +246,14 @@
 
                     <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
                               Header="Low Wind Speed Events Overview" >
-                        <ListView Margin="5,5,5,5" MinHeight="300" MinWidth="400"
-                        Name="LView_WSpdEvLo" MaxHeight="300" >
+                        <ListView Margin="5,5,5,5" Height="300" Width="500"
+                                  Name="LView_WSpdEvLo"
+                                  ScrollViewer.CanContentScroll="True" >
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -226,7 +300,6 @@
                                 </GridView>
                             </ListView.View>
                         </ListView>
-
                     </GroupBox>
                 </Grid>
             </TabItem>
@@ -241,17 +314,22 @@
                     </Grid.RowDefinitions>
 
                     <GroupBox Grid.Column="0" Grid.Row="0"  Margin="5,5,5,5"
-                              Header="High Wind Speed Events Overview" >
-                        
-                    <ListView Margin="5,5,5,5" MinHeight="300" MinWidth="400"
-                        Name="LView_WSpdEvHi" MaxHeight="300" >
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.View>
-                            <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
+                              Header="High Wind Speed Events Overview" >                        
+                        <ListView Margin="5,5,5,5" Height="300" Width="500"
+                              Name="LView_WSpdEvHi"
+                              ScrollViewer.CanContentScroll="True" >
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
                                 <GridViewColumn Header="Asset ID" Width="80" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
@@ -289,7 +367,7 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                             </GridView>
-                        </ListView.View>
+                            </ListView.View>
                         </ListView>
                     </GroupBox>
                 </Grid>
@@ -316,8 +394,14 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
-                                      MinHeight="300" MaxHeight="300" 
-                                      Name="LView_PowrNone" MinWidth="400" MaxWidth="450" >
+                                      Height="300" Width="420"
+                                      Name="LView_PowrNone"
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
                                 <ListView.ItemContainerStyle>
                                     <Style TargetType="ListViewItem">
                                         <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -339,7 +423,7 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Duration" Width="100">
+                                        <GridViewColumn Header="Duration" Width="80">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Durat, Mode=OneWay}" />
@@ -387,7 +471,7 @@
                                 Content="Edit duration" Click="EditDurationFilter"
                                 Style="{DynamicResource SquareButtonStyle}" />
                                 <Button Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Width="100" Name="BTN_ProcessFilter"
-                                Content="Process filter" Click="ProcessDurationFilter"
+                                Content="Process filter" Click="ProcessDurationFilterAsync"
                                 Style="{StaticResource AccentedSquareButtonStyle}"/>
 
                                 <Button Grid.Column="0" Grid.Row="10" Margin="5,5,5,5" Width="100"
