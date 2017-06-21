@@ -14,7 +14,22 @@ namespace scada_analyst
 
         #endregion
 
-        public Analysis() { }
+        public Analysis(List<MainWindow.Event> inputEvents, IProgress<int> progress)
+        {
+            try
+            {
+
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private void GetHistoricData()
+        {
+
+        }
 
         #region Properties
 

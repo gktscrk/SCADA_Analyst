@@ -63,6 +63,7 @@ namespace scada_analyst
         private List<string> loadedFiles = new List<string>();
 
         private CancellationTokenSource cts;
+
         private DateTime expStart = new DateTime();
         private DateTime expEnd = new DateTime();
         private TimeSpan duratFilter = new TimeSpan(0,10,0);
@@ -215,6 +216,8 @@ namespace scada_analyst
             BTN_ProcessDayTime.IsEnabled = false;
             BTN_ProcessFilter.IsEnabled = false;
             BTN_RemoveMaintenances.IsEnabled = false;
+
+            timeOfDayProcessed = false;
 
             UpdateDataOverview();
         }
