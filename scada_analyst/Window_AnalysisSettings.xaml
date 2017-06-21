@@ -7,7 +7,9 @@
                    xmlns:controls="clr-namespace:scada_analyst.Controls"
                    xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
                    mc:Ignorable="d"
-                   Title="Analysis Settings" SizeToContent="WidthAndHeight" MinWidth="300"
+                   Title="Analysis Settings" 
+                   SnapsToDevicePixels="True"
+                   SizeToContent="WidthAndHeight" MinWidth="300"
                    WindowStyle="ToolWindow" >
     
     <Grid>

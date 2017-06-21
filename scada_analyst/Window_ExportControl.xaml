@@ -6,7 +6,9 @@
                    xmlns:local="clr-namespace:scada_analyst"
                    xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
                    mc:Ignorable="d"
-                   Title="Export Options" SizeToContent="WidthAndHeight" MinWidth="350"
+                   Title="Export Options" 
+                   SnapsToDevicePixels="True"
+                   SizeToContent="WidthAndHeight" MinWidth="350"
                    WindowStyle="ToolWindow" >
     
     <Grid>

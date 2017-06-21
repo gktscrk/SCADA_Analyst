@@ -102,6 +102,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="clsAnalyis.cs" />
     <Compile Include="Controls\NumericTextBox.cs" />
     <Compile Include="Controls\Sunriset.cs" />
     <Compile Include="Shared\clsProgram.cs" />
@@ -116,6 +117,9 @@
     </Compile>
     <Compile Include="Window_AnalysisSettings.xaml.cs">
       <DependentUpon>Window_AnalysisSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window_EventChart.xaml.cs">
+      <DependentUpon>Window_EventChart.xaml</DependentUpon>
     </Compile>
     <Compile Include="Window_ExportControl.xaml.cs">
       <DependentUpon>Window_ExportControl.xaml</DependentUpon>
@@ -153,6 +157,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Window_AnalysisSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window_EventChart.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

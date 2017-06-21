@@ -10,7 +10,7 @@
                    SizeToContent="WidthAndHeight"
                    SnapsToDevicePixels="True" 
                    WindowStartupLocation="CenterScreen" 
-                   MinWidth="500" MinHeight="250" 
+                   Width="800" MinHeight="450" 
                    MaxHeight="500" MaxWidth="800" >
 
     <Grid>
@@ -79,8 +79,8 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
             
                     <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Header="Navigation" >
                         <Grid>
@@ -88,10 +88,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <TreeView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Width="150" >
+                            <TreeView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Width="150"
+                                      VerticalAlignment="Top" >
                                 <TreeView.Resources>
                                     <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
                                         <Setter Property="Padding" Value="3"/>
@@ -124,11 +125,12 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
                             <ListView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
                                       Height="120" Name="LView_LoadedOverview"
+                                      VerticalAlignment="Top"
                                       ScrollViewer.CanContentScroll="True" >
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -187,6 +189,7 @@
                     <GroupBox Grid.Column="0" Grid.Row="1" Header="Loaded Assets Overview" Margin="5,5,5,5" >
                         <ListView Margin="5,5,5,5" Height="300" Width="500"
                                   Name="LView_Overview" SelectionChanged="LView_Overview_SelectionChanged"
+                                  VerticalAlignment="Top"
                                   ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -248,6 +251,7 @@
                               Header="Low Wind Speed Events Overview" >
                         <ListView Margin="5,5,5,5" Height="300" Width="500"
                                   Name="LView_WSpdEvLo"
+                                  VerticalAlignment="Top"
                                   ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -317,6 +321,7 @@
                               Header="High Wind Speed Events Overview" >                        
                         <ListView Margin="5,5,5,5" Height="300" Width="500"
                               Name="LView_WSpdEvHi"
+                                  VerticalAlignment="Top"
                               ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -380,7 +385,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
@@ -391,11 +396,13 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
+                            
                             <ListView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" 
                                       Height="300" Width="420"
                                       Name="LView_PowrNone"
+                                      VerticalAlignment="Top"
                                       ScrollViewer.CanContentScroll="True" >
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -445,7 +452,7 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Time of Day" Width="100" >
+                                        <GridViewColumn Header="Time of Day" Width="120" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding DisplayDayTime, Mode=OneWay}" />
@@ -461,6 +468,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
