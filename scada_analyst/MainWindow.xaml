@@ -5,26 +5,27 @@
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:local="clr-namespace:scada_analyst"
                    xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
+                   xmlns:controls="clr-namespace:scada_analyst.Controls"
                    mc:Ignorable="d"
-                   Title="SCADA Data Analyst"
-                   SizeToContent="WidthAndHeight"
+                   Title="SCADA Data Analyst"   
                    SnapsToDevicePixels="True" 
-                   WindowStartupLocation="CenterScreen" 
-                   Width="800" MinHeight="450" 
-                   MaxHeight="500" MaxWidth="800" >
+                   WindowStartupLocation="CenterScreen"
+                   MinHeight="450" MinWidth="600" >
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" IsMainMenu="True" 
+        <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" IsMainMenu="True" 
               Name="Prime_Menu" >
             <MenuItem Header="_File" >
                 <MenuItem Header="_About" Click="AboutClick" />
@@ -62,7 +63,7 @@
             </MenuItem>
         </Menu>
 
-        <TabControl Grid.Column="0" Grid.Row="1" Margin="15,5,5,5"
+        <TabControl Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="15,5,5,5"
                     DataContext="{StaticResource tabVM}">
 
             <TabControl.ItemContainerStyle>
@@ -117,7 +118,7 @@
 
                         </Grid>
                 
-            </GroupBox>
+                    </GroupBox>
 
                     <GroupBox Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" Header="Summary">
                         <Grid>
@@ -166,17 +167,17 @@
             </TabItem>
             
         </TabControl>
-        
-        <TabControl Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="1" Margin="5,5,15,5"
+
+        <TabControl Grid.Column="1" Grid.Row="1" Margin="5,5,5,5"
                     DataContext="{StaticResource tabVM}" >
-            
+
             <TabControl.ItemContainerStyle>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="Visibility"
                             Value="Collapsed" />
                 </Style>
             </TabControl.ItemContainerStyle>
-            
+
             <TabItem Header="Structures" Name="Tab_Assets" IsSelected="True" >
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -187,7 +188,7 @@
                     </Grid.RowDefinitions>
 
                     <GroupBox Grid.Column="0" Grid.Row="1" Header="Loaded Assets Overview" Margin="5,5,5,5" >
-                        <ListView Margin="5,5,5,5" Height="300" Width="500"
+                        <ListView Margin="5,5,5,5" MinHeight="300" Width="500"
                                   Name="LView_Overview" SelectionChanged="LView_Overview_SelectionChanged"
                                   VerticalAlignment="Top"
                                   ScrollViewer.CanContentScroll="True" >
@@ -202,41 +203,53 @@
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <ListView.View>
-                            <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                <GridViewColumn Header="Asset ID" Width="80" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Label Content="{Binding UnitID, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Type" Width="100">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Label Content="{Binding Type, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Start Time" Width="120">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="End Time" Width="120">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
+                                <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
+                                    <GridViewColumn Header="Asset ID" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding UnitID, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Type" Width="100">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding Type, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Start Time" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="End Time" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
                         </ListView>
                     </GroupBox>
                 </Grid>
             </TabItem>
+            
+        </TabControl>
+        
+        <TabControl Grid.Column="1" Grid.Row="2" Margin="5,5,5,5"
+                    DataContext="{StaticResource tabVM}" >
+            
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Visibility"
+                            Value="Collapsed" />
+                </Style>
+            </TabControl.ItemContainerStyle>
             
             <TabItem Header="Low Wind Speed Events" Name="Tab_LoWinds" >
                 <Grid>
@@ -518,7 +531,11 @@
             
         </TabControl>
 
-        <StatusBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+        <controls:ScrollableView Grid.Column="2" Grid.Row="1" Margin="5,5,15,5" Width="400" >
+            
+        </controls:ScrollableView>
+        
+        <StatusBar Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
                    Name="Prime_StatusBar" >
             <Grid Width="{Binding ElementName=Prime_StatusBar, Path=ActualWidth}">
                 <Grid.ColumnDefinitions>
@@ -532,7 +549,7 @@
                 <TextBlock Grid.Column="0" Text=" " />
                 
                 <ProgressBar Grid.Column="1"
-                         Name="progress_ProgressBar" Width="100"
+                         Name="progress_ProgressBar" Width="200"
                          Margin="5,0" >
                 </ProgressBar>
                 

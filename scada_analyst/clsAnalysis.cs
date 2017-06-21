@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using scada_analyst.Shared;
+
 namespace scada_analyst
 {
     class Analysis
@@ -14,7 +16,7 @@ namespace scada_analyst
 
         #endregion
 
-        public Analysis(List<MainWindow.Event> inputEvents, IProgress<int> progress)
+        public Analysis(List<Event> inputEvents, IProgress<int> progress)
         {
             try
             {
