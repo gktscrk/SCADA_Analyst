@@ -16,7 +16,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -63,208 +63,174 @@
             </MenuItem>
         </Menu>
 
-        <TabControl Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="15,5,5,5"
-                    DataContext="{StaticResource tabVM}">
+        <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Visibility"
-                            Value="Collapsed" />
-                </Style>
-            </TabControl.ItemContainerStyle>
-
-            <TabItem>
+            <GroupBox Grid.Column="0" Grid.Row="0" Margin="15,5,5,5" Header="Navigation" >
                 <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-            
-                    <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Header="Navigation" >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                            <TreeView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Width="150"
+                    <TreeView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Width="150"
                                       VerticalAlignment="Top" >
-                                <TreeView.Resources>
-                                    <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
-                                        <Setter Property="Padding" Value="3"/>
-                                    </Style>
-                                </TreeView.Resources>
+                        <TreeView.Resources>
+                            <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="Padding" Value="3"/>
+                            </Style>
+                        </TreeView.Resources>
 
-                                <TreeViewItem Header="Structures" Name="TWI_Structures"
-                          Selected="TWI_Structures_Click" MouseDoubleClick="TWI_Structures_Click" />
+                        <TreeViewItem Header="Structures" Name="TWI_Structures" />
 
-                                <TreeViewItem Header="Events" Name="TWI_Events" Focusable="False" IsExpanded="True" >
+                        <TreeViewItem Header="Events" Name="TWI_Events" Focusable="False" IsExpanded="True" >
 
-                                    <TreeViewItem Header="Low Wind Speed" Name="TWI_Ev_LoSp" 
+                            <TreeViewItem Header="Low Wind Speed" Name="TWI_Ev_LoSp" 
                               Selected="TWI_Ev_LoSp_Click" MouseDoubleClick="TWI_Ev_LoSp_Click" />
-                                    <TreeViewItem Header="High Wind Speed" Name="TWI_Ev_HiSp" 
+                            <TreeViewItem Header="High Wind Speed" Name="TWI_Ev_HiSp" 
                               Selected="TWI_Ev_HiSp_Click" MouseDoubleClick="TWI_Ev_HiSp_Click" />
-                                    <TreeViewItem Header="No Power" Name="TWI_Ev_NoPw" 
+                            <TreeViewItem Header="No Power" Name="TWI_Ev_NoPw" 
                               Selected="TWI_Ev_NoPw_Click" MouseDoubleClick="TWI_Ev_NoPw_Click" />
 
-                                </TreeViewItem>
+                        </TreeViewItem>
 
-                            </TreeView>
+                    </TreeView>
 
-                        </Grid>
-                
-                    </GroupBox>
+                </Grid>
 
-                    <GroupBox Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" Header="Summary">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+            </GroupBox>
 
-                            <ListView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
+            <GroupBox Grid.Column="0" Grid.Row="1" Margin="15,5,5,5" Header="Summary">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ListView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
                                       Height="120" Name="LView_LoadedOverview"
                                       VerticalAlignment="Top"
                                       ScrollViewer.CanContentScroll="True" >
-                                <ListView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <VirtualizingStackPanel/>
-                                    </ItemsPanelTemplate>
-                                </ListView.ItemsPanel>
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
 
-                                <ListView.View>
-                                    <GridView ColumnHeaderContainerStyle="{DynamicResource hiddenHeaderStyle}">
-                                        <GridViewColumn Header="Type" Width="90" >
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Label Content="{Binding StringData, Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Number" Width="60">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Label Content="{Binding IntegerData, Mode=OneWay}"
+                        <ListView.View>
+                            <GridView ColumnHeaderContainerStyle="{DynamicResource hiddenHeaderStyle}">
+                                <GridViewColumn Header="Type" Width="90" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Label Content="{Binding StringData, Mode=OneWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Number" Width="60">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Label Content="{Binding IntegerData, Mode=OneWay}"
                                                            HorizontalContentAlignment="Center" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </Grid>
-                    </GroupBox>
-                    
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
                 </Grid>
-                
-            </TabItem>
-            
-        </TabControl>
+            </GroupBox>
 
-        <TabControl Grid.Column="1" Grid.Row="1" Margin="5,5,5,5"
-                    DataContext="{StaticResource tabVM}" >
+        </Grid>
 
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Visibility"
-                            Value="Collapsed" />
-                </Style>
-            </TabControl.ItemContainerStyle>
-
-            <TabItem Header="Structures" Name="Tab_Assets" IsSelected="True" >
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <GroupBox Grid.Column="0" Grid.Row="1" Header="Loaded Assets Overview" Margin="5,5,5,5" >
-                        <ListView Margin="5,5,5,5" MinHeight="300" Width="500"
+        <GroupBox Grid.Column="1" Grid.Row="1" Header="Loaded Assets Overview" Margin="5,5,5,5" >
+            <ListView Margin="5,5,5,5" MinHeight="300" Width="500"
                                   Name="LView_Overview" SelectionChanged="LView_Overview_SelectionChanged"
                                   VerticalAlignment="Top"
                                   ScrollViewer.CanContentScroll="True" >
-                            <ListView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel/>
-                                </ItemsPanelTemplate>
-                            </ListView.ItemsPanel>
-                            <ListView.ItemContainerStyle>
-                                <Style TargetType="ListViewItem">
-                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.View>
-                                <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                    <GridViewColumn Header="Asset ID" Width="80" >
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Label Content="{Binding UnitID, Mode=OneWay}" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Type" Width="100">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Label Content="{Binding Type, Mode=OneWay}" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Start Time" Width="120">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="End Time" Width="120">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </GroupBox>
-                </Grid>
-            </TabItem>
-            
-        </TabControl>
-        
-        <TabControl Grid.Column="1" Grid.Row="2" Margin="5,5,5,5"
-                    DataContext="{StaticResource tabVM}" >
-            
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Visibility"
-                            Value="Collapsed" />
-                </Style>
-            </TabControl.ItemContainerStyle>
-            
-            <TabItem Header="Low Wind Speed Events" Name="Tab_LoWinds" >
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
+                        <GridViewColumn Header="Asset ID" Width="80" >
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Label Content="{Binding UnitID, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Type" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Label Content="{Binding Type, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Start Time" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="End Time" Width="120">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </GroupBox>
 
-                    <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
-                              Header="Low Wind Speed Events Overview" >
-                        <ListView Margin="5,5,5,5" Height="300" Width="500"
+        <GroupBox Grid.Column="1" Grid.Row="2" Margin="5,5,5,5" Header="Events Overview">
+
+            <TabControl Grid.Column="1" Grid.Row="2" Margin="0"
+                    DataContext="{StaticResource tabVM}" >
+
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Visibility"
+                            Value="Collapsed" />
+                    </Style>
+                </TabControl.ItemContainerStyle>
+
+                <TabItem Name="Tab_LoWinds" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0,3,0"
+                              Content="Wind Speed: Less than Cut-in" />
+                        
+                        <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5"
+                                  Height="300" Width="500"
                                   Name="LView_WSpdEvLo"
-                                  VerticalAlignment="Top"
+                                  VerticalAlignment="Top" HorizontalAlignment="Left"
                                   ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -317,25 +283,28 @@
                                 </GridView>
                             </ListView.View>
                         </ListView>
-                    </GroupBox>
-                </Grid>
-            </TabItem>
-            
-            <TabItem Header="High Wind Speed Events" Name="Tab_HiWinds" >
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
 
-                    <GroupBox Grid.Column="0" Grid.Row="0"  Margin="5,5,5,5"
-                              Header="High Wind Speed Events Overview" >                        
-                        <ListView Margin="5,5,5,5" Height="300" Width="500"
-                              Name="LView_WSpdEvHi"
-                                  VerticalAlignment="Top"
-                              ScrollViewer.CanContentScroll="True" >
+                    </Grid>
+                </TabItem>
+
+                <TabItem Name="Tab_HiWinds" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Column="0" Grid.Row="0"  Margin="5,5,5,5" Padding="3,0,3,0"
+                              Content="Wind Speed: Above Cut-out" />
+                        
+                        <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
+                                  Height="300" Width="500"
+                                  Name="LView_WSpdEvHi"
+                                  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                  ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <VirtualizingStackPanel/>
@@ -348,193 +317,198 @@
                             </ListView.ItemContainerStyle>
                             <ListView.View>
                                 <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                <GridViewColumn Header="Asset ID" Width="80" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Label Content="{Binding FromAsset, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Type" Width="80" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Label Content="{Binding ESource, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Start Time" Width="120">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Duration" Width="120">
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Durat, Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Max Speed" Width="80" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.##}, 
+                                    <GridViewColumn Header="Asset ID" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Type" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding ESource, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Start Time" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Duration" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Durat, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Max Speed" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.##}, 
                                                 Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
                             </ListView.View>
                         </ListView>
-                    </GroupBox>
-                </Grid>
-            </TabItem>
 
-            <TabItem Header="No Power Events" Name="Tab_NoPower" >
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    </Grid>
+                </TabItem>
 
-                    <GroupBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
-                              Header="No Power Production Events Overview" >
-                        <Grid>
+                <TabItem Name="Tab_NoPower" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0"
+                               Content="Power Production: Null or Negative" />
+
+                        <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
+                                      Height="300" Width="420"
+                                      Name="LView_PowrNone"
+                                      VerticalAlignment="Top" HorizontalAlignment="Left"
+                                      ScrollViewer.CanContentScroll="True" >
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
+                                    <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Start Time" Width="120">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Duration" Width="80">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Durat, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Min Power" Width="70" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding MinmmPow, StringFormat={}{0:0.##}, 
+                                                Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Association" Width="70" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding AssocEv, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Time of Day" Width="120" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding DisplayDayTime, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+
+                        <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            
-                            <ListView Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" 
-                                      Height="300" Width="420"
-                                      Name="LView_PowrNone"
-                                      VerticalAlignment="Top"
-                                      ScrollViewer.CanContentScroll="True" >
-                                <ListView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <VirtualizingStackPanel/>
-                                    </ItemsPanelTemplate>
-                                </ListView.ItemsPanel>
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                                <ListView.View>
-                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Label Content="{Binding FromAsset, Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Start Time" Width="120">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Duration" Width="80">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Durat, Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Min Power" Width="70" >
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding MinmmPow, StringFormat={}{0:0.##}, 
-                                                Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Association" Width="70" >
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Label Content="{Binding AssocEv, Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Time of Day" Width="120" >
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Label Content="{Binding DisplayDayTime, Mode=OneWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
 
-                            <Grid Grid.Column="1" Grid.Row="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                            <TextBlock Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Text="Duration filtering:" />
 
-                                <TextBlock Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Text="Duration filtering:" />
-
-                                <Label Grid.Column="0" Grid.Row="2" Margin="5,5,5,5" Name="LBL_DurationFilter"
+                            <Label Grid.Column="0" Grid.Row="2" Margin="5,5,5,5" Name="LBL_DurationFilter"
                                        HorizontalAlignment="Center" HorizontalContentAlignment="Center" />
 
-                                <Button Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" Width="100"
+                            <Button Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" Width="100"
                                         Content="Edit duration" Click="EditDurationFilter"
                                         Style="{DynamicResource SquareButtonStyle}" />
-                                
-                                <Button Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Width="100" Name="BTN_ProcessFilter"
+
+                            <Button Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Width="100" Name="BTN_ProcessFilter"
                                         Content="Process filter" Click="ProcessDurationFilterAsync"
                                         Style="{StaticResource AccentedSquareButtonStyle}"/>
 
-                                <Separator Grid.Column="0" Grid.Row="4" Margin="5,5,5,5" />
+                            <Separator Grid.Column="0" Grid.Row="4" Margin="5,5,5,5" />
 
-                                <Button Grid.Column="0" Grid.Row="6" Margin="5,5,5,5" Width="100"
+                            <Button Grid.Column="0" Grid.Row="6" Margin="5,5,5,5" Width="100"
                                         Name="BTN_ProcessDayTime" Content="Add times" 
                                         Click="ProcessDayTimeAsync"
                                         Style="{StaticResource AccentedSquareButtonStyle}" />
-                                <Button Grid.Column="0" Grid.Row="7" Margin="5,5,5,5" Width="100"
+                            <Button Grid.Column="0" Grid.Row="7" Margin="5,5,5,5" Width="100"
                                         Name="BTN_RemoveMaintenances" Content="Process times"
                                         Click="RemoveProcessedDayTimesAsync"
                                         Style="{StaticResource AccentedSquareButtonStyle}" />
-                                
-                                <Separator Grid.Column="0" Grid.Row="8" Margin="5,5,5,5" />
 
-                                <Button Grid.Column="0" Grid.Row="10" Margin="5,5,5,5" Width="100"
+                            <Separator Grid.Column="0" Grid.Row="8" Margin="5,5,5,5" />
+
+                            <Button Grid.Column="0" Grid.Row="10" Margin="5,5,5,5" Width="100"
                                         Content="Reset" Click="ResetPowerEvents" />
-                            </Grid>
-
                         </Grid>
-                    </GroupBox>
-                </Grid>
-            </TabItem>
-            
-        </TabControl>
 
-        <controls:ScrollableView Grid.Column="2" Grid.Row="1" Margin="5,5,15,5" Width="400" >
-            
-        </controls:ScrollableView>
+                    </Grid>
+                </TabItem>
+
+            </TabControl>
+
+        </GroupBox>
         
+        <GroupBox Grid.Column="2" Grid.Row="1" Grid.RowSpan="2" Margin="5,5,15,5"
+                  Header="Event Details" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <controls:ScrollableView Grid.Column="2" Grid.Row="0" Margin="5,5,5,5" />
+                
+            </Grid>
+        </GroupBox>
+
         <StatusBar Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
                    Name="Prime_StatusBar" >
             <Grid Width="{Binding ElementName=Prime_StatusBar, Path=ActualWidth}">

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
+using LiveCharts;
 using LiveCharts.Defaults;
 
 namespace scada_analyst.Controls
@@ -17,6 +18,17 @@ namespace scada_analyst.Controls
 
         #endregion 
 
+        public ScrollableViewModel()
+        {
+            var l = new List<DateTimePoint>();
+            l.Add(new DateTimePoint(DateTime.Now, 0));
+
+            Formatter = x => new DateTime((long)x).ToString("dd-MM-yyyy HH:mm");
+
+            From = DateTime.Now.Ticks;
+            To = DateTime.Now.AddHours(24).Ticks;
+        }
+
         public ScrollableViewModel(List<ScadaData.ScadaSample> thisEvent)
         {
             var now = thisEvent[0].TimeStamp;
@@ -28,7 +40,7 @@ namespace scada_analyst.Controls
                 l.Add(new DateTimePoint(thisEvent[i].TimeStamp, thisEvent[i].Gearbox.Hs.Gens.Mean));                
             }
 
-            Formatter = x => new DateTime((long)x).ToString("yyyy");
+            Formatter = x => new DateTime((long)x).ToString("dd-MM-yyyy HH:mm");
 
             Values = l;
 

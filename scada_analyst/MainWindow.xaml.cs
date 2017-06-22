@@ -1716,11 +1716,6 @@ namespace scada_analyst
 
         #region Treeview Controls
 
-        private void TWI_Structures_Click(object sender, MouseButtonEventArgs e)
-        {
-            Tab_Assets.IsSelected = true;
-        }
-
         private void TWI_Ev_LoSp_Click(object sender, MouseButtonEventArgs e)
         {
             Tab_LoWinds.IsSelected = true;
@@ -1735,12 +1730,7 @@ namespace scada_analyst
         {
             Tab_NoPower.IsSelected = true;
         }
-
-        private void TWI_Structures_Click(object sender, RoutedEventArgs e)
-        {
-            Tab_Assets.IsSelected = true;
-        }
-
+       
         private void TWI_Ev_LoSp_Click(object sender, RoutedEventArgs e)
         {
             Tab_LoWinds.IsSelected = true;
