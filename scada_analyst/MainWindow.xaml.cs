@@ -1683,6 +1683,8 @@ namespace scada_analyst
         {
             LView_LoadedOverview.ItemsSource = null;
 
+            overview.Clear();
+
             overview.Add(new DataOverview("Structures", assetList.Count));
             overview.Add(new DataOverview("Low Winds", loSpEvents.Count));
             overview.Add(new DataOverview("High Winds", hiSpEvents.Count));
@@ -1797,14 +1799,6 @@ namespace scada_analyst
             CreateAndUpdateDataSummary();
         }
         
-        void RemoveAllAssets()
-        {
-            LView_Overview.ItemsSource = null;
-            LView_Overview.IsEnabled = false;
-
-            assetList.Clear();
-        }
-
         void RemoveSingleAsset(int toRemove)
         {
             if (assetList.Count != 0)
@@ -1824,6 +1818,7 @@ namespace scada_analyst
             }
 
             LView_Overview.Items.Refresh();
+            CreateAndUpdateDataSummary();
         }
 
         void OnPropertyChanged(string name)
@@ -1834,21 +1829,7 @@ namespace scada_analyst
                 changed(this, new PropertyChangedEventArgs(name));
             }
         }
-
-        //void UpdateDataOverview()
-        //{
-        //    LView_LoadedOverview.ItemsSource = null;
-
-        //    overview[0].IntegerData = assetList.Count;
-        //    overview[1].IntegerData = loSpEvents.Count;
-        //    overview[2].IntegerData = hiSpEvents.Count;
-        //    overview[3].IntegerData = noPwEvents.Count;
-        //    overview[4].StringData = ratedPwr.ToString() + " kW Power";
-        //    overview[4].IntegerData = rtPwEvents.Count;
-
-        //    LView_LoadedOverview.ItemsSource = overview;
-        //}
-
+        
         void UpdateProgress(int value)
         {
             label_ProgressBar.Content = value + "%";
@@ -1861,10 +1842,10 @@ namespace scada_analyst
 
         private void LView_Overview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SetContextMenuLocationBox();
+            SetContextMenuAssets();
         }
 
-        private void SetContextMenuLocationBox()
+        private void SetContextMenuAssets()
         {
             ContextMenu menu = null;
 
@@ -1905,6 +1886,66 @@ namespace scada_analyst
             }
         }
 
+        private void LView_Powr_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SetContextMenuPowerEvents();
+        }
+
+        private void SetContextMenuPowerEvents()
+        {
+            ContextMenu menu = null;
+
+            if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
+            {
+                menu = new ContextMenu();
+
+                MenuItem explorEvent_MenuItem = new MenuItem();
+                explorEvent_MenuItem.Header = "Explore Event";
+                explorEvent_MenuItem.Click += ExploreEvent_MenuItem_Click;
+                menu.Items.Add(explorEvent_MenuItem);
+            }
+
+            if (LView_PowrNone.SelectedItems.Count == 1)
+            {
+                LView_PowrNone.ContextMenu = menu;
+            }
+            else if (LView_PowrRted.SelectedItems.Count == 1)
+            {
+                LView_PowrRted.ContextMenu = menu;
+            }
+        }
+
+        private void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
+            {
+                EventData thisEv = LView_PowrNone.SelectedItems.Count == 1 ? 
+                    (EventData)LView_PowrNone.SelectedItem : (EventData)LView_PowrRted.SelectedItem;
+                
+                // do something part of the method
+                // this one needs to take the event details and send it to another listbox plus graph
+
+                // thisEvent has the event data only -- for the actual data to display, we'll need to find 
+                // the datapoints from the source data
+
+                List<ScadaData.ScadaSample> thisEvScada = new List<ScadaData.ScadaSample>();
+
+                int assetIndex = scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
+                
+                for (int i = 0; i < thisEv.EvTimes.Count; i++)
+                {
+                    int timeIndex = 
+                        scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[i]);
+
+                    thisEvScada.Add(scadaFile.WindFarm[assetIndex].DataSorted[timeIndex]);
+                }
+
+                // now sent the thisEvScada to the new ListBox
+                ObservableCollection<ScadaData.ScadaSample> specSamples = 
+                    new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
+            }
+        }
+
         #endregion
 
         #region Treeview Controls
@@ -1918,7 +1959,7 @@ namespace scada_analyst
         {
             Tab_HiWinds.IsSelected = true;
         }
-
+        
         private void TWI_Ev_NoPw_Click(object sender, MouseButtonEventArgs e)
         {
             Tab_NoPower.IsSelected = true;

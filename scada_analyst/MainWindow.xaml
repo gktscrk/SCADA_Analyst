@@ -386,9 +386,10 @@
                                Content="Power Production: Null or Negative" />
 
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
-                                      Name="LView_PowrNone"
-                                      VerticalAlignment="Top" HorizontalAlignment="Left"
-                                      ScrollViewer.CanContentScroll="True" >
+                                  Name="LView_PowrNone"
+                                  SelectionChanged="LView_Powr_SelectionChanged"
+                                  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                  ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <VirtualizingStackPanel/>
@@ -514,9 +515,10 @@
                                Content="Power Production: " Name="LBL_PwrProdAmount" />
 
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
-                                      Name="LView_PowrRted"
-                                      VerticalAlignment="Top" HorizontalAlignment="Left"
-                                      ScrollViewer.CanContentScroll="True" >
+                                  Name="LView_PowrRted"
+                                  SelectionChanged="LView_Powr_SelectionChanged"
+                                  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                  ScrollViewer.CanContentScroll="True" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <VirtualizingStackPanel/>
