@@ -34,9 +34,8 @@ namespace scada_analyst
 
         private bool geoLoaded = false, geoAssociated = false;
         private bool meteoLoaded = false;
-        private bool posnsCombnd = false;
+        private bool positionsAddedToData = false;
         private bool scadaLoaded = false;
-        private bool timeOfDayProcessed = false;
 
         private bool mnt_Night = false;
         private bool mnt_AstDw = false;
@@ -66,7 +65,10 @@ namespace scada_analyst
 
         private DateTime expStart = new DateTime();
         private DateTime expEnd = new DateTime();
-        private TimeSpan duratFilter = new TimeSpan(0,10,0);
+        private TimeSpan duratFilter = new TimeSpan(0, 10, 0);
+
+        // this is to allow changing the property of the timestep in the loaded scada data at some point
+        private TimeSpan scadaSeprtr = new TimeSpan(0, 10, 0); 
 
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
@@ -74,11 +76,12 @@ namespace scada_analyst
 
         private List<DataOverview> overview = new List<DataOverview>();
 
-        private ObservableCollection<Event> allEvents = new ObservableCollection<Event>();
-        private ObservableCollection<Event> loSpEvents = new ObservableCollection<Event>();
-        private ObservableCollection<Event> hiSpEvents = new ObservableCollection<Event>();
-        private ObservableCollection<Event> noPwEvents = new ObservableCollection<Event>();
-        private ObservableCollection<Event> alPwEvents = new ObservableCollection<Event>();
+        private ObservableCollection<EventData> allWtrEvts = new ObservableCollection<EventData>();
+        private ObservableCollection<EventData> loSpEvents = new ObservableCollection<EventData>();
+        private ObservableCollection<EventData> hiSpEvents = new ObservableCollection<EventData>();
+        private ObservableCollection<EventData> noPwEvents = new ObservableCollection<EventData>();
+        private ObservableCollection<EventData> rtPwEvents = new ObservableCollection<EventData>();
+        private ObservableCollection<EventData> allPwrEvts = new ObservableCollection<EventData>();
 
         private ObservableCollection<Structure> assetList = new ObservableCollection<Structure>();
 
@@ -101,19 +104,116 @@ namespace scada_analyst
             LView_WSpdEvLo.IsEnabled = false;
             LView_WSpdEvHi.IsEnabled = false;
             LView_PowrNone.IsEnabled = false;
+            LView_PowrRted.IsEnabled = false;
 
-            BTN_ProcessFilter.IsEnabled = false;
-            BTN_ProcessDayTime.IsEnabled = false;
-            BTN_RemoveMaintenances.IsEnabled = false;
+            CreateAndUpdateDataSummary(); // Call this before GetPowerProdLabel as that will change one of the strings here
 
             LBL_DurationFilter.Content = duratFilter.ToString();
+            LBL_PwrProdAmount.Content = GetPowerProdLabel();
+        }
 
-            CreateDataOverview();
+        private string GetPowerProdLabel()
+        {
+            return "Power Production: " + ratedPwr.ToString() + " kW";
         }
 
         private void AboutClick(object sender, RoutedEventArgs e)
         {
             new Window_About(this).ShowDialog();
+        }
+
+        private ObservableCollection<EventData> AddDaytimesToEvents(ObservableCollection<EventData> currentEvents, 
+            IProgress<int> progress)
+        {
+            // this method will contain the search for whether a non power production
+            // event took place during the day or during the night by calculating the 
+            // relevant sunrise and sunset for that day
+
+            int count = 0;
+
+            for (int i = 0; i < currentEvents.Count; i++)
+            {
+                Structure asset = assetList.Where(x => x.UnitID == currentEvents[i].FromAsset).FirstOrDefault();
+
+                currentEvents[i].DayTime = GetEventDayTime(currentEvents[i], asset);
+
+                count++;
+
+                if (count % 10 == 0)
+                {
+                    if (progress != null)
+                    {
+                        progress.Report((int)(i / currentEvents.Count * 100.0));
+                    }
+                }
+            }
+
+            return currentEvents;
+        }
+
+        private async void AddDaytimesToEvents(object sender, RoutedEventArgs e)
+        {
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                // these conditions check that the function is not used in a situation
+                // where it would cause a nullreference exception or some other bad result
+
+                if (assetList == null || assetList.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No structures have been loaded. Load structures before using this function.");
+
+                    throw new CancelLoadingException();
+                }
+                else if ((Tab_NoPower.IsSelected && noPwEvents.Count == 0) ||
+                        (Tab_RtPower.IsSelected && rtPwEvents.Count == 0))
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "There are no respective power production events to process.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (geoFile == null && !geoAssociated)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
+
+                    throw new CancelLoadingException();
+                }
+
+                ProgressBarVisible();
+
+                if (Tab_NoPower.IsSelected)
+                {
+                    var thisEventSet = noPwEvents;
+                    noPwEvents = null;
+
+                    await Task.Run(() => NoPwEvents = AddDaytimesToEvents(thisEventSet, progress));
+                }
+                else if (Tab_RtPower.IsSelected)
+                {
+                    var thisEventSet = rtPwEvents;
+                    rtPwEvents = null;
+
+                    await Task.Run(() => RtPwEvents = AddDaytimesToEvents(thisEventSet, progress));
+                }
+
+                ProgressBarInvisible();
+                RefreshEvents();
+            }
+            catch (CancelLoadingException) { }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
         }
 
         private bool AddStructureLocations()
@@ -161,9 +261,9 @@ namespace scada_analyst
                         }
                     }
 
-                    return posnsCombnd = true;
+                    return positionsAddedToData = true;
                 }
-                else { return posnsCombnd = false; }
+                else { return positionsAddedToData = false; }
 
             }
             catch
@@ -172,14 +272,30 @@ namespace scada_analyst
             }
         }
 
-        private void AddStructureLocations(object sender, RoutedEventArgs e)
+        private async void AddStructureLocationsAsync(object sender, RoutedEventArgs e)
         {
             try
             {
+                if (geoFile == null || geoFile.GeoInfo.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No geographic data is loaded.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (meteoFile.MetMasts.Count == 0 && scadaFile.WindFarm.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No meteorologic or SCADA data is loaded.");
+
+                    throw new CancelLoadingException();
+                }
+
                 AddStructureLocations();
 
                 geoAssociated = true;
             }
+            catch (CancelLoadingException) { }
             catch
             {
                 throw new Exception();
@@ -200,13 +316,19 @@ namespace scada_analyst
         
         private void ClearEvents(object sender, RoutedEventArgs e)
         {
-            allEvents = new ObservableCollection<Event>();
-            loSpEvents = new ObservableCollection<Event>();
-            hiSpEvents = new ObservableCollection<Event>();
-            noPwEvents = new ObservableCollection<Event>();
+            allWtrEvts = new ObservableCollection<EventData>();
+            loSpEvents = new ObservableCollection<EventData>();
+            hiSpEvents = new ObservableCollection<EventData>();
+
+            allPwrEvts = new ObservableCollection<EventData>();
+            noPwEvents = new ObservableCollection<EventData>();
+            rtPwEvents = new ObservableCollection<EventData>();
 
             LView_PowrNone.ItemsSource = null;
             LView_PowrNone.IsEnabled = false;
+
+            LView_PowrRted.ItemsSource = null;
+            LView_PowrRted.IsEnabled = false;
 
             LView_WSpdEvLo.ItemsSource = null;
             LView_WSpdEvLo.IsEnabled = false;
@@ -214,13 +336,7 @@ namespace scada_analyst
             LView_WSpdEvHi.ItemsSource = null;
             LView_WSpdEvHi.IsEnabled = false;
 
-            BTN_ProcessDayTime.IsEnabled = false;
-            BTN_ProcessFilter.IsEnabled = false;
-            BTN_RemoveMaintenances.IsEnabled = false;
-
-            timeOfDayProcessed = false;
-
-            UpdateDataOverview();
+            CreateAndUpdateDataSummary();
         }
 
         private void ClearGeoData(object sender, RoutedEventArgs e)
@@ -229,7 +345,7 @@ namespace scada_analyst
 
             AddStructureLocations();
 
-            UpdateDataOverview();
+            CreateAndUpdateDataSummary();
         }
 
         private void ClearMeteoData(object sender, RoutedEventArgs e)
@@ -249,7 +365,7 @@ namespace scada_analyst
 
             AddStructureLocations();
 
-            UpdateDataOverview();
+            CreateAndUpdateDataSummary();
         }
 
         private void ClearScadaData(object sender, RoutedEventArgs e)
@@ -269,7 +385,7 @@ namespace scada_analyst
 
             AddStructureLocations();
 
-            UpdateDataOverview();
+            CreateAndUpdateDataSummary();
         }
 
         private void CreateEventAssociations(IProgress<int> progress)
@@ -290,7 +406,7 @@ namespace scada_analyst
                     {
                         if (currentEvents[i].EvTimes.Intersect(loSpEvents[j].EvTimes).Any())
                         {
-                            currentEvents[i].AssocEv = Event.EventAssoct.LO_SP;
+                            currentEvents[i].AssocEv = EventData.EventAssoct.LO_SP;
 
                             goIntoHiSpEvents = false;
                             break;
@@ -303,15 +419,15 @@ namespace scada_analyst
                         {
                             if (currentEvents[i].EvTimes.Intersect(hiSpEvents[k].EvTimes).Any())
                             {
-                                currentEvents[i].AssocEv = Event.EventAssoct.HI_SP;
+                                currentEvents[i].AssocEv = EventData.EventAssoct.HI_SP;
 
                                 break;
                             }
                         }
                     }
 
-                    if (currentEvents[i].AssocEv == Event.EventAssoct.NONE)
-                    { currentEvents[i].AssocEv = Event.EventAssoct.OTHER; }
+                    if (currentEvents[i].AssocEv == EventData.EventAssoct.NONE)
+                    { currentEvents[i].AssocEv = EventData.EventAssoct.OTHER; }
 
                     count++;
 
@@ -482,6 +598,7 @@ namespace scada_analyst
             try
             {
                 FindNoPowerEvents(progress);
+                FindRatedPowerEvents(progress);
                 FindWeatherFromMeteo(progress);
                 FindWeatherFromScada(progress);
             }
@@ -545,7 +662,7 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                                 {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > scadaSeprtr)
                                     {
                                         j = k; break;
                                     }
@@ -559,7 +676,67 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                noPwEvents.Add(new Event(thisEvent));
+                                noPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.NOPROD));
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
+                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private void FindRatedPowerEvents(IProgress<int> progress)
+        {
+            // this method sees when and how often the turbine was operating
+            // at rated power in the time that we are inputting
+            
+            try
+            {
+                if (scadaFile.WindFarm != null)
+                {
+                    int count = 0;
+
+                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                    {
+                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                        {
+                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean >= ratedPwr &&
+                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
+                            {
+                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                                {
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > scadaSeprtr)
+                                    {
+                                        j = k; break;
+                                    }
+
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < ratedPwr)
+                                    {
+                                        j = k; break;
+                                    }
+                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                                }
+
+                                rtPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.RATEDP));
                             }
 
                             count++;
@@ -622,8 +799,8 @@ namespace scada_analyst
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                                 }
 
-                                loSpEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
-                                allEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                                loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
+                                allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
                             }
                             else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > cutOut)
                             {
@@ -646,8 +823,8 @@ namespace scada_analyst
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                                 }
 
-                                hiSpEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
-                                allEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                                hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
+                                allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
                             }
 
                             count++;
@@ -710,8 +887,8 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                loSpEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
-                                allEvents.Add(new Event(thisEvent, Event.WeatherType.LOW_SP));
+                                loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
+                                allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
                             }
                             else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > cutOut)
                             {
@@ -734,8 +911,8 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                hiSpEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
-                                allEvents.Add(new Event(thisEvent, Event.WeatherType.HI_SPD));
+                                hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
+                                allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
                             }
 
                             count++;
@@ -758,7 +935,7 @@ namespace scada_analyst
             }
         }
 
-        public Event.TimeOfEvent GetEventDayTime(Event thisEvent, Structure thisStructure)
+        public EventData.TimeOfEvent GetEventDayTime(EventData thisEvent, Structure thisStructure)
         {
             double tsunrise, tsunsets, civcrise, civcsets, astrrise, astrsets, nautrise, nautsets;
 
@@ -792,39 +969,39 @@ namespace scada_analyst
 
             if (thisEvent.Start.TimeOfDay <= astriseTime)
             {
-                return Event.TimeOfEvent.NIGHTTM;
+                return EventData.TimeOfEvent.NIGHTTM;
             }
             else if (thisEvent.Start.TimeOfDay <= nauriseTime)
             {
-                return Event.TimeOfEvent.AS_DAWN;
+                return EventData.TimeOfEvent.AS_DAWN;
             }
             else if (thisEvent.Start.TimeOfDay <= civriseTime)
             {
-                return Event.TimeOfEvent.NA_DAWN;
+                return EventData.TimeOfEvent.NA_DAWN;
             }
             else if (thisEvent.Start.TimeOfDay <= sunriseTime)
             {
-                return Event.TimeOfEvent.CI_DAWN;
+                return EventData.TimeOfEvent.CI_DAWN;
             }
             else if (thisEvent.Start.TimeOfDay <= sunsetsTime)
             {
-                return Event.TimeOfEvent.DAYTIME;
+                return EventData.TimeOfEvent.DAYTIME;
             }
             else if (thisEvent.Start.TimeOfDay <= civsetsTime)
             {
-                return Event.TimeOfEvent.CI_DUSK;
+                return EventData.TimeOfEvent.CI_DUSK;
             }
             else if (thisEvent.Start.TimeOfDay <= nausetsTime)
             {
-                return Event.TimeOfEvent.NA_DUSK;
+                return EventData.TimeOfEvent.NA_DUSK;
             }
             else if (thisEvent.Start.TimeOfDay <= astsetsTime)
             {
-                return Event.TimeOfEvent.AS_DUSK;
+                return EventData.TimeOfEvent.AS_DUSK;
             }
             else
             {
-                return Event.TimeOfEvent.NIGHTTM;
+                return EventData.TimeOfEvent.NIGHTTM;
             }
         }
 
@@ -963,20 +1140,23 @@ namespace scada_analyst
             }
         }
 
-        private void LoadScadaData(ScadaData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
+        private async Task LoadScadaData(ScadaData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
         {
             try
             {
                 ScadaData analysis = new ScadaData(existingData);
 
-                if (!isLoaded)
+                await Task.Run(() =>
                 {
-                    analysis = new ScadaData(filenames, progress);
-                }
-                else
-                {
-                    analysis.AppendFiles(filenames, progress);
-                }
+                    if (!isLoaded)
+                    {
+                        analysis = new ScadaData(filenames, progress);
+                    }
+                    else
+                    {
+                        analysis.AppendFiles(filenames, progress);
+                    }
+                });
 
                 scadaFile = analysis;
                 scadaLoaded = true;
@@ -1006,8 +1186,9 @@ namespace scada_analyst
                 if (openFileDialog.ShowDialog().Value)
                 {
                     ProgressBarVisible();
-                    
-                    await Task.Run(() => LoadScadaData(scadaFile, openFileDialog.FileNames, scadaLoaded, progress));
+
+                    await Task.Run(() =>
+                        LoadScadaData(scadaFile, openFileDialog.FileNames, scadaLoaded, progress), token);
 
                     ProgressBarInvisible();
 
@@ -1020,7 +1201,7 @@ namespace scada_analyst
             }
             catch (OperationCanceledException)
             {
-
+                MessageBox.Show("Loading cancelled by user.");
             }
             catch (WrongFileTypeException)
             {
@@ -1038,10 +1219,17 @@ namespace scada_analyst
             {
                 CreateEventAssociations(progress);
 
-                foreach (Event singleEvent in noPwEvents)
+                foreach (EventData singleEvent in noPwEvents)
                 {
-                    alPwEvents.Add(singleEvent);
+                    allPwrEvts.Add(singleEvent);
                 }
+
+                foreach (EventData singleEvent in rtPwEvents)
+                {
+                    allPwrEvts.Add(singleEvent);
+                }
+                
+                allPwrEvts.OrderBy(o => o.Start); // does this need a ToList()?
 
                 RemovedMatchedEvents(progress);
             }
@@ -1132,171 +1320,113 @@ namespace scada_analyst
             {
                 if (duratFilter.TotalSeconds != 0)
                 {
-                    ProgressBarVisible();
-                    
-                    await Task.Run(() => ProcessDurationFilter(progress));
-
-                    ProgressBarInvisible();
-
-                    RefreshEvents();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
-            }
-        }
-
-        private void ProcessDayTime(IProgress<int> progress)
-        {
-            // this method will contain the search for whether a non power production
-            // event took place during the day or during the night by calculating the 
-            // relevant sunrise and sunset for that day
-
-            try
-            {
-                if (assetList.Count > 0)
-                {
-                    int count = 0;
-
-                    for (int i = 0; i < noPwEvents.Count; i++)
+                    if (noPwEvents.Count != 0)
                     {
-                        Structure asset = assetList.Where(x => x.UnitID == noPwEvents[i].FromAsset).FirstOrDefault();
+                        ProgressBarVisible();
 
-                        noPwEvents[i].DayTime = GetEventDayTime(noPwEvents[i],asset);
+                        await Task.Run(() => ProcessDurationFilter(progress));
 
-                        count++;
+                        ProgressBarInvisible();
 
-                        if (count % 10 == 0)
-                        {
-                            if (progress != null)
-                            {
-                                progress.Report((int)(i / noPwEvents.Count * 100.0));
-                            }
-                        }
+                        RefreshEvents();
                     }
-                }
-                else { throw new Exception(); }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private async void ProcessDayTimeAsync(object sender, RoutedEventArgs e)
-        {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
-
-            var progress = new Progress<int>(value =>
-            {
-                UpdateProgress(value);
-            });
-
-            try
-            {
-                if (geoFile != null && geoAssociated)
-                {
-                    ProgressBarVisible();
-
-                    await Task.Run(() => ProcessDayTime(progress));
-
-                    ProgressBarInvisible();
-
-                    RefreshEvents();
-
-                    BTN_RemoveMaintenances.IsEnabled = true;
+                    else
+                    {
+                        await this.ShowMessageAsync("Warning!", 
+                            "There are no null power production events to filter.");
+                    }
                 }
                 else
                 {
-                    await this.ShowMessageAsync("Warning!","Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
+                    await this.ShowMessageAsync("Warning!",
+                        "The duration filter is set to 0 seconds. Please change the length of this filter.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
-        
-        private void RemoveProcessedDayTimes(IProgress<int> progress)
+
+        private ObservableCollection<EventData> RemoveProcessedDaytimes(ObservableCollection<EventData> currentEvents, 
+            IProgress<int> progress)
         {
-            try
+            int count = 0;
+
+            for (int i = currentEvents.Count - 1; i >= 0; i--)
             {
-                var currentEvents = noPwEvents;
-
-                noPwEvents = null;
-
-                for (int i = currentEvents.Count - 1; i >= 0; i--)
+                if (currentEvents[i].DayTime == EventData.TimeOfEvent.NIGHTTM && mnt_Night)
                 {
-
-                    if (currentEvents[i].DayTime == Event.TimeOfEvent.NIGHTTM && mnt_Night)
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.AS_DAWN && mnt_AstDw)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DAWN && mnt_AstDw)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.NA_DAWN && mnt_NauDw)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DAWN && mnt_NauDw)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.CI_DAWN && mnt_CivDw)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DAWN && mnt_CivDw)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.DAYTIME && mnt_Daytm)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.DAYTIME && mnt_Daytm)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.CI_DUSK && mnt_CivDs)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DUSK && mnt_CivDs)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.NA_DUSK && mnt_NauDs)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DUSK && mnt_NauDs)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-                    else if (currentEvents[i].DayTime == Event.TimeOfEvent.AS_DUSK && mnt_AstDs)
+                        currentEvents.RemoveAt(i);
+                    });
+                }
+                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DUSK && mnt_AstDs)
+                {
+                    App.Current.Dispatcher.Invoke((Action)delegate // 
                     {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
+                        currentEvents.RemoveAt(i);
+                    });
                 }
 
-                noPwEvents = currentEvents;
+                count++;
+
+                if (count % 10 == 0)
+                {
+                    if (progress != null)
+                    {
+                        progress.Report((int)(i / currentEvents.Count * 100.0));
+                    }
+                }
             }
-            catch
-            {
-                throw;
-            }
+
+            return currentEvents;
         }
 
-        private async void RemoveProcessedDayTimesAsync(object sender, RoutedEventArgs e)
+        private async void RemoveProcessedDaytimesAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
             var token = cts.Token;
@@ -1308,17 +1438,47 @@ namespace scada_analyst
 
             try
             {
-                if (duratFilter.TotalSeconds != 0)
+                // these conditions check that the function is not used in a situation
+                // where it would cause a nullreference exception or some other bad result
+
+                if ((Tab_NoPower.IsSelected && noPwEvents.Count == 0) ||
+                        (Tab_RtPower.IsSelected && rtPwEvents.Count == 0))
                 {
-                    ProgressBarVisible();
+                    await this.ShowMessageAsync("Warning!",
+                        "There are no respective power production events to process.");
 
-                    await Task.Run(() => RemoveProcessedDayTimes(progress));
-
-                    ProgressBarInvisible();
-
-                    RefreshEvents();
+                    throw new CancelLoadingException();
                 }
+                else if ((Tab_NoPower.IsSelected && (noPwEvents.Count > 0 && noPwEvents[0].DayTime == EventData.TimeOfEvent.UNKNOWN)) ||
+                    (Tab_RtPower.IsSelected && (rtPwEvents.Count > 0 && rtPwEvents[0].DayTime == EventData.TimeOfEvent.UNKNOWN)))
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "The events cannot be removed before the day-time associations have been created.");
+
+                    throw new CancelLoadingException();
+                }
+
+                ProgressBarVisible();
+
+                if (Tab_NoPower.IsSelected)
+                {
+                    var thisEventSet = noPwEvents;
+                    noPwEvents = null;
+
+                    await Task.Run(() => NoPwEvents = RemoveProcessedDaytimes(thisEventSet, progress));                    
+                }
+                else if (Tab_RtPower.IsSelected)
+                {
+                    var thisEventSet = rtPwEvents;
+                    rtPwEvents = null;
+
+                    await Task.Run(() => RtPwEvents = RemoveProcessedDaytimes(thisEventSet,progress));
+                }
+
+                ProgressBarInvisible();
+                RefreshEvents();
             }
+            catch (CancelLoadingException) { }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
@@ -1337,8 +1497,8 @@ namespace scada_analyst
 
                 for (int i = currentEvents.Count - 1; i >= 0; i--)
                 {
-                    if (currentEvents[i].AssocEv == Event.EventAssoct.LO_SP ||
-                        currentEvents[i].AssocEv == Event.EventAssoct.HI_SP)
+                    if (currentEvents[i].AssocEv == EventData.EventAssoct.LO_SP ||
+                        currentEvents[i].AssocEv == EventData.EventAssoct.HI_SP)
                     {
                         App.Current.Dispatcher.Invoke((Action)delegate // 
                         {
@@ -1362,19 +1522,37 @@ namespace scada_analyst
             catch { throw; }
         }
 
-        private void ResetPowerEvents(object sender, RoutedEventArgs e)
+        private void ResetNoPwrProdEvents(object sender, RoutedEventArgs e)
         {
             noPwEvents.Clear();
 
-            for (int i = 0; i < alPwEvents.Count; i++)
+            for (int i = 0; i < allPwrEvts.Count; i++)
             {
-                noPwEvents.Add(alPwEvents[i]);
+                if (allPwrEvts[i].PwrProd == EventData.PwrProdType.NOPROD)
+                {
+                    noPwEvents.Add(allPwrEvts[i]);
+                }
             }
 
             duratFilter = new TimeSpan(0, 10, 0);
             LBL_DurationFilter.Content = duratFilter.ToString();
 
-            UpdateDataOverview();
+            CreateAndUpdateDataSummary();
+        }
+
+        private void ResetRtdPwrProdEvents(object sender, RoutedEventArgs e)
+        {
+            rtPwEvents.Clear();
+
+            for (int i = 0; i < rtPwEvents.Count; i++)
+            {
+                if (allPwrEvts[i].PwrProd == EventData.PwrProdType.RATEDP)
+                {
+                    noPwEvents.Add(allPwrEvts[i]);
+                }
+            }
+
+            CreateAndUpdateDataSummary();
         }
 
         private void SetAnalysisSets(object sender, RoutedEventArgs e)
@@ -1411,6 +1589,10 @@ namespace scada_analyst
                 mnt_CivDs = anaSets.Mnt_CivDs;
                 mnt_NauDs = anaSets.Mnt_NauDs;
                 mnt_AstDs = anaSets.Mnt_AstDs;
+
+                rtPwEvents.Clear();
+                LBL_PwrProdAmount.Content = GetPowerProdLabel();
+                CreateAndUpdateDataSummary(); 
             }
         }
         
@@ -1497,13 +1679,18 @@ namespace scada_analyst
             }
         }
 
-        void CreateDataOverview()
+        void CreateAndUpdateDataSummary()
         {
-            overview.Add(new DataOverview("Structures", 0));
-            //overview.Add(new DataOverview("Total Events", 0));
-            overview.Add(new DataOverview("Low Winds", 0));
-            overview.Add(new DataOverview("High Winds", 0));
-            overview.Add(new DataOverview("No Power", 0));
+            LView_LoadedOverview.ItemsSource = null;
+
+            overview.Add(new DataOverview("Structures", assetList.Count));
+            overview.Add(new DataOverview("Low Winds", loSpEvents.Count));
+            overview.Add(new DataOverview("High Winds", hiSpEvents.Count));
+            overview.Add(new DataOverview("No Power", noPwEvents.Count));
+            
+            double ratedPwrMw = ratedPwr / 1000.0;
+
+            overview.Add(new DataOverview("Power: " + Common.GetStringDecimals(ratedPwrMw,1) + "MW", rtPwEvents.Count));
 
             LView_LoadedOverview.ItemsSource = overview;
         }
@@ -1552,7 +1739,7 @@ namespace scada_analyst
                     if (assetList[i].EndTime > expEnd) { expEnd = assetList[i].EndTime; }
                 }
 
-                UpdateDataOverview();
+                CreateAndUpdateDataSummary();
             }
         }
 
@@ -1584,9 +1771,13 @@ namespace scada_analyst
                 LView_PowrNone.IsEnabled = true;
                 LView_PowrNone.ItemsSource = NoPwEvents;
                 LView_PowrNone.Items.Refresh();
+            }
 
-                BTN_ProcessFilter.IsEnabled = true;
-                BTN_ProcessDayTime.IsEnabled = true;
+            if (noPwEvents.Count != 0)
+            {
+                LView_PowrRted.IsEnabled = true;
+                LView_PowrRted.ItemsSource = RtPwEvents;
+                LView_PowrRted.Items.Refresh();
             }
 
             if (loSpEvents.Count != 0)
@@ -1603,7 +1794,7 @@ namespace scada_analyst
                 LView_WSpdEvHi.Items.Refresh();
             }
 
-            UpdateDataOverview();
+            CreateAndUpdateDataSummary();
         }
         
         void RemoveAllAssets()
@@ -1644,17 +1835,19 @@ namespace scada_analyst
             }
         }
 
-        void UpdateDataOverview()
-        {
-            LView_LoadedOverview.ItemsSource = null;
+        //void UpdateDataOverview()
+        //{
+        //    LView_LoadedOverview.ItemsSource = null;
 
-            overview[0].IntegerData = assetList.Count;
-            overview[1].IntegerData = loSpEvents.Count;
-            overview[2].IntegerData = hiSpEvents.Count;
-            overview[3].IntegerData = noPwEvents.Count;
+        //    overview[0].IntegerData = assetList.Count;
+        //    overview[1].IntegerData = loSpEvents.Count;
+        //    overview[2].IntegerData = hiSpEvents.Count;
+        //    overview[3].IntegerData = noPwEvents.Count;
+        //    overview[4].StringData = ratedPwr.ToString() + " kW Power";
+        //    overview[4].IntegerData = rtPwEvents.Count;
 
-            LView_LoadedOverview.ItemsSource = overview;
-        }
+        //    LView_LoadedOverview.ItemsSource = overview;
+        //}
 
         void UpdateProgress(int value)
         {
@@ -1730,7 +1923,12 @@ namespace scada_analyst
         {
             Tab_NoPower.IsSelected = true;
         }
-       
+
+        private void TWI_Ev_RtPw_Click(object sender, MouseButtonEventArgs e)
+        {
+            Tab_RtPower.IsSelected = true;
+        }
+
         private void TWI_Ev_LoSp_Click(object sender, RoutedEventArgs e)
         {
             Tab_LoWinds.IsSelected = true;
@@ -1744,6 +1942,11 @@ namespace scada_analyst
         private void TWI_Ev_NoPw_Click(object sender, RoutedEventArgs e)
         {
             Tab_NoPower.IsSelected = true;
+        }
+
+        private void TWI_Ev_RtPw_Click(object sender, RoutedEventArgs e)
+        {
+            Tab_RtPower.IsSelected = true;
         }
 
         #endregion 
@@ -1779,7 +1982,7 @@ namespace scada_analyst
 
         public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
-        public bool PosnsCombnd { get { return posnsCombnd; } set { posnsCombnd = value; } }
+        public bool PosnsCombnd { get { return positionsAddedToData; } set { positionsAddedToData = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
 
         public double CutIn { get { return cutIn; } set { cutIn = value; } }
@@ -1811,7 +2014,7 @@ namespace scada_analyst
             }
         }
 
-        public ObservableCollection<Event> LoSpEvents
+        public ObservableCollection<EventData> LoSpEvents
         {
             get { return loSpEvents; }
             set
@@ -1824,7 +2027,7 @@ namespace scada_analyst
             }
         }
 
-        public ObservableCollection<Event> HiSpEvents
+        public ObservableCollection<EventData> HiSpEvents
         {
             get { return hiSpEvents; }
             set
@@ -1837,7 +2040,7 @@ namespace scada_analyst
             }
         }
 
-        public ObservableCollection<Event> NoPwEvents
+        public ObservableCollection<EventData> NoPwEvents
         {
             get { return noPwEvents; }
             set
@@ -1846,6 +2049,19 @@ namespace scada_analyst
                 {
                     noPwEvents = value;
                     OnPropertyChanged("NoPwEvents");
+                }
+            }
+        }
+
+        public ObservableCollection<EventData> RtPwEvents
+        {
+            get { return rtPwEvents; }
+            set
+            {
+                if (rtPwEvents != value)
+                {
+                    rtPwEvents = value;
+                    OnPropertyChanged("RtPwEvents");
                 }
             }
         }
@@ -1864,10 +2080,11 @@ namespace scada_analyst
         }
 
         #endregion
-
     }
 
     public class FutureDevelopmentException : Exception { }
+
+    public class DataNotProcessedException : Exception { }
 
     public class LoadingCancelledException : Exception { }
 

@@ -103,7 +103,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="clsAnalysis.cs" />
-    <Compile Include="clsEvent.cs" />
+    <Compile Include="clsEventData.cs" />
     <Compile Include="Controls\ChartBase.xaml.cs">
       <DependentUpon>ChartBase.xaml</DependentUpon>
     </Compile>

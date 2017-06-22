@@ -16,7 +16,7 @@ namespace scada_analyst
 
         #endregion
 
-        public Analysis(List<Event> inputEvents, IProgress<int> progress)
+        public Analysis(List<EventData> inputEvents, IProgress<int> progress)
         {
             try
             {

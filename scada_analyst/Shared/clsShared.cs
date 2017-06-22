@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;    
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,12 @@ namespace scada_analyst.Shared
 {
     static class Common
     {
+        #region Variables
+
+        private static NumberFormatInfo numberFormat = new CultureInfo("en-US", false).NumberFormat;
+
+        #endregion
+
         public static bool CanConvert<T>(string data)
         {
             TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
@@ -64,6 +71,14 @@ namespace scada_analyst.Shared
         public static string[] GetSplits(string line, char[] delimiters, bool useEmpty)
         {
             return GetSplits(line, delimiters, false, false);
+        }
+        
+        public static string GetStringDecimals(double number, int dp)
+        {
+            numberFormat.NumberDecimalDigits = dp;
+            numberFormat.NumberGroupSeparator = "";
+
+            return number.ToString("N", numberFormat);
         }
 
         public static double GetVals(string[] data, int index, double error = -9999)
