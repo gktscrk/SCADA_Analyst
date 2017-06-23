@@ -21,6 +21,7 @@ using Microsoft.Win32;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 
+using scada_analyst.Controls;
 using scada_analyst.Shared;
 
 namespace scada_analyst
@@ -32,10 +33,9 @@ namespace scada_analyst
     {
         #region Variables
 
-        private bool geoLoaded = false, geoAssociated = false;
-        private bool meteoLoaded = false;
-        private bool positionsAddedToData = false;
-        private bool scadaLoaded = false;
+        private bool geoLoaded = false, meteoLoaded = false, scadaLoaded = false;
+
+        private bool positionsAddedToData = false, eventsAreProcessed = false, eventsMatchedAcrossTypes = false;
 
         private bool mnt_Night = false;
         private bool mnt_AstDw = false;
@@ -63,8 +63,8 @@ namespace scada_analyst
 
         private CancellationTokenSource cts;
 
-        private DateTime expStart = new DateTime();
-        private DateTime expEnd = new DateTime();
+        private DateTime dataExportStart = new DateTime();
+        private DateTime dataExportEndTm = new DateTime();
         private TimeSpan duratFilter = new TimeSpan(0, 10, 0);
 
         // this is to allow changing the property of the timestep in the loaded scada data at some point
@@ -73,7 +73,7 @@ namespace scada_analyst
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
-
+        
         private List<DataOverview> overview = new List<DataOverview>();
 
         private ObservableCollection<EventData> allWtrEvts = new ObservableCollection<EventData>();
@@ -85,19 +85,31 @@ namespace scada_analyst
 
         private ObservableCollection<Structure> assetList = new ObservableCollection<Structure>();
 
+        private ObservableCollection<ScadaData.ScadaSample> thisEventData;
+        private ObservableCollection<ScadaData.ScadaSample> historicEventData;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
+
+        #region Constructor
 
         public MainWindow()
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
 
-            progress_ProgressBar.Visibility = Visibility.Collapsed;
+            progress_ProgrBar.Visibility = Visibility.Collapsed;
             label_ProgressBar.Visibility = Visibility.Collapsed;
             cancel_ProgressBar.Visibility = Visibility.Collapsed;
             //counter_ProgressBar.Visibility = Visibility.Collapsed;
+
+            List<string> newNames = new List<string>();
+            newNames.Add(" ");
+            newNames.Add("Gearbox");
+            newNames.Add("Generator");
+            newNames.Add("Main bearing");
+            Comb_EquipmentChoice.ItemsSource = newNames;
 
             LView_Overview.IsEnabled = false;
 
@@ -110,18 +122,47 @@ namespace scada_analyst
 
             LBL_DurationFilter.Content = duratFilter.ToString();
             LBL_PwrProdAmount.Content = GetPowerProdLabel();
+
+            Comb_EquipmentChoice.IsEnabled = false;
+            LBL_EquipmentChoice.IsEnabled = false;
+            CBox_DataSetChoice.IsEnabled = false;
+
+            LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+            LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+            LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
         }
 
+        #endregion
+
+        #region UI Updating
+
+        /// <summary>
+        /// Creates a label used in the power production tab which shows a power value
+        /// </summary>
+        /// <returns></returns>
         private string GetPowerProdLabel()
         {
             return "Power Production: " + ratedPwr.ToString() + " kW";
         }
 
+        #endregion
+
+        /// <summary>
+        /// Brings up the About window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AboutClick(object sender, RoutedEventArgs e)
         {
             new Window_About(this).ShowDialog();
         }
 
+        /// <summary>
+        /// Processes loaded power events and returns the collection with the respective time-of-day fields
+        /// </summary>
+        /// <param name="currentEvents"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
         private ObservableCollection<EventData> AddDaytimesToEvents(ObservableCollection<EventData> currentEvents, 
             IProgress<int> progress)
         {
@@ -151,6 +192,11 @@ namespace scada_analyst
             return currentEvents;
         }
 
+        /// <summary>
+        /// The function that is called by the button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void AddDaytimesToEvents(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -181,7 +227,7 @@ namespace scada_analyst
 
                     throw new CancelLoadingException();
                 }
-                else if (geoFile == null && !geoAssociated)
+                else if (geoFile == null && !positionsAddedToData)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
@@ -189,22 +235,14 @@ namespace scada_analyst
                     throw new CancelLoadingException();
                 }
 
+                // if the above conditions are not fulfilled, the process can continue
+
                 ProgressBarVisible();
 
                 if (Tab_NoPower.IsSelected)
-                {
-                    var thisEventSet = noPwEvents;
-                    noPwEvents = null;
-
-                    await Task.Run(() => NoPwEvents = AddDaytimesToEvents(thisEventSet, progress));
-                }
+                { await Task.Run(() => noPwEvents = AddDaytimesToEvents(noPwEvents, progress)); }
                 else if (Tab_RtPower.IsSelected)
-                {
-                    var thisEventSet = rtPwEvents;
-                    rtPwEvents = null;
-
-                    await Task.Run(() => RtPwEvents = AddDaytimesToEvents(thisEventSet, progress));
-                }
+                { await Task.Run(() => rtPwEvents = AddDaytimesToEvents(rtPwEvents, progress)); }
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -216,6 +254,10 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Bool on whether locations could be added to loaded assets or not
+        /// </summary>
+        /// <returns></returns>
         private bool AddStructureLocations()
         {
             try
@@ -261,17 +303,19 @@ namespace scada_analyst
                         }
                     }
 
-                    return positionsAddedToData = true;
+                    return true;
                 }
-                else { return positionsAddedToData = false; }
+                else { return false; }
 
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
+        /// <summary>
+        /// Method called by the UI that references the AddStructureLocations bool
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void AddStructureLocationsAsync(object sender, RoutedEventArgs e)
         {
             try
@@ -291,17 +335,55 @@ namespace scada_analyst
                     throw new CancelLoadingException();
                 }
 
-                AddStructureLocations();
-
-                geoAssociated = true;
+                positionsAddedToData = AddStructureLocations();
             }
             catch (CancelLoadingException) { }
-            catch
+            catch { throw new Exception(); }
+        }
+
+        /// <summary>
+        /// Method to deal with the equipment chosen; should change what the graph and the listview display
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Comb_EquipmentChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // only go into this event if the below conditions are true; probably will disable the combobox as well though
+
+            if (Comb_EquipmentChoice.SelectedIndex != -1)
             {
-                throw new Exception();
+                if (Comb_EquipmentChoice.SelectedIndex == 0)
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_EquipmentChoice.SelectedItem == "Gearbox")
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_EquipmentChoice.SelectedItem == "Generator")
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Visible;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_EquipmentChoice.SelectedItem == "Main bearing")
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
+                }
             }
         }
 
+        /// <summary>
+        /// Calls other clear events, leaves nothing
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearAllData(object sender, RoutedEventArgs e)
         {
             ClearGeoData(sender, e);
@@ -310,10 +392,15 @@ namespace scada_analyst
 
             ClearEvents(sender, e);
 
-            expStart = new DateTime();
-            expEnd = new DateTime();
+            dataExportStart = new DateTime();
+            dataExportEndTm = new DateTime();
         }
         
+        /// <summary>
+        /// Clears all processed events
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearEvents(object sender, RoutedEventArgs e)
         {
             allWtrEvts = new ObservableCollection<EventData>();
@@ -337,17 +424,30 @@ namespace scada_analyst
             LView_WSpdEvHi.IsEnabled = false;
 
             CreateAndUpdateDataSummary();
+
+            eventsMatchedAcrossTypes = false;
+            eventsAreProcessed = false;
         }
 
+        /// <summary>
+        /// Clears all loaded geographic data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearGeoData(object sender, RoutedEventArgs e)
         {
-            geoFile = null; geoLoaded = false; geoAssociated = false;
+            loadedFiles.Clear();
+            geoFile = null; geoLoaded = false; positionsAddedToData = false;
 
             AddStructureLocations();
-
             CreateAndUpdateDataSummary();
         }
 
+        /// <summary>
+        /// Clears all loaded meteorologic data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearMeteoData(object sender, RoutedEventArgs e)
         {
             for (int i = assetList.Count - 1; i >= 0; i--)
@@ -359,15 +459,18 @@ namespace scada_analyst
                 }
             }
 
-            meteoFile = null; meteoLoaded = false;
-
-            meteoFile = new MeteoData();
+            loadedFiles.Clear();
+            meteoFile = new MeteoData(); meteoLoaded = false;            
 
             AddStructureLocations();
-
             CreateAndUpdateDataSummary();
         }
 
+        /// <summary>
+        /// Clears all loaded SCADA data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearScadaData(object sender, RoutedEventArgs e)
         {
             for (int i = assetList.Count - 1; i >= 0; i--)
@@ -379,24 +482,24 @@ namespace scada_analyst
                 }
             }
 
-            scadaFile = null; scadaLoaded = false;
-
-            scadaFile = new ScadaData();
-
+            loadedFiles.Clear();
+            scadaFile = new ScadaData(); scadaLoaded = false;
+            
             AddStructureLocations();
-
             CreateAndUpdateDataSummary();
         }
 
-        private void CreateEventAssociations(IProgress<int> progress)
+        /// <summary>
+        /// Returns Collection with event associations created
+        /// </summary>
+        /// <param name="currentEvents"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
+        private ObservableCollection<EventData> CreateEventAssociations(ObservableCollection<EventData> currentEvents, IProgress<int> progress)
         {
             try
             {
                 int count = 0;
-
-                var currentEvents = noPwEvents;
-
-                this.NoPwEvents = null;
 
                 for (int i = 0; i < currentEvents.Count; i++)
                 {
@@ -418,7 +521,7 @@ namespace scada_analyst
                         for (int k = 0; k < hiSpEvents.Count; k++)
                         {
                             if (currentEvents[i].EvTimes.Intersect(hiSpEvents[k].EvTimes).Any())
-                            {
+                            { 
                                 currentEvents[i].AssocEv = EventData.EventAssoct.HI_SP;
 
                                 break;
@@ -440,14 +543,16 @@ namespace scada_analyst
                     }
                 }
 
-                this.NoPwEvents = currentEvents;
+                return currentEvents;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
+        /// <summary>
+        /// Changes the duration of the filter than can be used to remove events from active consideration
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void EditDurationFilter(object sender, RoutedEventArgs e)
         {
             Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
@@ -460,11 +565,21 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Quit
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Exit(object sender, RoutedEventArgs e)
         {
             this.Close();            
         }
 
+        /// <summary>
+        /// Exports meteorology data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ExportMeteoDataAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -491,21 +606,21 @@ namespace scada_analyst
 
                         if (CBox_DateRangeExport.IsChecked)
                         {
-                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", expStart);
-                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", expEnd);
+                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", dataExportStart);
+                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", dataExportEndTm);
 
                             if (startCal.ShowDialog().Value)
                             {
-                                expStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
+                                dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
                             }
 
                             if (endCal.ShowDialog().Value)
                             {
-                                expEnd = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
+                                dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
                             }
                         }
 
-                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName,expStart,expEnd));
+                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName,dataExportStart,dataExportEndTm));
 
                         ProgressBarInvisible();
                     }
@@ -520,7 +635,12 @@ namespace scada_analyst
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
         }
-
+        
+        /// <summary>
+        /// Exports SCADA data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ExportScadaDataAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -547,17 +667,17 @@ namespace scada_analyst
 
                         if (CBox_DateRangeExport.IsChecked)
                         {
-                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", expStart);
-                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", expEnd);
+                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", dataExportStart);
+                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", dataExportEndTm);
 
                             if (startCal.ShowDialog().Value)
                             {
-                                expStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
+                                dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
                             }
 
                             if (endCal.ShowDialog().Value)
                             {
-                                expEnd = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
+                                dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
                             }
                         }
 
@@ -568,7 +688,7 @@ namespace scada_analyst
                             exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
                             exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
                             exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
-                            expStart, expEnd));
+                            dataExportStart, dataExportEndTm));
 
                         ProgressBarInvisible();
                     }
@@ -584,6 +704,10 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Overall method for finding events -- references separate functions for other events
+        /// </summary>
+        /// <param name="progress"></param>
         private void FindEvents(IProgress<int> progress)
         {
             // all of the find events methods follow a similar methodology
@@ -608,6 +732,11 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Method called by the UI, references the real method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void FindEventsAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -620,22 +749,35 @@ namespace scada_analyst
 
             try
             {
-                ProgressBarVisible();
+                if (loadedAsset == null || loadedAsset.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No turbines or metmasts are loaded. Load data before trying to process it.");
 
+                    throw new CancelLoadingException();
+                }
+
+                ProgressBarVisible();
                 ClearEvents(sender, e);
 
                 await Task.Run(() => FindEvents(progress));
 
                 ProgressBarInvisible();
-
                 RefreshEvents();
+
+                eventsAreProcessed = true;
             }
+            catch (CancelLoadingException) { }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
+        /// <summary>
+        /// Finds events where power production was negative or null
+        /// </summary>
+        /// <param name="progress"></param>
         private void FindNoPowerEvents(IProgress<int> progress)
         {
             // this method investigates all loaded scada files for low power (defined as below 0)
@@ -699,6 +841,10 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Finds events where power production was equal to a user-set value "rated"
+        /// </summary>
+        /// <param name="progress"></param>
         private void FindRatedPowerEvents(IProgress<int> progress)
         {
             // this method sees when and how often the turbine was operating
@@ -759,6 +905,10 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Finds wind speed times above and below cutin/cutout speed in meteorological dataset
+        /// </summary>
+        /// <param name="progress"></param>
         private void FindWeatherFromMeteo(IProgress<int> progress)
         {
             // this method investigates all loaded meteorologic files for low and high wind speed
@@ -847,6 +997,10 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Finds wind speed times above and below cutin/cutout speed in SCADA dataset
+        /// </summary>
+        /// <param name="progress"></param>
         private void FindWeatherFromScada(IProgress<int> progress)
         {
             // this method investigates all loaded scada files for low and high wind speed
@@ -935,6 +1089,12 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Sets the enum "TimeOfEvent" for every event
+        /// </summary>
+        /// <param name="thisEvent"></param>
+        /// <param name="thisStructure"></param>
+        /// <returns></returns>
         public EventData.TimeOfEvent GetEventDayTime(EventData thisEvent, Structure thisStructure)
         {
             double tsunrise, tsunsets, civcrise, civcsets, astrrise, astrsets, nautrise, nautsets;
@@ -1005,6 +1165,11 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Method that loads the geographic data
+        /// </summary>
+        /// <param name="filenames"></param>
+        /// <param name="progress"></param>
         private void LoadGeoData(string[] filenames, IProgress<int> progress)
         {
             try
@@ -1018,15 +1183,15 @@ namespace scada_analyst
                         loadedFiles.Add(filenames[i]);
                     }
                 }
-
-                geoLoaded = true;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
+        /// <summary>
+        /// UI calls this, references the non async method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void LoadGeoDataAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -1050,6 +1215,8 @@ namespace scada_analyst
                     await Task.Run(() => LoadGeoData(openFileDialog.FileNames, progress));
 
                     ProgressBarInvisible();
+
+                    geoLoaded = true;
                 }
             }
             catch (LoadingCancelledException)
@@ -1070,6 +1237,13 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Method loads the meteorology data, checks for existing files and appends datapoints
+        /// </summary>
+        /// <param name="existingData"></param>
+        /// <param name="filenames"></param>
+        /// <param name="isLoaded"></param>
+        /// <param name="progress"></param>
         private void LoadMeteoData(MeteoData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
         {
             try
@@ -1094,6 +1268,11 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// UI references this, this calls the above sync method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void LoadMeteoDataAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -1140,6 +1319,14 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Method loads the SCADA data, checks for existing files and appends datapoints
+        /// </summary>
+        /// <param name="existingData"></param>
+        /// <param name="filenames"></param>
+        /// <param name="isLoaded"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
         private async Task LoadScadaData(ScadaData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
         {
             try
@@ -1167,6 +1354,11 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// UI calls this method, references the async Task
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void LoadScadaDataAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -1213,11 +1405,16 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Method looks for matching events based on timestamps in the loaded power and wind datasets
+        /// </summary>
+        /// <param name="progress"></param>
         private void MatchEvents(IProgress<int> progress)
         {
             try
             {
-                CreateEventAssociations(progress);
+                noPwEvents = CreateEventAssociations(noPwEvents, progress);
+                rtPwEvents = CreateEventAssociations(rtPwEvents, progress);
 
                 foreach (EventData singleEvent in noPwEvents)
                 {
@@ -1229,16 +1426,16 @@ namespace scada_analyst
                     allPwrEvts.Add(singleEvent);
                 }
                 
-                allPwrEvts.OrderBy(o => o.Start); // does this need a ToList()?
-
-                RemovedMatchedEvents(progress);
+                allPwrEvts.OrderBy(o => o.Start);
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
+        /// <summary>
+        /// UI calls this, goes to above
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void MatchEventsAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -1251,22 +1448,44 @@ namespace scada_analyst
 
             try
             {
+                if (loadedAsset == null || loadedAsset.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No turbines or metmasts are loaded. Load data before trying to analyse it.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (!eventsAreProcessed)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "Events have not been processed.");
+
+                    throw new CancelLoadingException();
+                }
+
                 ProgressBarVisible();
 
                 LView_PowrNone.ItemsSource = null;
+                LView_PowrRted.ItemsSource = null;
 
                 await Task.Run(() => MatchEvents(progress));
 
                 ProgressBarInvisible();
-
                 RefreshEvents();
+
+                eventsMatchedAcrossTypes = true;
             }
+            catch (CancelLoadingException) { }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
+        /// <summary>
+        /// Duration filter takes a timespan and uses it to remove shorter events from loaded events list
+        /// </summary>
+        /// <param name="progress"></param>
         private void ProcessDurationFilter(IProgress<int> progress)
         {
             try
@@ -1306,6 +1525,11 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// UI calls this, references above
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void ProcessDurationFilterAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -1348,6 +1572,121 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Removes events which have been matched based on their windspeed -- calls the OC method
+        /// </summary>
+        /// <param name="progress"></param>
+        private void RemoveMatchedEvents(IProgress<int> progress)
+        {
+            try
+            {
+                noPwEvents = RemovedMatchedEvents(noPwEvents, progress);
+                rtPwEvents = RemovedMatchedEvents(rtPwEvents, progress);
+            }
+            catch { throw; }
+        }
+
+        /// <summary>
+        /// Creates a new OC which only includes the non-matched events
+        /// </summary>
+        /// <param name="currentEvents"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
+        private ObservableCollection<EventData> RemovedMatchedEvents(ObservableCollection<EventData> currentEvents, IProgress<int> progress)
+        {
+            try
+            {
+                int count = 0;
+
+                for (int i = currentEvents.Count - 1; i >= 0; i--)
+                {
+                    if (currentEvents[i].AssocEv == EventData.EventAssoct.LO_SP ||
+                        currentEvents[i].AssocEv == EventData.EventAssoct.HI_SP)
+                    {
+                        App.Current.Dispatcher.Invoke((Action)delegate // 
+                        {
+                            currentEvents.RemoveAt(i);
+                        });
+                    }
+
+                    count++;
+
+                    if (count % 10 == 0)
+                    {
+                        if (progress != null)
+                        {
+                            progress.Report((int)(50 + 0.5 * i / currentEvents.Count * 100.0));
+                        }
+                    }
+                }
+
+                return currentEvents;
+            }
+            catch { throw; }
+        }
+
+        /// <summary>
+        /// UI calls this
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void RemovedMatchedEventsAsync(object sender, RoutedEventArgs e)
+        {
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                if (loadedAsset == null || loadedAsset.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No turbines or metmasts are loaded. Load data before trying to analyse it.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (!eventsAreProcessed)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "Events have not been processed.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (!eventsMatchedAcrossTypes)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "Events have not been matched across types.");
+
+                    throw new CancelLoadingException();
+                }
+
+                ProgressBarVisible();
+
+                LView_PowrNone.ItemsSource = null;
+                LView_PowrRted.ItemsSource = null;
+
+                await Task.Run(() => RemoveMatchedEvents(progress));
+
+                ProgressBarInvisible();
+                RefreshEvents();
+            }
+            catch (CancelLoadingException) { }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Comes back with a new OC which has removed the day-time periods that the user has specified
+        /// </summary>
+        /// <param name="currentEvents"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
         private ObservableCollection<EventData> RemoveProcessedDaytimes(ObservableCollection<EventData> currentEvents, 
             IProgress<int> progress)
         {
@@ -1426,6 +1765,11 @@ namespace scada_analyst
             return currentEvents;
         }
 
+        /// <summary>
+        /// UI calls this, references the OC return method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void RemoveProcessedDaytimesAsync(object sender, RoutedEventArgs e)
         {
             cts = new CancellationTokenSource();
@@ -1485,43 +1829,11 @@ namespace scada_analyst
             }
         }
 
-        private void RemovedMatchedEvents(IProgress<int> progress)
-        {
-            try
-            {
-                int count = 0;
-
-                var currentEvents = noPwEvents;
-
-                this.NoPwEvents = null;
-
-                for (int i = currentEvents.Count - 1; i >= 0; i--)
-                {
-                    if (currentEvents[i].AssocEv == EventData.EventAssoct.LO_SP ||
-                        currentEvents[i].AssocEv == EventData.EventAssoct.HI_SP)
-                    {
-                        App.Current.Dispatcher.Invoke((Action)delegate // 
-                        {
-                            currentEvents.RemoveAt(i);
-                        });
-                    }
-
-                    count++;
-
-                    if (count % 10 == 0)
-                    {
-                        if (progress != null)
-                        {
-                            progress.Report((int)(50 + 0.5 * i / currentEvents.Count * 100.0));
-                        }
-                    }
-                }
-
-                this.NoPwEvents = currentEvents;
-            }
-            catch { throw; }
-        }
-
+        /// <summary>
+        /// Resets power production null or negative to the original state
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ResetNoPwrProdEvents(object sender, RoutedEventArgs e)
         {
             noPwEvents.Clear();
@@ -1540,6 +1852,11 @@ namespace scada_analyst
             CreateAndUpdateDataSummary();
         }
 
+        /// <summary>
+        /// Resets power production high -- at "rated" -- to the original state
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ResetRtdPwrProdEvents(object sender, RoutedEventArgs e)
         {
             rtPwEvents.Clear();
@@ -1555,7 +1872,12 @@ namespace scada_analyst
             CreateAndUpdateDataSummary();
         }
 
-        private void SetAnalysisSets(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Brings up a dialog window with various analysis settings
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SetAnalysisSettings(object sender, RoutedEventArgs e)
         {
             // old method here before took the use of the proper analysis settings window
             // I'll leave the old code here in its commented form
@@ -1596,7 +1918,12 @@ namespace scada_analyst
             }
         }
         
-        private void SetExportVars(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Brings up a dialog window with export settings
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SetExportSettings(object sender, RoutedEventArgs e)
         {
             Window_ExportControl exportOptions = new Window_ExportControl(this);
 
@@ -1667,7 +1994,7 @@ namespace scada_analyst
             }
         }
 
-        #region Background Processes
+        #region Background Methods
 
         void CancelProgress_Click(object sender, RoutedEventArgs e)
         {
@@ -1688,7 +2015,7 @@ namespace scada_analyst
             overview.Add(new DataOverview("Structures", assetList.Count));
             overview.Add(new DataOverview("Low Winds", loSpEvents.Count));
             overview.Add(new DataOverview("High Winds", hiSpEvents.Count));
-            overview.Add(new DataOverview("No Power", noPwEvents.Count));
+            overview.Add(new DataOverview("Power: None", noPwEvents.Count));
             
             double ratedPwrMw = ratedPwr / 1000.0;
 
@@ -1711,6 +2038,13 @@ namespace scada_analyst
 
                         loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
                     }
+                    else
+                    {
+                        int index = assetList.IndexOf
+                            (assetList.Where(x => x.UnitID == meteoFile.MetMasts[i].UnitID).FirstOrDefault());
+
+                        assetList[index].CheckDataSeriesTimes(meteoFile.MetMasts[i]);
+                    }
                 }
             }
 
@@ -1724,6 +2058,13 @@ namespace scada_analyst
 
                         loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
                     }
+                    else
+                    {
+                        int index = assetList.IndexOf
+                            (assetList.Where(x => x.UnitID == scadaFile.WindFarm[i].UnitID).FirstOrDefault());
+
+                        assetList[index].CheckDataSeriesTimes(scadaFile.WindFarm[i]);
+                    }
                 }
             }
 
@@ -1732,13 +2073,14 @@ namespace scada_analyst
 
             if (assetList != null && assetList.Count > 0)
             {
-                expStart = assetList[0].StartTime;
-                expEnd = assetList[0].EndTime;
+                dataExportStart = assetList[0].StartTime;
+                dataExportEndTm = assetList[0].EndTime;
 
+                // i is 1 below because the first values have already been assigned by the above code
                 for (int i = 1; i < assetList.Count; i++)
                 {
-                    if (assetList[i].StartTime < expStart) { expStart = assetList[i].StartTime; }
-                    if (assetList[i].EndTime > expEnd) { expEnd = assetList[i].EndTime; }
+                    if (assetList[i].StartTime < dataExportStart) { dataExportStart = assetList[i].StartTime; }
+                    if (assetList[i].EndTime > dataExportEndTm) { dataExportEndTm = assetList[i].EndTime; }
                 }
 
                 CreateAndUpdateDataSummary();
@@ -1747,7 +2089,7 @@ namespace scada_analyst
 
         void ProgressBarVisible()
         {
-            progress_ProgressBar.Visibility = Visibility.Visible;
+            progress_ProgrBar.Visibility = Visibility.Visible;
             label_ProgressBar.Visibility = Visibility.Visible;
             cancel_ProgressBar.Visibility = Visibility.Visible;
             //counter_ProgressBar.Visibility = Visibility.Visible;
@@ -1755,8 +2097,8 @@ namespace scada_analyst
         
         void ProgressBarInvisible()
         {
-            progress_ProgressBar.Visibility = Visibility.Collapsed;
-            progress_ProgressBar.Value = 0;
+            progress_ProgrBar.Visibility = Visibility.Collapsed;
+            progress_ProgrBar.Value = 0;
 
             label_ProgressBar.Visibility = Visibility.Collapsed;
             label_ProgressBar.Content = "";
@@ -1775,7 +2117,7 @@ namespace scada_analyst
                 LView_PowrNone.Items.Refresh();
             }
 
-            if (noPwEvents.Count != 0)
+            if (rtPwEvents.Count != 0)
             {
                 LView_PowrRted.IsEnabled = true;
                 LView_PowrRted.ItemsSource = RtPwEvents;
@@ -1833,7 +2175,7 @@ namespace scada_analyst
         void UpdateProgress(int value)
         {
             label_ProgressBar.Content = value + "%";
-            progress_ProgressBar.Value = value;
+            progress_ProgrBar.Value = value;
         }
 
         #endregion
@@ -1914,7 +2256,7 @@ namespace scada_analyst
                 LView_PowrRted.ContextMenu = menu;
             }
         }
-
+        
         private void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
@@ -1929,21 +2271,69 @@ namespace scada_analyst
                 // the datapoints from the source data
 
                 List<ScadaData.ScadaSample> thisEvScada = new List<ScadaData.ScadaSample>();
+                List<ScadaData.ScadaSample> dataHistory = new List<ScadaData.ScadaSample>();
 
+                // get index of the asset and get index of the event time in the asset
                 int assetIndex = scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
-                
+                int timeIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0]);
+
                 for (int i = 0; i < thisEv.EvTimes.Count; i++)
                 {
-                    int timeIndex = 
-                        scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[i]);
-
-                    thisEvScada.Add(scadaFile.WindFarm[assetIndex].DataSorted[timeIndex]);
+                    thisEvScada.Add(scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
                 }
 
-                // now sent the thisEvScada to the new ListBox
-                ObservableCollection<ScadaData.ScadaSample> specSamples = 
-                    new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
+                for (int j = 0; j < (timeIndex + thisEv.EvTimes.Count); j++)
+                {
+                    dataHistory.Add(scadaFile.WindFarm[assetIndex].DataSorted[j]);
+                }
+
+                // assign the created dataset lists to their global variables
+                thisEventData = new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
+                historicEventData = new ObservableCollection<ScadaData.ScadaSample>(dataHistory);
+
+                // now sent the thisEvScada to the new ListView to populate it
+                InitializeEventExploration();
             }
+        }
+
+        private void ChangeListViewDataset(object sender, RoutedEventArgs e)
+        {
+            // checks whether the dataset choice button has been activated and displays the respective
+            // -- either all historic data to the end of the event, or only partial data for the duration
+            // of the event
+
+            if (CBox_DataSetChoice.IsChecked.Value)
+            {
+                LView_EventExplorer_Gearbox.ItemsSource = historicEventData;
+                LView_EventExplorer_Generator.ItemsSource = historicEventData;
+                LView_EventExplorer_MainBear.ItemsSource = historicEventData;
+            }
+            else
+            {
+                LView_EventExplorer_Gearbox.ItemsSource = thisEventData;
+                LView_EventExplorer_Generator.ItemsSource = thisEventData;
+                LView_EventExplorer_MainBear.ItemsSource = thisEventData;
+            }
+        }
+
+        private void InitializeEventExploration()
+        {
+            Comb_EquipmentChoice.IsEnabled = true;
+            LBL_EquipmentChoice.IsEnabled = true;
+            CBox_DataSetChoice.IsEnabled = true;
+
+            // first add it to the gridview on the list
+            LView_EventExplorer_Gearbox.ItemsSource = thisEventData;
+            LView_EventExplorer_Generator.ItemsSource = thisEventData;
+            LView_EventExplorer_MainBear.ItemsSource = thisEventData;
+
+            // lastly also add respective dataviews to the chart
+            ScrollView.Visibility = Visibility.Visible;
+
+            Controls.ScrollableViewModel sVM = new ScrollableViewModel(historicEventData.ToList());
+
+            ScrollView.DataContext = sVM;
+            ScrollView.Width = 400;
         }
 
         #endregion
@@ -1993,7 +2383,7 @@ namespace scada_analyst
         #endregion 
 
         #region Support Classes
-
+        
         public class DataOverview
         {
             #region Variables
@@ -2023,7 +2413,6 @@ namespace scada_analyst
 
         public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
-        public bool PosnsCombnd { get { return positionsAddedToData; } set { positionsAddedToData = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
 
         public double CutIn { get { return cutIn; } set { cutIn = value; } }
@@ -2123,19 +2512,23 @@ namespace scada_analyst
         #endregion
     }
 
-    public class FutureDevelopmentException : Exception { }
+    #region Project Specific Exceptions
+
+    public class CancelLoadingException : Exception { }
 
     public class DataNotProcessedException : Exception { }
 
+    public class FutureDevelopmentException : Exception { }
+
     public class LoadingCancelledException : Exception { }
+
+    public class NoFilesInFolderException : Exception { }
+
+    public class UnsuitableTargetFileException : Exception { }
 
     public class WritingCancelledException : Exception { }
 
     public class WrongFileTypeException : Exception { }
 
-    public class UnsuitableTargetFileException : Exception { }
-
-    public class NoFilesInFolderException : Exception { }
-
-    public class CancelLoadingException : Exception { }
+    #endregion
 }

@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace scada_analyst.Views
+namespace scada_analyst
 {
     /// <summary>
     /// Interaction logic for EventDetailsView.xaml

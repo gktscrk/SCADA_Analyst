@@ -14,6 +14,7 @@ namespace scada_analyst
         private double extrmSpd = 0;
         private double extrmPwr = 0;
         private string displayDayTime = "";
+        private string displayAssoctn = "";
 
         private TimeSpan sampleLen = new TimeSpan(0, 9, 59);
 
@@ -222,6 +223,18 @@ namespace scada_analyst
                 else { return "Unknown"; }
             }
             set { displayDayTime = value; }
+        }
+
+        public string DisplayAssoctn
+        {
+            get
+            {
+                if (AssocEv == EventAssoct.NONE) { return "Unknown"; }
+                else if (AssocEv == EventAssoct.LO_SP) { return "Low wind speeds"; }
+                else if (AssocEv == EventAssoct.HI_SP) { return "High wind speeds"; }
+                else { return "Other"; }
+            }
+            set { displayAssoctn = value; }
         }
 
         public EventAssoct AssocEv { get { return assocEv; } set { assocEv = value; } }

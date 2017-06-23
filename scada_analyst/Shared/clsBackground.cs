@@ -17,24 +17,34 @@ namespace scada_analyst.Shared
 
         public Structure() { }
 
-        private Structure(MeteoData.MetMastData metMast)
+        private Structure(MeteoData.MetMastData input)
         {
-            Position = metMast.Position;
-            UnitID = metMast.UnitID;
-            Type = metMast.Type;
+            Position = input.Position;
+            UnitID = input.UnitID;
+            Type = input.Type;
 
-            startTime = GetFirstOrLast(metMast.InclDtTm, true);
-            endTime = GetFirstOrLast(metMast.InclDtTm, false);
+            CheckDataSeriesTimes(input);
         }
 
-        private Structure(ScadaData.TurbineData turbine)
+        private Structure(ScadaData.TurbineData input)
         {
-            Position = turbine.Position;
-            UnitID = turbine.UnitID;
-            Type = turbine.Type;
+            Position = input.Position;
+            UnitID = input.UnitID;
+            Type = input.Type;
 
-            startTime = GetFirstOrLast(turbine.InclDtTm, true);
-            endTime = GetFirstOrLast(turbine.InclDtTm, false);
+            CheckDataSeriesTimes(input);
+        }
+
+        public void CheckDataSeriesTimes(MeteoData.MetMastData input)
+        {
+            startTime = input.MetDataSorted[0].TimeStamp;
+            endTime = input.MetDataSorted[input.MetDataSorted.Count - 1].TimeStamp;
+        }
+
+        public void CheckDataSeriesTimes(ScadaData.TurbineData input)
+        {
+            startTime = input.DataSorted[0].TimeStamp;
+            endTime = input.DataSorted[input.DataSorted.Count - 1].TimeStamp;
         }
 
         private DateTime GetFirstOrLast(List<DateTime> times, bool getFirst)
@@ -54,7 +64,7 @@ namespace scada_analyst.Shared
 
             return result;
         }
-
+        
         public static explicit operator Structure(MeteoData.MetMastData metMast)
         {
             return new Structure(metMast);

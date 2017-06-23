@@ -998,6 +998,8 @@ namespace scada_analyst
             
             private int error = -9999;
 
+            private string[] nullValues = { "\\N" };
+
             private DateTime curTime = new DateTime();
 
             private Ambient ambTemps = new Ambient();
@@ -1209,7 +1211,7 @@ namespace scada_analyst
                 #endregion
                 #region Turbine File
 
-                if (header.CurTimeCol != -1)
+                if (header.CurTimeCol != -1 && !nullValues.Contains(data[header.CurTimeCol]))
                 {
                     curTime = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }));
                 }

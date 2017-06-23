@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using scada_analyst.Model;
 
-namespace scada_analyst.ViewModel
+namespace scada_analyst
 {
     class EventDetailsViewModel
     {

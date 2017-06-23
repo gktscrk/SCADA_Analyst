@@ -4,6 +4,7 @@ using System.ComponentModel;
 
 using LiveCharts;
 using LiveCharts.Defaults;
+using System.Linq;
 
 namespace scada_analyst.Controls
 {
@@ -13,6 +14,9 @@ namespace scada_analyst.Controls
 
         private double _from;
         private double _to;
+
+        private double _bottom;
+        private double _top;
 
         private Func<double, string> _formatter;
 
@@ -27,6 +31,9 @@ namespace scada_analyst.Controls
 
             From = DateTime.Now.Ticks;
             To = DateTime.Now.AddHours(24).Ticks;
+
+            Bottom = 0;
+            Top = 1;
         }
 
         public ScrollableViewModel(List<ScadaData.ScadaSample> thisEvent)
@@ -39,18 +46,41 @@ namespace scada_analyst.Controls
             {
                 l.Add(new DateTimePoint(thisEvent[i].TimeStamp, thisEvent[i].Gearbox.Hs.Gens.Mean));                
             }
-
+                        
             Formatter = x => new DateTime((long)x).ToString("dd-MM-yyyy HH:mm");
 
             Values = l;
 
             From = thisEvent[0].TimeStamp.Ticks;
             To = thisEvent[thisEvent.Count - 1].TimeStamp.Ticks;
+            
+            Bottom = Values.Min(x => x.Value) == -9999 ? 0 : Values.Min(x => x.Value) * 0.8;
+            Top = Values.Max(x => x.Value) * 1.2;
         }
 
         #region Properties
 
         public object Mapper { get; set; }
+
+        public double Bottom
+        {
+            get { return _bottom; }
+            set
+            {
+                _bottom = value;
+                OnPropertyChanged(nameof(Bottom));
+            }
+        }
+
+        public double Top
+        {
+            get { return _top; }
+            set
+            {
+                _top = value;
+                OnPropertyChanged(nameof(Top));
+            }
+        }
 
         public double From
         {
@@ -58,7 +88,7 @@ namespace scada_analyst.Controls
             set
             {
                 _from = value;
-                OnPropertyChanged("From");
+                OnPropertyChanged(nameof(From));
             }
         }
 
@@ -68,7 +98,7 @@ namespace scada_analyst.Controls
             set
             {
                 _to = value;
-                OnPropertyChanged("To");
+                OnPropertyChanged(nameof(To));
             }
         }
 
@@ -80,7 +110,7 @@ namespace scada_analyst.Controls
             set
             {
                 _formatter = value;
-                OnPropertyChanged("Formatter");
+                OnPropertyChanged(nameof(Formatter));
             }
         }
 

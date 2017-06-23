@@ -14,6 +14,20 @@ namespace scada_analyst.Shared
 
             #region Version 0.200
 
+            ProgramVersion v0240 = new ProgramVersion(0240, new DateTime(2017, 06, 23));
+            v0240.AddChange("Display of events based lists.");
+            v0240.AddChange("Slowly working towards chart display with the same datasets.");
+            results.Add(v0240);
+
+            ProgramVersion v0230 = new ProgramVersion(0230, new DateTime(2017, 06, 22));
+            v0230.AddChange("Implemented MVVM style systems for a bit to improve the GUI.");
+            results.Add(v0230);
+
+            ProgramVersion v0220 = new ProgramVersion(0220, new DateTime(2017, 06, 21));
+            v0220.AddChange("Implemented MVVM style systems for a bit to improve the GUI.");
+            v0220.AddChange("General GUI redesign.");
+            results.Add(v0220);
+
             ProgramVersion v0210 = new ProgramVersion(0210, new DateTime(2017, 06, 20));
             v0210.AddChange("Added time of day comparison to remove events during the day in case they are scheduled maintenance events.");
             v0210.AddChange("User can choose when time of day events are most likely to be maintenance. Should probably add a time filter as well.");

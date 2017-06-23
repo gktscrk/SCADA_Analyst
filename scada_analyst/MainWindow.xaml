@@ -6,12 +6,16 @@
                    xmlns:local="clr-namespace:scada_analyst"
                    xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
                    xmlns:controls="clr-namespace:scada_analyst.Controls"
-                   mc:Ignorable="d"
+                   mc:Ignorable="d"                   
                    Title="SCADA Data Analyst"   
                    SnapsToDevicePixels="True" 
                    WindowStartupLocation="CenterScreen"
                    MinHeight="450" MinWidth="600" >
 
+    <!--<Window.DataContext>
+        <local:MainWindowViewModel/>
+    </Window.DataContext>-->
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -32,34 +36,34 @@
                 <Separator />
                 <MenuItem Header="_Exit" Click="Exit" />
             </MenuItem>
-            <MenuItem Header="_Load">
+            <MenuItem Header="_Load and Unload">
                 <MenuItem Header="_Geographic Data" Click="LoadGeoDataAsync" />
                 <MenuItem Header="_Meteorologic Data" Click="LoadMeteoDataAsync" />
                 <MenuItem Header="_SCADA Data" Click="LoadScadaDataAsync" />
-            </MenuItem>
-            <MenuItem Header="_Data Management">
-                <MenuItem Header="_Add Position Data to Structures" Click="AddStructureLocationsAsync" />
-                <Separator/>
-                <MenuItem Header="_Clear All" Click="ClearAllData" />
                 <Separator/>
                 <MenuItem Header="_Clear Geographic Data" Click="ClearGeoData" />
                 <MenuItem Header="_Clear Meteorologic Data" Click="ClearMeteoData" />
                 <MenuItem Header="_Clear SCADA Data" Click="ClearScadaData" />
+                <Separator/>
+                <MenuItem Header="_Clear All" Click="ClearAllData" />
             </MenuItem>
-            <MenuItem Header="_Export">
+            <MenuItem Header="_Export Data">
                 <MenuItem Header="_Meteorologic Data" Click="ExportMeteoDataAsync" />
                 <MenuItem Header="_SCADA Data" Click="ExportScadaDataAsync" />
                 <Separator/>
                 <MenuItem Header="_Export Date Range Only" IsCheckable="True" Name="CBox_DateRangeExport" />
-                <MenuItem Header="_Settings" Click="SetExportVars" />
+                <MenuItem Header="_Export Settings" Click="SetExportSettings" />
             </MenuItem>
-            <MenuItem Header="_Analysis">
+            <MenuItem Header="_Analysis Options">
+                <MenuItem Header="_Add Position Data to Structures" Click="AddStructureLocationsAsync" />
+                <Separator />
                 <MenuItem Header="_Process Events" Click="FindEventsAsync" />
-                <MenuItem Header="_Match Events Across Types" Click="MatchEventsAsync" />
+                <MenuItem Header="_Match Power Events with Weather" Click="MatchEventsAsync" />
+                <MenuItem Header="_Removed Matched Events" Click="RemovedMatchedEventsAsync" />
                 <Separator/>
                 <MenuItem Header="_Clear Events" Click="ClearEvents" />
                 <Separator/>
-                <MenuItem Header="_Settings" Click="SetAnalysisSets" />
+                <MenuItem Header="_Analysis Settings" Click="SetAnalysisSettings" />
             </MenuItem>
         </Menu>
 
@@ -238,7 +242,7 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0,3,0"
-                              Content="Wind Speed: Less than Cut-in" />
+                              Content="Wind Speed: Below Cut-in" />
                         
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5"
                                   Name="LView_WSpdEvLo"
@@ -287,7 +291,7 @@
                                     <GridViewColumn Header="Min Speed" Width="80" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.##}, 
+                                                <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
@@ -359,7 +363,7 @@
                                     <GridViewColumn Header="Max Speed" Width="80" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.##}, 
+                                                <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
@@ -426,7 +430,7 @@
                                     <GridViewColumn Header="Min Power" Width="70" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.##}, 
+                                                <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
@@ -434,7 +438,7 @@
                                     <GridViewColumn Header="Association" Width="70" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Label Content="{Binding AssocEv, Mode=OneWay}" />
+                                                <Label Content="{Binding DisplayAssoctn, Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -555,7 +559,7 @@
                                     <GridViewColumn Header="Max Power" Width="70" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.##}, 
+                                                <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
@@ -563,7 +567,7 @@
                                     <GridViewColumn Header="Association" Width="70" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Label Content="{Binding AssocEv, Mode=OneWay}" />
+                                                <Label Content="{Binding DisplayAssoctn, Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
@@ -624,22 +628,237 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <controls:ScrollableView Grid.Column="2" Grid.Row="0" Margin="5,5,5,5"
+                <controls:ScrollableView Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Margin="5,5,5,5"
                                          HorizontalAlignment="Center"
                                          x:Name="ScrollView"
-                                         Visibility="Hidden"/>
+                                         Visibility="Hidden"/>                
+
+                <Label Grid.Column="0" Grid.Row="0" Margin="5" Name="LBL_EquipmentChoice"
+                       Content="Equipment:" />
                 
+                <ComboBox Grid.Column="1" Grid.Row="0" Margin="5,5,5,5"
+                          Name="Comb_EquipmentChoice" ItemsSource="{Binding AnalysisItems}"
+                          SelectionChanged="Comb_EquipmentChoice_SelectionChanged" />
+
+                <CheckBox Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" Margin="5" Name="CBox_DataSetChoice"
+                          Unchecked="ChangeListViewDataset" Checked="ChangeListViewDataset"                       
+                          Content="Include pre-event data" VerticalAlignment="Center" />
+
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" Margin="5" />
+                
+                <ListView Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Grid.ColumnSpan="4" 
+                              Name="LView_EventExplorer_Gearbox"                       
+                              VerticalAlignment="Top"                       
+                              ScrollViewer.CanContentScroll="True" >
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.View>
+                            <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                                <GridViewColumn Header="Date and Time" Width="110" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="HS Gen." Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Gearbox.Hs.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="HS Rot." Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Gearbox.Hs.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="IMS Gen." Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Gearbox.Ims.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="IMS Rot." Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Gearbox.Ims.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Gearbox Oil" Width="80" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Gearbox.Oils.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                <ListView Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Grid.ColumnSpan="4" 
+                              Name="LView_EventExplorer_Generator"                       
+                              VerticalAlignment="Top"                       
+                              ScrollViewer.CanContentScroll="True" >
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.View>
+                            <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                                <GridViewColumn Header="Date and Time" Width="110" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G-Bearing" Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.bearingG.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="R-Bearing" Width="80" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.bearingR.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G1U1" Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.G1u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G1V1" Width="80" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.G1v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G1W1" Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.G1w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G2U1" Width="80" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.G2u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G2V1" Width="60" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.G2v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="G2W1" Width="80" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genny.G2w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                
+                <ListView Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Grid.ColumnSpan="4" 
+                              Name="LView_EventExplorer_MainBear"                       
+                              VerticalAlignment="Top"                       
+                              ScrollViewer.CanContentScroll="True" >
+                   <ListView.ItemsPanel>
+                       <ItemsPanelTemplate>
+                           <VirtualizingStackPanel/>
+                       </ItemsPanelTemplate>
+                   </ListView.ItemsPanel>
+                   <ListView.ItemContainerStyle>
+                       <Style TargetType="ListViewItem">
+                           <Setter Property="HorizontalContentAlignment" Value="Center" />
+                       </Style>
+                   </ListView.ItemContainerStyle>
+
+                    <ListView.View>
+                        <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                            <GridViewColumn Header="Date and Time" Width="110" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Main Bearing" Width="80" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding MainBear.Standards.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Main Bearing GS" Width="100" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding MainBear.Gs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate> 
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Main Bearing HS" Width="100" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding MainBear.Hs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                    </ListView.View>
+                </ListView>
+                          
             </Grid>
         </GroupBox>
 
         <StatusBar Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
                    Name="Prime_StatusBar" >
+            
             <Grid Width="{Binding ElementName=Prime_StatusBar, Path=ActualWidth}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -652,7 +871,7 @@
                 <TextBlock Grid.Column="0" Text=" " />
                 
                 <ProgressBar Grid.Column="1"
-                         Name="progress_ProgressBar" Width="200"
+                         Name="progress_ProgrBar" Width="200"
                          Margin="5,0" >
                 </ProgressBar>
                 

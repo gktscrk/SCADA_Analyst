@@ -108,7 +108,7 @@
       <DependentUpon>ChartBase.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\NumericTextBox.cs" />
-    <Compile Include="Controls\ScrollableViewModel.cs" />
+    <Compile Include="ViewModel\ScrollableViewModel.cs" />
     <Compile Include="Controls\Sunriset.cs" />
     <Compile Include="Helper\ObservableObject.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
@@ -139,9 +139,6 @@
     </Compile>
     <Compile Include="Window_AnalysisSettings.xaml.cs">
       <DependentUpon>Window_AnalysisSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Window_EventChart.xaml.cs">
-      <DependentUpon>Window_EventChart.xaml</DependentUpon>
     </Compile>
     <Compile Include="Window_ExportControl.xaml.cs">
       <DependentUpon>Window_ExportControl.xaml</DependentUpon>
@@ -195,10 +192,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Window_AnalysisSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Window_EventChart.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
