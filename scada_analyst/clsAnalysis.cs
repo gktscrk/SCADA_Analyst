@@ -34,8 +34,31 @@ namespace scada_analyst
         /// <param name="currentEvents"></param>
         /// <param name="progress"></param>
         /// <returns></returns>
-        public List<EventData> AddDaytimesToEvents(List<EventData> currentEvents,
-            IProgress<int> progress)
+        public void AddDaytimesToEvents(IProgress<int> progress)
+        {
+            try
+            {
+                _allPwrEvts.Clear();
+
+                _noPwEvents = AddDaytimesToEvents(_noPwEvents, progress);
+                _rtPwEvents = AddDaytimesToEvents(_rtPwEvents, progress, 50);
+
+                foreach (EventData singleEvent in _noPwEvents)
+                {
+                    _allPwrEvts.Add(singleEvent);
+                }
+
+                foreach (EventData singleEvent in _rtPwEvents)
+                {
+                    _allPwrEvts.Add(singleEvent);
+                }
+
+                _allPwrEvts.OrderBy(o => o.Start);
+            }
+            catch { throw; }
+        }
+
+        private List<EventData> AddDaytimesToEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
         {
             // this method will contain the search for whether a non power production
             // event took place during the day or during the night by calculating the 
@@ -55,7 +78,7 @@ namespace scada_analyst
                 {
                     if (progress != null)
                     {
-                        progress.Report((int)(i / currentEvents.Count * 100.0));
+                        progress.Report((int)(start + 0.5 * i / currentEvents.Count * 100.0));
                     }
                 }
             }
@@ -137,8 +160,10 @@ namespace scada_analyst
         {
             try
             {
-                _noPwEvents = CreateEventAssociations(_noPwEvents, progress);
-                _rtPwEvents = CreateEventAssociations(_rtPwEvents, progress, 50);
+                _allPwrEvts.Clear();
+
+                _noPwEvents = AssociateEvents(_noPwEvents, progress);
+                _rtPwEvents = AssociateEvents(_rtPwEvents, progress, 50);
 
                 foreach (EventData singleEvent in _noPwEvents)
                 {
@@ -155,8 +180,7 @@ namespace scada_analyst
             catch { throw; }
         }
         
-        private List<EventData> CreateEventAssociations(List<EventData> currentEvents,
-            IProgress<int> progress, int start = 0)
+        private List<EventData> AssociateEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
         {
             try
             {
@@ -595,17 +619,17 @@ namespace scada_analyst
         /// this works on both no power production and high power production events
         /// </summary>
         /// <param name="progress"></param>
-        public void RemoveShortDurations(IProgress<int> progress)
+        public void RemoveByDuration(IProgress<int> progress)
         {
             try
             {
-                _noPwEvents = ProcessDurationFilter(_noPwEvents, progress);
-                _rtPwEvents = ProcessDurationFilter(_rtPwEvents, progress, 50);
+                _noPwEvents = RemoveByDuration(_noPwEvents, progress);
+                _rtPwEvents = RemoveByDuration(_rtPwEvents, progress, 50);
             }
             catch { throw; }
         }
 
-        private List<EventData> ProcessDurationFilter(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
+        private List<EventData> RemoveByDuration(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
         {
             try
             {

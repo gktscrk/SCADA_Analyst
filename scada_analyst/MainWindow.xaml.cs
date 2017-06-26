@@ -209,11 +209,8 @@ namespace scada_analyst
                 // if the above conditions are not fulfilled, the process can continue
 
                 ProgressBarVisible();
-
-                if (Tab_NoPower.IsSelected)
-                { await Task.Run(() => analyser.NoPwEvents = analyser.AddDaytimesToEvents(analyser.NoPwEvents, progress)); }
-                else if (Tab_RtPower.IsSelected)
-                { await Task.Run(() => analyser.RtPwEvents = analyser.AddDaytimesToEvents(analyser.RtPwEvents, progress)); }
+                
+                await Task.Run(() => analyser.AddDaytimesToEvents(progress));                 
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -966,7 +963,7 @@ namespace scada_analyst
 
                 ProgressBarVisible();
 
-                await Task.Run(() => analyser.RemoveShortDurations(progress));
+                await Task.Run(() => analyser.RemoveByDuration(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -1097,7 +1094,7 @@ namespace scada_analyst
 
             analyser.ResetEventList();
             PopulateOverview();
-            CreateAndUpdateDataSummary();
+            RefreshEvents();
         }
 
         /// <summary>
@@ -1112,7 +1109,7 @@ namespace scada_analyst
 
             analyser.ResetEventList();
             PopulateOverview();
-            CreateAndUpdateDataSummary();
+            RefreshEvents();
         }
 
         /// <summary>
@@ -1254,15 +1251,11 @@ namespace scada_analyst
             LView_LoadedOverview.ItemsSource = null;
 
             overview.Clear();
-
             overview.Add(new DataOverview("Structures", AssetsView.Count));
             overview.Add(new DataOverview("Low Winds", LoSpdViews.Count));
             overview.Add(new DataOverview("High Winds", HiSpdViews.Count));
             overview.Add(new DataOverview("Power: None", NoPowViews.Count));
-            
-            double ratedPwrMw = ratedPwr / 1000.0;
-
-            overview.Add(new DataOverview("Power: " + Common.GetStringDecimals(ratedPwrMw,1) + "MW", RtdPowView.Count));
+            overview.Add(new DataOverview("Power: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
             LView_LoadedOverview.ItemsSource = overview;
         }
