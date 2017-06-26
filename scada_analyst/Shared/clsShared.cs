@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -18,6 +19,149 @@ namespace scada_analyst.Shared
         private static NumberFormatInfo numberFormat = new CultureInfo("en-US", false).NumberFormat;
 
         #endregion
+
+        /// <summary>
+        /// Returns the grid bearing between two grid positions.
+        /// </summary>
+        /// <param name="position1">The start grid position.</param>
+        /// <param name="position2">The end grid position.</param>
+        /// <returns>The grid bearing between the two grid positions.</returns>
+        private static float Bearing(double dX, double dY)
+        {
+            if (dX == 0 && dY == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                double bearing = Math.Atan2(dX, dY) * (180 / Math.PI);
+                return (float)(bearing + 360) % 360;
+            }
+        }
+
+        public static float Bearing(GridPosition position1, GridPosition position2)
+        {
+            return Bearing(position2.Easting - position1.Easting, position2.Northing - position1.Northing);
+        }
+
+        public static float Bearing(double easting1, double northing1,
+            double easting2, double northing2)
+        {
+            return Bearing(easting1 - easting2, northing1 - northing2);
+        }
+
+        public static float Bearing(Point p1, Point p2)
+        {
+            return Bearing(p1.X - p2.X, p1.Y - p2.Y);
+        }
+
+        private static float Bearing90(double dX, double dY)
+        {
+            if (dX == 0 && dY == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                double bearing = Math.Atan2(dX, dY) * (180 / Math.PI);
+                return (float)(bearing + 360) % 90;
+            }
+        }
+
+        public static float Bearing90(double easting1, double northing1,
+            double easting2, double northing2)
+        {
+            return Bearing90(easting1 - easting2, northing1 - northing2);
+        }
+
+        public static string BearingStringConversion(float bearing)
+        {
+            string direction = "";
+
+            bearing = bearing % 360;
+
+            if (bearing < 11.25)
+            {
+                direction = "north";
+            }
+            else if (bearing < 33.75)
+            {
+                direction = "NNE";
+            }
+            else if (bearing < 56.25)
+            {
+                direction = "northeast";
+            }
+            else if (bearing < 78.75)
+            {
+                direction = "ENE";
+            }
+            else if (bearing < 101.25)
+            {
+                direction = "east";
+            }
+            else if (bearing < 123.75)
+            {
+                direction = "ESE";
+            }
+            else if (bearing < 146.25)
+            {
+                direction = "southeast";
+            }
+            else if (bearing < 168.75)
+            {
+                direction = "SSE";
+            }
+            else if (bearing < 191.25)
+            {
+                direction = "south";
+            }
+            else if (bearing < 213.75)
+            {
+                direction = "SSW";
+            }
+            else if (bearing < 236.25)
+            {
+                direction = "southwest";
+            }
+            else if (bearing < 258.75)
+            {
+                direction = "WSW";
+            }
+            else if (bearing < 281.25)
+            {
+                direction = "west";
+            }
+            else if (bearing < 303.75)
+            {
+                direction = "WNW";
+            }
+            else if (bearing < 326.25)
+            {
+                direction = "northwest";
+            }
+            else if (bearing < 348.75)
+            {
+                direction = "NNW";
+            }
+            else
+            {
+                direction = "north";
+            }
+
+            return direction;
+        }
+
+        public static double CalculateDistance(GridPosition pos1, GridPosition pos2)
+        {
+            return CalculateDistance(pos1.Easting, pos1.Northing, pos2.Easting, pos2.Northing);
+        }
+
+        public static double CalculateDistance(double x1, double y1, double x2, double y2)
+        {
+            //get the distance between 2 points, using Pythagoras theorem:
+            return Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2));
+        }
 
         public static bool CanConvert<T>(string data)
         {

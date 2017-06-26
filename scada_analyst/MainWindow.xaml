@@ -56,6 +56,7 @@
             </MenuItem>
             <MenuItem Header="_Analysis Options">
                 <MenuItem Header="_Add Position Data to Structures" Click="AddStructureLocationsAsync" />
+                <MenuItem Header="_Get Distances Between Structures" Click="GetDistancesBetweenStructuresAsync" />
                 <Separator />
                 <MenuItem Header="_Process Events" Click="FindEventsAsync" />
                 <MenuItem Header="_Match Power Events with Weather" Click="MatchEventsAsync" />
@@ -101,9 +102,9 @@
                               Selected="TWI_Ev_LoSp_Click" MouseDoubleClick="TWI_Ev_LoSp_Click" />
                             <TreeViewItem Header="High Wind Speed" Name="TWI_Ev_HiSp" 
                               Selected="TWI_Ev_HiSp_Click" MouseDoubleClick="TWI_Ev_HiSp_Click" />
-                            <TreeViewItem Header="No Power" Name="TWI_Ev_NoPw" 
+                            <TreeViewItem Header="No Power Prod." Name="TWI_Ev_NoPw" 
                               Selected="TWI_Ev_NoPw_Click" MouseDoubleClick="TWI_Ev_NoPw_Click" />
-                            <TreeViewItem Header="Rated Power" Name="TWI_Ev_RtPw" 
+                            <TreeViewItem Header="High Power Prod." Name="TWI_Ev_RtPw" 
                               Selected="TWI_Ev_RtPw_Click" MouseDoubleClick="TWI_Ev_RtPw_Click" />
 
                         </TreeViewItem>
@@ -183,14 +184,14 @@
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                        <GridViewColumn Header="Asset ID" Width="80" >
+                        <GridViewColumn Header="Asset ID" Width="70" >
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Label Content="{Binding UnitID, Mode=OneWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Type" Width="100">
+                        <GridViewColumn Header="Type" Width="90">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Label Content="{Binding Type, Mode=OneWay}" />
@@ -200,18 +201,25 @@
                         <GridViewColumn Header="Start Time" Width="120">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                    <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <GridViewColumn Header="End Time" Width="120">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                        <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Positions" Width="80">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding PositionsLoadedDisplay, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
                 </ListView.View>
             </ListView>
                 
@@ -242,8 +250,8 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0,3,0"
-                              Content="Wind Speed: Below Cut-in" />
-                        
+                              Content="Wind Speed: Below Cut-in" FontWeight="Bold" />
+
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5"
                                   Name="LView_WSpdEvLo"
                                   VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -314,7 +322,7 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Column="0" Grid.Row="0"  Margin="5,5,5,5" Padding="3,0,3,0"
-                              Content="Wind Speed: Above Cut-out" />
+                              Content="Wind Speed: Above Cut-out" FontWeight="Bold" />
                         
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
                                   Name="LView_WSpdEvHi"
@@ -387,7 +395,7 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0"
-                               Content="Power Production: Null or Negative" />
+                               Content="Power Production: Null or Negative" FontWeight="Bold" />
 
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
                                   Name="LView_PowrNone"
@@ -516,7 +524,7 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0"
-                               Content="Power Production: " Name="LBL_PwrProdAmount" />
+                               Content="Power Production: " Name="LBL_PwrProdAmount" FontWeight="Bold" />
 
                         <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
                                   Name="LView_PowrRted"
@@ -743,15 +751,22 @@
                                             <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G-Bearing" Width="60" >
+                            </GridViewColumn>
+                            <GridViewColumn Header="RPM" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.Rpms.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G-Bearing" Width="60" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Genny.bearingG.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="R-Bearing" Width="80" >
+                                <GridViewColumn Header="R-Bearing" Width="60" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Genny.bearingR.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
@@ -765,7 +780,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="G1V1" Width="80" >
+                                <GridViewColumn Header="G1V1" Width="60" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Genny.G1v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
@@ -779,7 +794,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="G2U1" Width="80" >
+                                <GridViewColumn Header="G2U1" Width="60" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Genny.G2u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
@@ -793,7 +808,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="G2W1" Width="80" >
+                                <GridViewColumn Header="G2W1" Width="60" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Genny.G2w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />

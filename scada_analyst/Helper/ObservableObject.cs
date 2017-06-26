@@ -4,8 +4,11 @@ using System.Diagnostics;
 using System.Collections;
 using System.ComponentModel;
 
+using PropertyChanged;
+
 namespace scada_analyst
 {
+    [AddINotifyPropertyChangedInterface]
     public abstract class ObservableObject : INotifyPropertyChanged
     {
         #region Debugging Aides

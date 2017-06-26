@@ -20,6 +20,7 @@ namespace scada_analyst.Shared
         private Structure(MeteoData.MetMastData input)
         {
             Position = input.Position;
+            PositionsLoaded = input.PositionsLoaded;
             UnitID = input.UnitID;
             Type = input.Type;
 
@@ -29,6 +30,7 @@ namespace scada_analyst.Shared
         private Structure(ScadaData.TurbineData input)
         {
             Position = input.Position;
+            PositionsLoaded = input.PositionsLoaded;
             UnitID = input.UnitID;
             Type = input.Type;
 
@@ -136,10 +138,11 @@ namespace scada_analyst.Shared
         #endregion
     }
 
-    public class BaseStructure
+    public class BaseStructure : ObservableObject
     {
         #region Variables
 
+        private bool positionsLoaded = false;
         private int unitID = -1;
 
         private List<DateTime> inclDtTm = new List<DateTime>();
@@ -158,6 +161,9 @@ namespace scada_analyst.Shared
 
         #region Properties
 
+        public bool PositionsLoaded { get { return positionsLoaded; } set { positionsLoaded = value; } }
+
+        public string PositionsLoadedDisplay { get { return PositionsLoaded == true ? "Yes" : "No"; } set { PositionsLoadedDisplay = value; } }
         public int UnitID { get { return unitID; } set { unitID = value; } }
 
         public List<DateTime> InclDtTm { get { return inclDtTm; } set { inclDtTm = value; } }
@@ -200,6 +206,8 @@ namespace scada_analyst.Shared
         private double easting = 0, northing = 0;
         private double latitude = 0, longitude = 0;
 
+        private Type fileType;
+
         #endregion
 
         public GridPosition() { }
@@ -208,20 +216,25 @@ namespace scada_analyst.Shared
         {
             this.easting = easting;
             this.northing = northing;
+
+            fileType = Type.GRID;
         }
 
         public GridPosition(GridPosition source)
         {
             easting = source.easting;
             northing = source.northing;
+
+            fileType = Type.GRID;
         }
 
-        public GridPosition(double latitude, double longitude, Type type)
+        public GridPosition(double latitude, double longitude, Type inputType)
         {
-            if (type == Type.GEOG)
+            if (inputType == Type.GEOG)
             {
                 this.latitude = latitude;
                 this.longitude = longitude;
+                fileType = Type.GEOG;
             }
         }
 
@@ -231,45 +244,26 @@ namespace scada_analyst.Shared
             {
                 latitude = source.latitude;
                 longitude = source.longitude;
-            }
-            else
-            {
-                easting = source.easting;
-                northing = source.northing;
+                fileType = Type.GEOG;
             }
         }
 
         public enum Type
         {
             GRID,
-            GEOG
+            GEOG,
+            BOTH
         }
 
         #region Properties
 
-        public double Easting
-        {
-            get { return easting; }
-            set { value = easting; }
-        }
+        public double Easting { get { return easting; } set { value = easting; } }
+        public double Northing { get { return northing; } set { value = northing; } }
 
-        public double Northing
-        {
-            get { return northing; }
-            set { value = northing; }
-        }
+        public double Latitude { get { return latitude; } set { value = latitude; } }
+        public double Longitude { get { return longitude; } set { value = longitude; } }
 
-        public double Latitude
-        {
-            get { return latitude; }
-            set { value = latitude; }
-        }
-
-        public double Longitude
-        {
-            get { return longitude; }
-            set { value = longitude; }
-        }
+        public Type FileType { get { return fileType; } set { fileType = value; } }
 
         #endregion
     }
