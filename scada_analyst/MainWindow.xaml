@@ -4,6 +4,7 @@
                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:local="clr-namespace:scada_analyst"
+                   xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
                    xmlns:Metro="http://metro.mahapps.com/winfx/xaml/controls"
                    xmlns:controls="clr-namespace:scada_analyst.Controls"
                    mc:Ignorable="d"                   
@@ -598,10 +599,20 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <controls:ScrollableView Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Margin="5,5,5,5"
+                <lvc:CartesianChart Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Margin="5,5,5,5"
+                                    HorizontalAlignment="Center" DisableAnimations="True"
+                                    x:Name="LChart_Basic" MinWidth="500"
+                                    Visibility="Visible" />
+                
+                <!--<controls:LineChart Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Margin="5,5,5,5"
+                                    HorizontalAlignment="Center"
+                                    x:Name="LineView" MinWidth="500"
+                                    Visibility="Visible" />-->
+                
+                <!--<controls:ScrollableView Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Margin="5,5,5,5"
                                          HorizontalAlignment="Center"
-                                         x:Name="ScrollView"
-                                         Visibility="Hidden"/>                
+                                         x:Name="ScrollView" MinWidth="300"
+                                         Visibility="Visible" />-->                
 
                 <Label Grid.Column="0" Grid.Row="0" Margin="5" Name="LBL_EquipmentChoice"
                        Content="Equipment:" />

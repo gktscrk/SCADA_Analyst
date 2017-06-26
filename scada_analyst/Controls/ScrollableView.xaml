@@ -59,7 +59,7 @@
                 </lvc:CartesianChart.AxisY>
             </lvc:CartesianChart>
 
-            <lvc:CartesianChart Grid.Row="1" DisableAnimations="True" 
+            <!--<lvc:CartesianChart Grid.Row="1" DisableAnimations="True" 
                             ScrollMode="X" 
                             ScrollHorizontalFrom="{Binding From, Mode=TwoWay}"
                             ScrollHorizontalTo="{Binding To, Mode=TwoWay}"
@@ -94,7 +94,7 @@
                     <lvc:Axis ShowLabels="False" />
                 </lvc:CartesianChart.AxisY>
                 
-            </lvc:CartesianChart>
+            </lvc:CartesianChart>-->
             
         </Grid>
 

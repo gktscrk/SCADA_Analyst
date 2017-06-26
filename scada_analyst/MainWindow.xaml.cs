@@ -18,11 +18,15 @@ using System.Windows.Shapes;
 
 using Microsoft.Win32;
 
+using LiveCharts;
+using LiveCharts.Charts;
+
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 
 using scada_analyst.Controls;
 using scada_analyst.Shared;
+using LiveCharts.Wpf;
 
 namespace scada_analyst
 {
@@ -87,6 +91,7 @@ namespace scada_analyst
         private ObservableCollection<EventData> _rtPwView = new ObservableCollection<EventData>();
            
         private ObservableCollection<ScadaData.ScadaSample> thisEventData;
+        private ObservableCollection<ScadaData.ScadaSample> weekEventData;
         private ObservableCollection<ScadaData.ScadaSample> histEventData;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -132,12 +137,6 @@ namespace scada_analyst
             LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
         }
 
-        private void UpdateDurationLabel()
-        {
-            LBL_DurationFilter.Content = "Duration Filter: " + duratFilter.ToString();
-            LBL_DurationFilter2.Content = "Duration Filter: " + duratFilter.ToString();
-        }
-
         #endregion
 
         #region UI Updating
@@ -149,6 +148,12 @@ namespace scada_analyst
         private string GetPowerProdLabel()
         {
             return "Power Production: " + ratedPwr.ToString() + " kW";
+        }
+
+        private void UpdateDurationLabel()
+        {
+            LBL_DurationFilter.Content = "Duration Filter: " + duratFilter.ToString();
+            LBL_DurationFilter2.Content = "Duration Filter: " + duratFilter.ToString();
         }
 
         #endregion
@@ -260,7 +265,11 @@ namespace scada_analyst
         private void Comb_EquipmentChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // only go into this event if the below conditions are true; probably will disable the combobox as well though
+            DisplayCorrectEventDetails();
+        }
 
+        private void DisplayCorrectEventDetails()
+        {
             if (Comb_EquipmentChoice.SelectedIndex != -1)
             {
                 if (Comb_EquipmentChoice.SelectedIndex == 0)
@@ -268,26 +277,74 @@ namespace scada_analyst
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    LChart_Basic.Visibility = Visibility.Collapsed;
                 }
                 else if ((string)Comb_EquipmentChoice.SelectedItem == "Gearbox")
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+
+                    //try it with a normal view as the List<DateTimePoint> did not work particularly well
+                    ChartShowSeries("Gearbox");
                 }
                 else if ((string)Comb_EquipmentChoice.SelectedItem == "Generator")
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Visible;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    ChartShowSeries("Generator");
                 }
                 else if ((string)Comb_EquipmentChoice.SelectedItem == "Main bearing")
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
+                    ChartShowSeries("Main bearing");
                 }
             }
+        }
+
+        private void ChartShowSeries(string input)
+        {
+            try
+            {
+                if (LChart_Basic.Series.Count == 1) { LChart_Basic.Series.RemoveAt(0); }
+
+                List<double> list = new List<double>();
+                List<string> times = new List<string>();
+
+                LineSeries newLine = new LineSeries();
+
+                for (int i = 0; i < weekEventData.Count; i++)
+                {
+                    double variable = 0;
+                    
+                    if (input == "Gearbox")
+                    {
+                        newLine.Title = "HS Gens.";
+                        variable = weekEventData[i].Gearbox.Hs.Gens.Mean;
+                    }
+                    else if (input == "Generator")
+                    {
+                        newLine.Title = "Bearing G";
+                        variable = weekEventData[i].Genny.bearingG.Mean;
+                    }
+                    else if (input == "Main bearing")
+                    {
+                        newLine.Title = "Main Bearing.";
+                        variable = weekEventData[i].MainBear.Standards.Mean;
+                    }
+
+                    list.Add(variable != -9999 ? variable : double.NaN);
+                    times.Add(weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
+                }
+
+                newLine.Values = new ChartValues<double>(list);
+                newLine.Fill = Brushes.Transparent;
+                LChart_Basic.Series.Add(newLine);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -1496,40 +1553,59 @@ namespace scada_analyst
         
         private void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
+            try
             {
-                EventData thisEv = LView_PowrNone.SelectedItems.Count == 1 ? 
-                    (EventData)LView_PowrNone.SelectedItem : (EventData)LView_PowrRted.SelectedItem;
-                
-                // do something part of the method
-                // this one needs to take the event details and send it to another listbox plus graph
-
-                // thisEvent has the event data only -- for the actual data to display, we'll need to find 
-                // the datapoints from the source data
-
-                List<ScadaData.ScadaSample> thisEvScada = new List<ScadaData.ScadaSample>();
-                List<ScadaData.ScadaSample> dataHistory = new List<ScadaData.ScadaSample>();
-
-                // get index of the asset and get index of the event time in the asset
-                int assetIndex = scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
-                int timeIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0]);
-
-                for (int i = 0; i < thisEv.EvTimes.Count; i++)
+                if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
                 {
-                    thisEvScada.Add(scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+                    EventData thisEv = LView_PowrNone.SelectedItems.Count == 1 ?
+                        (EventData)LView_PowrNone.SelectedItem : (EventData)LView_PowrRted.SelectedItem;
+
+                    // do something part of the method
+                    // this one needs to take the event details and send it to another listbox plus graph
+
+                    // thisEvent has the event data only -- for the actual data to display, we'll need to find 
+                    // the datapoints from the source data
+
+                    List<ScadaData.ScadaSample> thisEvScada = new List<ScadaData.ScadaSample>();
+                    List<ScadaData.ScadaSample> weekHistory = new List<ScadaData.ScadaSample>();
+                    List<ScadaData.ScadaSample> dataHistory = new List<ScadaData.ScadaSample>();
+
+                    // get index of the asset and get index of the event time in the asset
+                    // the index of the asset to be used below
+                    int assetIndex = scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
+                    // the index of the timestamp a week before the event began or otherwise the first timestamp in the series - long conditional but should work
+                    TimeSpan stepBack = new TimeSpan(0, -60 * 24 * 5, 0);
+                    int weekIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) != -1 ? scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) : 0;
+
+                    int timeIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0]);
+
+                    for (int i = 0; i < thisEv.EvTimes.Count; i++)
+                    {
+                        thisEvScada.Add(scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+                    }
+
+                    for (int i = weekIndex; i < (timeIndex + thisEv.EvTimes.Count); i++)
+                    {
+                        weekHistory.Add(scadaFile.WindFarm[assetIndex].DataSorted[i]);
+                    }
+
+                    for (int j = 0; j < (timeIndex + thisEv.EvTimes.Count); j++)
+                    {
+                        dataHistory.Add(scadaFile.WindFarm[assetIndex].DataSorted[j]);
+                    }
+
+                    // assign the created dataset lists to their global variables
+                    thisEventData = new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
+                    weekEventData = new ObservableCollection<ScadaData.ScadaSample>(weekHistory);
+                    histEventData = new ObservableCollection<ScadaData.ScadaSample>(dataHistory);
+
+                    // now sent the thisEvScada to the new ListView to populate it
+                    InitializeEventExploration(sender, e);
                 }
-
-                for (int j = 0; j < (timeIndex + thisEv.EvTimes.Count); j++)
-                {
-                    dataHistory.Add(scadaFile.WindFarm[assetIndex].DataSorted[j]);
-                }
-
-                // assign the created dataset lists to their global variables
-                thisEventData = new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
-                histEventData = new ObservableCollection<ScadaData.ScadaSample>(dataHistory);
-
-                // now sent the thisEvScada to the new ListView to populate it
-                InitializeEventExploration(sender, e);
+            }
+            catch
+            {
+                MessageBox.Show("A problem has come up with the code in loading this event. Have the programmer check the indices.","Warning!");
             }
         }
         
@@ -1563,14 +1639,16 @@ namespace scada_analyst
             LView_EventExplorer_Gearbox.ItemsSource = thisEventData;
             LView_EventExplorer_Generator.ItemsSource = thisEventData;
             LView_EventExplorer_MainBear.ItemsSource = thisEventData;
+
             ChangeListViewDataset(sender, e);
+            DisplayCorrectEventDetails();
 
-            // lastly also add respective dataviews to the chart
-            ScrollView.Visibility = Visibility.Visible;
+            // lastly also add respective dataviews to the chart and also to the viewmodel
 
-            Controls.ScrollableViewModel sVM = new ScrollableViewModel(histEventData.ToList());
+            //ScrollableViewModel sVM = new ScrollableViewModel(histEventData.ToList());
 
-            ScrollView.DataContext = sVM;
+            //ScrollView.Visibility = Visibility.Visible;
+            //ScrollView.DataContext = sVM;
         }
 
         #endregion

@@ -1,13 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Linq;
+using System.Windows.Controls;
 
 using LiveCharts;
 using LiveCharts.Defaults;
-using System.Linq;
+using LiveCharts.Events;
+using LiveCharts.Wpf;
 
 namespace scada_analyst.Controls
 {
+    /// <summary>
+    /// Interaction logic for ChartBase.xaml
+    /// </summary>
+    public partial class ScrollableView : UserControl
+    {
+        public ScrollableView()
+        {
+            InitializeComponent();
+        }
+
+        private void Axis_OnRangeChanged(RangeChangedEventArgs eventargs)
+        {
+            var vm = (ScrollableViewModel)DataContext;
+
+            var currentRange = eventargs.Range;
+
+            if (currentRange < TimeSpan.TicksPerDay * 2)
+            {
+                vm.Formatter = x => new DateTime((long)x).ToString("t");
+                return;
+            }
+
+            if (currentRange < TimeSpan.TicksPerDay * 60)
+            {
+                vm.Formatter = x => new DateTime((long)x).ToString("dd MMM yy");
+                return;
+            }
+
+            if (currentRange < TimeSpan.TicksPerDay * 540)
+            {
+                vm.Formatter = x => new DateTime((long)x).ToString("MMM yy");
+                return;
+            }
+
+            vm.Formatter = x => new DateTime((long)x).ToString("yyyy");
+        }
+    }
+
     public class ScrollableViewModel : ObservableObject
     {
         #region Variables
@@ -18,42 +58,44 @@ namespace scada_analyst.Controls
         private double _bottom;
         private double _top;
 
+        private List<DateTimePoint> list = new List<DateTimePoint>();
+
         private Func<double, string> _formatter;
 
         #endregion 
 
         public ScrollableViewModel()
         {
-            var l = new List<DateTimePoint>();
-            l.Add(new DateTimePoint(DateTime.Now, 0));
+            list.Clear();
+
+            list.Add(new DateTimePoint(DateTime.Now.AddDays(-365), 0));
+            list.Add(new DateTimePoint(DateTime.Now, 0));
 
             Formatter = x => new DateTime((long)x).ToString("dd-MM-yyyy HH:mm");
 
-            From = DateTime.Now.Ticks;
-            To = DateTime.Now.AddHours(24).Ticks;
+            From = list[0].DateTime.Ticks;
+            To = list[1].DateTime.Ticks;
 
             Bottom = 0;
-            Top = 1;
+            Top = 100;
         }
 
         public ScrollableViewModel(List<ScadaData.ScadaSample> thisEvent)
         {
-            var now = thisEvent[0].TimeStamp;
-            
-            var l = new List<DateTimePoint>();
+            list.Clear();
 
             for (int i = 0; i < thisEvent.Count; i++)
             {
-                l.Add(new DateTimePoint(thisEvent[i].TimeStamp, thisEvent[i].Gearbox.Hs.Gens.Mean));                
+                list.Add(new DateTimePoint(thisEvent[i].TimeStamp, thisEvent[i].Gearbox.Hs.Gens.Mean));
             }
-                        
+
             Formatter = x => new DateTime((long)x).ToString("dd-MM-yyyy HH:mm");
 
-            Values = l;
+            Values = list;
 
             From = thisEvent[0].TimeStamp.Ticks;
             To = thisEvent[thisEvent.Count - 1].TimeStamp.Ticks;
-            
+
             Bottom = Values.Min(x => x.Value) == -9999 ? 0 : Values.Min(x => x.Value) * 0.8;
             Top = Values.Max(x => x.Value) * 1.2;
         }
@@ -102,7 +144,7 @@ namespace scada_analyst.Controls
             }
         }
 
-        public List<DateTimePoint> Values { get; set; }
+        public List<DateTimePoint> Values { get { return list; } set { list = value; } }
 
         public Func<double, string> Formatter
         {
