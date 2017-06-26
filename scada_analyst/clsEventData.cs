@@ -129,6 +129,82 @@ namespace scada_analyst
             SetEventDuration();
         }
 
+        /// <summary>
+        /// Sets the enum "TimeOfEvent" for every event
+        /// </summary>
+        /// <param name="thisEvent"></param>
+        /// <param name="thisStructure"></param>
+        /// <returns></returns>
+        public static TimeOfEvent GetEventDayTime(EventData thisEvent, Structure thisStructure)
+        {
+            double tsunrise, tsunsets, civcrise, civcsets, astrrise, astrsets, nautrise, nautsets;
+
+            Sunriset.AstronomicalTwilight(thisEvent.Start.Year, thisEvent.Start.Month,
+                thisEvent.Start.Day, thisStructure.Position.Latitude, thisStructure.Position.Longitude,
+                out astrrise, out astrsets);
+
+            TimeSpan astriseTime = TimeSpan.FromHours(astrrise);
+            TimeSpan astsetsTime = TimeSpan.FromHours(astrsets);
+
+            Sunriset.NauticalTwilight(thisEvent.Start.Year, thisEvent.Start.Month,
+                thisEvent.Start.Day, thisStructure.Position.Latitude, thisStructure.Position.Longitude,
+                out nautrise, out nautsets);
+
+            TimeSpan nauriseTime = TimeSpan.FromHours(nautrise);
+            TimeSpan nausetsTime = TimeSpan.FromHours(nautsets);
+
+            Sunriset.CivilTwilight(thisEvent.Start.Year, thisEvent.Start.Month,
+                thisEvent.Start.Day, thisStructure.Position.Latitude, thisStructure.Position.Longitude,
+                out civcrise, out civcsets);
+
+            TimeSpan civriseTime = TimeSpan.FromHours(civcrise);
+            TimeSpan civsetsTime = TimeSpan.FromHours(civcsets);
+
+            Sunriset.SunriseSunset(thisEvent.Start.Year, thisEvent.Start.Month,
+                thisEvent.Start.Day, thisStructure.Position.Latitude, thisStructure.Position.Longitude,
+                out tsunrise, out tsunsets);
+
+            TimeSpan sunriseTime = TimeSpan.FromHours(tsunrise);
+            TimeSpan sunsetsTime = TimeSpan.FromHours(tsunsets);
+
+            if (thisEvent.Start.TimeOfDay <= astriseTime)
+            {
+                return EventData.TimeOfEvent.NIGHTTM;
+            }
+            else if (thisEvent.Start.TimeOfDay <= nauriseTime)
+            {
+                return EventData.TimeOfEvent.AS_DAWN;
+            }
+            else if (thisEvent.Start.TimeOfDay <= civriseTime)
+            {
+                return EventData.TimeOfEvent.NA_DAWN;
+            }
+            else if (thisEvent.Start.TimeOfDay <= sunriseTime)
+            {
+                return EventData.TimeOfEvent.CI_DAWN;
+            }
+            else if (thisEvent.Start.TimeOfDay <= sunsetsTime)
+            {
+                return EventData.TimeOfEvent.DAYTIME;
+            }
+            else if (thisEvent.Start.TimeOfDay <= civsetsTime)
+            {
+                return EventData.TimeOfEvent.CI_DUSK;
+            }
+            else if (thisEvent.Start.TimeOfDay <= nausetsTime)
+            {
+                return EventData.TimeOfEvent.NA_DUSK;
+            }
+            else if (thisEvent.Start.TimeOfDay <= astsetsTime)
+            {
+                return EventData.TimeOfEvent.AS_DUSK;
+            }
+            else
+            {
+                return EventData.TimeOfEvent.NIGHTTM;
+            }
+        }
+        
         private void SetEventDuration()
         {
             // the definitions for the different no power production event

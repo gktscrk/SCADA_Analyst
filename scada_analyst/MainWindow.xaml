@@ -56,15 +56,21 @@
             </MenuItem>
             <MenuItem Header="_Analysis Options">
                 <MenuItem Header="_Add Position Data to Structures" Click="AddStructureLocationsAsync" />
-                <MenuItem Header="_Get Distances Between Structures" Click="GetDistancesBetweenStructuresAsync" />
+                <MenuItem Header="_Calculate Distances Between Structures" Click="GetDistancesBetweenStructuresAsync" />
                 <Separator />
                 <MenuItem Header="_Process Events" Click="FindEventsAsync" />
-                <MenuItem Header="_Match Power Events with Weather" Click="MatchEventsAsync" />
-                <MenuItem Header="_Removed Matched Events" Click="RemovedMatchedEventsAsync" />
-                <Separator/>
+                <Separator />
+                <MenuItem Header="_Match Power and Weather Event Times" Click="MatchEventsAsync" />
+                <MenuItem Header="_Compute Time of Day for Power Events" Click="AddDaytimesToEvents" />
+                <Separator />
+                <MenuItem Header="_Filter by Event Duration" Click="ProcessDurationFilterAsync" />
+                <MenuItem Header="_Remove Matching Events" Click="RemoveMatchedEventsAsync" />
+                <MenuItem Header="_Remove Events by Time of Day" Click="RemoveProcessedDaytimesAsync" />
+                <Separator />
                 <MenuItem Header="_Clear Events" Click="ClearEvents" />
-                <Separator/>
+                <Separator />
                 <MenuItem Header="_Analysis Settings" Click="SetAnalysisSettings" />
+                <MenuItem Header="_Modify Event Duration Filter Length" Click="EditDurationFilter" />
             </MenuItem>
         </Menu>
 
@@ -397,7 +403,7 @@
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0"
                                Content="Power Production: Null or Negative" FontWeight="Bold" />
 
-                        <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
+                        <ListView Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="5,5,5,5" 
                                   Name="LView_PowrNone"
                                   SelectionChanged="LView_Powr_SelectionChanged"
                                   VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -461,52 +467,17 @@
                             </ListView.View>
                         </ListView>
 
-                        <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
+                        <Grid Grid.Row="0" Grid.Column="1" >
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Text="Duration filtering:" />
+                            <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Name="LBL_DurationFilter"                               
+                                   HorizontalAlignment="Center" HorizontalContentAlignment="Center" />
 
-                            <Label Grid.Column="0" Grid.Row="2" Margin="5,5,5,5" Name="LBL_DurationFilter"
-                                       HorizontalAlignment="Center" HorizontalContentAlignment="Center" />
-
-                            <Button Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" Width="100"
-                                        Content="Edit duration" Click="EditDurationFilter"
-                                        Style="{DynamicResource SquareButtonStyle}" />
-
-                            <Button Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Width="100" Name="BTN_ProcessFilter"
-                                        Content="Process filter" Click="ProcessDurationFilterAsync"
-                                        Style="{StaticResource AccentedSquareButtonStyle}"/>
-
-                            <Separator Grid.Column="0" Grid.Row="4" Margin="5,5,5,5" />
-
-                            <Button Grid.Column="0" Grid.Row="6" Margin="5,5,5,5" Width="100"
-                                        Name="BTN_ProcessDayTime" Content="Add times" 
-                                        Click="AddDaytimesToEvents"
-                                        Style="{StaticResource AccentedSquareButtonStyle}" />
-                            <Button Grid.Column="0" Grid.Row="7" Margin="5,5,5,5" Width="100"
-                                        Name="BTN_RemoveMaintenances" Content="Process times"
-                                        Click="RemoveProcessedDaytimesAsync"
-                                        Style="{StaticResource AccentedSquareButtonStyle}" />
-
-                            <Separator Grid.Column="0" Grid.Row="8" Margin="5,5,5,5" />
-
-                            <Button Grid.Column="0" Grid.Row="10" Margin="5,5,5,5" Width="100"
-                                        Content="Reset" Click="ResetNoPwrProdEvents" />
+                            <Button Grid.Column="1" Grid.Row="0" Margin="5,5,5,5" Width="100"
+                                    Content="Reset Events" Click="ResetNoPwrProdEvents" />
                         </Grid>
 
                     </Grid>
@@ -526,7 +497,7 @@
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0"
                                Content="Power Production: " Name="LBL_PwrProdAmount" FontWeight="Bold" />
 
-                        <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5" 
+                        <ListView Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="5,5,5,5" 
                                   Name="LView_PowrRted"
                                   SelectionChanged="LView_Powr_SelectionChanged"
                                   VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -590,40 +561,18 @@
                             </ListView.View>
                         </ListView>
 
-                        <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
+                        <Grid Grid.Row="0" Grid.Column="1" >
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
 
-                            <Button Grid.Column="0" Grid.Row="6" Margin="5,5,5,5" Width="100"
-                                    Content="Add times" 
-                                    Click="AddDaytimesToEvents"
-                                    Style="{StaticResource AccentedSquareButtonStyle}" />
-                            
-                            <Button Grid.Column="0" Grid.Row="7" Margin="5,5,5,5" Width="100"
-                                    Content="Process times"
-                                    Click="RemoveProcessedDaytimesAsync"
-                                    Style="{StaticResource AccentedSquareButtonStyle}" />
+                            <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Name="LBL_DurationFilter2"                               
+                                   HorizontalAlignment="Center" HorizontalContentAlignment="Center" />
 
-                            <Separator Grid.Column="0" Grid.Row="8" Margin="5,5,5,5" />
-
-                            <Button Grid.Column="0" Grid.Row="10" Margin="5,5,5,5" Width="100"
-                                        Content="Reset" Click="ResetRtdPwrProdEvents" />
+                            <Button Grid.Column="1" Grid.Row="0" Margin="5,5,5,5" Width="100"
+                                    Content="Reset Events" Click="ResetRtdPwrProdEvents" />
                         </Grid>
-
                     </Grid>
                 </TabItem>
 
