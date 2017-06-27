@@ -13,6 +13,10 @@ namespace scada_analyst
     {
         #region Variables
 
+        private ScadaData.TurbineData _fleetMeans = new ScadaData.TurbineData();
+
+        private List<ScadaData.TurbineData> _localCopy = new List<ScadaData.TurbineData>();
+
         private List<EventData> _allWtrEvts = new List<EventData>();
         private List<EventData> _loSpEvents = new List<EventData>();
         private List<EventData> _hiSpEvents = new List<EventData>();
@@ -743,6 +747,98 @@ namespace scada_analyst
             catch
             {
                 throw;
+            }
+        }
+
+        #endregion
+
+        #region Fleet-wise Means and Difference
+
+        public void FleetStats(ScadaData scadaFile)
+        {
+
+        }
+
+        /// <summary>
+        /// This function calculates the fleet-wise average of several variables.
+        /// </summary>
+        /// <param name="scadaFile"></param>
+        private void FleetAverages(ScadaData scadaFile)
+        {
+            // need to decide which variables we are using for this process; thinking main bearing only for now and if needed
+            // the method is easily extendable
+
+            // we need some sort of timeaverage for every sample without having the guarantee that every sample exists
+            // for every turbine
+
+            // need code to iterate through every turbine to find the specific value 
+
+            //this needs to happen for every windfarm we have
+            for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+            {
+                // and for every sample in every windfarm
+                for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                {
+                    // if the averages' file already does not contain this, we can add a new DateTime to it
+                    if (_fleetMeans.InclDtTm.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
+                    {
+                        // if the list does contain that timestamp already, we need to increment the variable  
+                        // we are averaging by the new value
+
+                        // get index as the first thing
+                        int index = _fleetMeans.Data.IndexOf
+                            (_fleetMeans.Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp).FirstOrDefault());
+
+                        // this should only work though if the value !IsNaN and the previous value !IsNaN
+                        if (!double.IsNaN(_fleetMeans.Data[index].MainBear.Gs.Mean))
+                        {
+                            _fleetMeans.Data[index].MainBear.Gs.Mean = 0;
+                        }
+
+                        if (!double.IsNaN(scadaFile.WindFarm[i].DataSorted[j].MainBear.Gs.Mean))
+                        {
+                            // this adds the code *but* we also need to keep track of how many times we have done this
+                            _fleetMeans.Data[index].MainBear.Gs.Mean += scadaFile.WindFarm[i].DataSorted[j].MainBear.Gs.Mean;
+                            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Maxm++;
+                        }
+                        // no else needed, if it is NaN then we can ignore it without problem
+                    }
+                    else
+                    {
+                        // if the new average list does not contain the information, we can just add it in
+                        _fleetMeans.Data.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                        // .Maxm will be used as the incrementor, need to be careful in setting it up to avoid making it
+                        // count a NaN as the first one. Present conditional should work for this
+                        _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
+
+                        _fleetMeans.InclDtTm.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
+                    }
+                }
+            }
+
+            // lastly the incrementor needs to be used to get the average for all of the timestamps
+            for (int i = 0; i < _fleetMeans.Data.Count; i++)
+            {
+                _fleetMeans.Data[i].MainBear.Gs.Mean = _fleetMeans.Data[i].MainBear.Gs.Mean / _fleetMeans.Data[i].MainBear.Gs.Maxm;
+            }
+        }
+
+        /// <summary>
+        /// This functions calculates the specific deviation for every datapoint for whom the 
+        /// average value was calculated.
+        /// </summary>
+        /// <param name="scadaFile"></param>
+        private void FleetWiseDeviation(ScadaData scadaFile)
+        {
+            // for this to happen well, the full dataset needs to be made into a local copy 
+            // here that contains the relevant information for everything
+
+            _localCopy = new List<ScadaData.TurbineData>(scadaFile.WindFarm);
+            
+            for (int i = 0; i < _fleetMeans.Data.Count; i++)
+            {
+
             }
         }
 
