@@ -24,7 +24,13 @@ namespace scada_analyst
 
         #endregion
 
+        #region Constructor
+
         public MeteoData() { }
+
+        #endregion
+
+        #region Load Data
 
         public MeteoData(MeteoData existingFiles)
         {
@@ -47,15 +53,6 @@ namespace scada_analyst
         public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
             LoadNSortMet(filenames, progress);
-        }
-
-        public void ExportFiles(IProgress<int> progress, string output, DateTime startExp, DateTime endExprt)
-        {
-            // feed in proper arguments for this output file name and assign these
-            outputName = output;
-
-            // write the SCADA file out in a reasonable method
-            WriteMeteo(progress, startExp, endExprt);
         }
 
         private void LoadMetFiles(string[] filenames, IProgress<int> progress)
@@ -170,6 +167,19 @@ namespace scada_analyst
             }
         }
 
+        #endregion
+
+        #region Export Data
+
+        public void ExportFiles(IProgress<int> progress, string output, DateTime startExp, DateTime endExprt)
+        {
+            // feed in proper arguments for this output file name and assign these
+            outputName = output;
+
+            // write the SCADA file out in a reasonable method
+            WriteMeteo(progress, startExp, endExprt);
+        }
+
         private void WriteMeteo(IProgress<int> progress, DateTime startExp, DateTime endExprt)
         {
             using (StreamWriter sW = new StreamWriter(outputName))
@@ -244,6 +254,8 @@ namespace scada_analyst
                 }
             }
         }
+
+        #endregion 
 
         #region Support Classes
 

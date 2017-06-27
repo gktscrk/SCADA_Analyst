@@ -21,12 +21,18 @@ namespace scada_analyst
 
         #endregion
 
+        #region Constructor
+
         public GeoData(string filename, IProgress<int> progress)
         {
             this.FileName = filename;
 
             LoadGeography(progress);
         }
+
+        #endregion
+
+        #region Load Data
 
         private void LoadGeography(IProgress<int> progress)
         {
@@ -83,6 +89,8 @@ namespace scada_analyst
                 }
             }
         }
+
+        #endregion
 
         #region Support Classes
 

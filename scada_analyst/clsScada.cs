@@ -25,7 +25,13 @@ namespace scada_analyst
 
         #endregion
 
+        #region Constructor
+
         public ScadaData() { }
+
+        #endregion
+
+        #region Load Data
 
         public ScadaData(ScadaData existingFiles)
         {
@@ -34,12 +40,12 @@ namespace scada_analyst
                 windFarm.Add(existingFiles.WindFarm[i]);
             }
 
-            for (int i = 0; i< existingFiles.InclTrbn.Count; i++)
+            for (int i = 0; i < existingFiles.InclTrbn.Count; i++)
             {
                 inclTrbn.Add(existingFiles.InclTrbn[i]);
             }
         }
-        
+
         public ScadaData(string[] filenames, IProgress<int> progress)
         {
             LoadNSort(filenames, progress);
@@ -48,29 +54,6 @@ namespace scada_analyst
         public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
             LoadNSort(filenames, progress);
-        }
-
-        public void ExportFiles(IProgress<int> progress, string output,
-            bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
-            bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
-            bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
-            bool exportGBxMaxm, bool exportGBxMinm, bool exportGBxMean, bool exportGBxStdv,
-            bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
-            bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv,
-            DateTime expStart, DateTime exprtEnd)
-        {
-            // feed in proper arguments for this output file name and assign these
-            outputName = output;
-
-            // write the SCADA file out in a reasonable method
-            WriteSCADA(progress,
-                exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
-                exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
-                exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
-                exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
-                exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
-                exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
-                expStart, exprtEnd);
         }
 
         private void LoadFiles(string[] filenames, IProgress<int> progress)
@@ -163,7 +146,7 @@ namespace scada_analyst
                 }
             }
         }
-        
+
         private void PopulateTimeDif()
         {
             for (int i = 0; i < windFarm.Count; i++)
@@ -181,6 +164,33 @@ namespace scada_analyst
             {
                 windFarm[i].DataSorted = windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
             }
+        }
+
+        #endregion 
+
+        #region Export Data
+
+        public void ExportFiles(IProgress<int> progress, string output,
+            bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
+            bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
+            bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
+            bool exportGBxMaxm, bool exportGBxMinm, bool exportGBxMean, bool exportGBxStdv,
+            bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
+            bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv,
+            DateTime expStart, DateTime exprtEnd)
+        {
+            // feed in proper arguments for this output file name and assign these
+            outputName = output;
+
+            // write the SCADA file out in a reasonable method
+            WriteSCADA(progress,
+                exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
+                exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
+                exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
+                exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
+                exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
+                exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
+                expStart, exprtEnd);
         }
 
         private void WriteSCADA(IProgress<int> progress,
@@ -234,7 +244,7 @@ namespace scada_analyst
                                 if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
                                 else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
 
-                                if (exportPowMaxm) { hB.Append("wtc_ActPower_max" + ","); sB.Append(Math.Round(unit.Powers.Maxm,3) + ","); }
+                                if (exportPowMaxm) { hB.Append("wtc_ActPower_max" + ","); sB.Append(Math.Round(unit.Powers.Maxm, 3) + ","); }
                                 if (exportPowMinm) { hB.Append("wtc_ActPower_min" + ","); sB.Append(Math.Round(unit.Powers.Minm, 3) + ","); }
                                 if (exportPowMean) { hB.Append("wtc_ActPower_mean" + ","); sB.Append(Math.Round(unit.Powers.Mean, 3) + ","); }
                                 if (exportPowStdv) { hB.Append("wtc_ActPower_stddev" + ","); sB.Append(Math.Round(unit.Powers.Stdv, 3) + ","); }
@@ -362,6 +372,8 @@ namespace scada_analyst
                 }
             }
         }
+
+        #endregion
 
         #region Support Classes
 

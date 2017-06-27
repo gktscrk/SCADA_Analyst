@@ -27,7 +27,13 @@ namespace scada_analyst
 
         #endregion
 
+        #region Constructor
+
         public EventData() { }
+
+        #endregion
+
+        #region Create Events
 
         public EventData(List<MeteoData.MeteoSample> data, WeatherType input)
         {
@@ -204,7 +210,10 @@ namespace scada_analyst
                 return EventData.TimeOfEvent.NIGHTTM;
             }
         }
-        
+
+        /// <summary>
+        /// Get event durations and assign appropriate enumerators
+        /// </summary>
         private void SetEventDuration()
         {
             // the definitions for the different no power production event
@@ -218,6 +227,10 @@ namespace scada_analyst
             else if (Durat.TotalMinutes < (int)EvtDuration.DAYS) { evtDrtn = EvtDuration.MANYHOURS; }
             else if (Durat.TotalMinutes >= (int)EvtDuration.DAYS) { evtDrtn = EvtDuration.DAYS; }
         }
+
+        #endregion
+
+        #region Support Classes
 
         public enum EventAssoct
         {
@@ -279,6 +292,8 @@ namespace scada_analyst
             LOW_SP, // below cutin
             HI_SPD  // above cutout
         }
+
+        #endregion
 
         #region Properties
 
