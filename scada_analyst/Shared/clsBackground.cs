@@ -100,7 +100,7 @@ namespace scada_analyst.Shared
         #endregion
     }
 
-    public class BaseEventData
+    public class BaseEventData : ObservableObject
     {
         #region Variables
 

@@ -19,7 +19,7 @@ namespace scada_analyst
         private TimeSpan sampleLen = new TimeSpan(0, 9, 59);
 
         private EventAssoct assocEv = EventAssoct.NONE;
-        private EventSource eSource;
+        private EventSource eSource = EventSource.UNKNOWN;
         private EvtDuration evtDrtn = EvtDuration.UNKNOWN;
         private PwrProdType pwrProd = PwrProdType.NORMAL;
         private TimeOfEvent dayTime = TimeOfEvent.UNKNOWN;
@@ -212,10 +212,11 @@ namespace scada_analyst
 
             Durat = Finit - Start;
 
-            if (Durat.TotalMinutes < 30) { evtDrtn = EvtDuration.DMNS; }
-            else if (Durat.TotalMinutes < 60 * 5) { evtDrtn = EvtDuration.HORS; }
-            else if (Durat.TotalMinutes < 60 * 10) { evtDrtn = EvtDuration.DHRS; }
-            else if (Durat.TotalMinutes < 60 * 24) { evtDrtn = EvtDuration.DAYS; }
+            if (Durat.TotalMinutes < (int)EvtDuration.DECIMINS) { evtDrtn = EvtDuration.SHORT; }
+            else if (Durat.TotalMinutes < (int)EvtDuration.HOURS) { evtDrtn = EvtDuration.DECIMINS; }
+            else if (Durat.TotalMinutes < (int)EvtDuration.MANYHOURS) { evtDrtn = EvtDuration.HOURS; }
+            else if (Durat.TotalMinutes < (int)EvtDuration.DAYS) { evtDrtn = EvtDuration.MANYHOURS; }
+            else if (Durat.TotalMinutes >= (int)EvtDuration.DAYS) { evtDrtn = EvtDuration.DAYS; }
         }
 
         public enum EventAssoct
@@ -242,12 +243,12 @@ namespace scada_analyst
         {
             // this event marks the duration of the downtime for the event
 
-            UNKNOWN,
-            NONE,
-            DMNS, // deciminutes
-            HORS, // hours
-            DHRS, // decihours
-            DAYS // days
+            UNKNOWN = -1,
+            SHORT = 0, // short for things below 30 minutes which are quite probably not worth thinking about
+            DECIMINS = 30, // deciminutes
+            HOURS = 2*60, // hours
+            MANYHOURS = 8*60, // decihours
+            DAYS = 2*24*60 // days
         }
 
         public enum PwrProdType
