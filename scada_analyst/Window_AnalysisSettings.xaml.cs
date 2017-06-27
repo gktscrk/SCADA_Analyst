@@ -22,7 +22,7 @@ namespace scada_analyst
 
         public Window_AnalysisSettings(MetroWindow owner, double spdIns, double spdOut, double ratPwr,
             bool nightTime, bool astdwTime, bool naudwTime, bool civdwTime, 
-            bool daytmTime, bool civdsTime, bool naudsTime, bool astdsTime)
+            bool daytmTime, bool civdsTime, bool naudsTime, bool astdsTime, TimeSpan workMorn, TimeSpan workEven)
         {
             InitializeComponent();
 
@@ -40,6 +40,11 @@ namespace scada_analyst
             CBox_Mnt_CivDs.IsChecked = civdsTime;
             CBox_Mnt_NauDs.IsChecked = naudsTime;
             CBox_Mnt_AstDs.IsChecked = astdsTime;
+
+            TCtrl_MorningH.NumericValue = workMorn.Hours;
+            TCtrl_MorningM.NumericValue = workMorn.Minutes;
+            TCtrl_EveningH.NumericValue = workEven.Hours;
+            TCtrl_EveningM.NumericValue = workEven.Minutes;
         }
 
         private void ApplyClick(object sender, RoutedEventArgs e)
@@ -62,6 +67,30 @@ namespace scada_analyst
         public double SpdOut { get { return NBox_Ctout.NumericValue; } set { NBox_Ctout.NumericValue = value; } }
         public double RtdPwr { get { return NBox_RaPow.NumericValue; } set { NBox_RaPow.NumericValue = value; } }
 
+        public TimeSpan WorkHoursMorning
+        {
+            get
+            { return new TimeSpan((int)TCtrl_MorningH.NumericValue, (int)TCtrl_MorningM.NumericValue, 0);
+            }
+            set
+            {
+                TCtrl_MorningH.NumericValue = value.Hours;
+                TCtrl_MorningM.NumericValue = value.Minutes;
+            }
+        }
+
+        public TimeSpan WorkHoursEvening
+        {
+            get
+            {
+                return new TimeSpan((int)TCtrl_EveningH.NumericValue, (int)TCtrl_EveningM.NumericValue, 0);
+            }
+            set
+            {
+                TCtrl_EveningH.NumericValue = value.Hours;
+                TCtrl_EveningM.NumericValue = value.Minutes;
+            }
+        }
         #endregion
     }
 }

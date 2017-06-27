@@ -703,7 +703,9 @@ namespace scada_analyst
         }
         
         /// <summary>
-        /// Removes events which have been qualified as likely to be not during the right time of day
+        /// Removes events which have been qualified as likely to be not during the right time of day. Extension of this method
+        /// also checks that the removed time is not between likely work hours in order to account for the early morning and 
+        /// evening sunshine in the respective hemispheric summers.
         /// </summary>
         /// <param name="progress"></param>
         public void RemoveProcessedDaytimes(IProgress<int> progress)
@@ -722,40 +724,41 @@ namespace scada_analyst
 
             for (int i = currentEvents.Count - 1; i >= 0; i--)
             {
-                if (currentEvents[i].DayTime == EventData.TimeOfEvent.NIGHTTM && MainWindow.Mnt_Night)
+                if (currentEvents[i].Start.TimeOfDay > MainWindow.WorkHoursMorning &&
+                    currentEvents[i].Start.TimeOfDay < MainWindow.WorkHoursEvening)
                 {
-                    //App.Current.Dispatcher.Invoke((Action)delegate // 
-                    //{
-                    currentEvents.RemoveAt(i);
-                    //});
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DAWN && MainWindow.Mnt_AstDw)
-                {
-                    currentEvents.RemoveAt(i);
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DAWN && MainWindow.Mnt_NauDw)
-                {
-                    currentEvents.RemoveAt(i);
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DAWN && MainWindow.Mnt_CivDw)
-                {
-                    currentEvents.RemoveAt(i);
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.DAYTIME && MainWindow.Mnt_Daytm)
-                {
-                    currentEvents.RemoveAt(i);
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DUSK && MainWindow.Mnt_CivDs)
-                {
-                    currentEvents.RemoveAt(i);
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DUSK && MainWindow.Mnt_NauDs)
-                {
-                    currentEvents.RemoveAt(i);
-                }
-                else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DUSK && MainWindow.Mnt_AstDs)
-                {
-                    currentEvents.RemoveAt(i);
+                    if (currentEvents[i].DayTime == EventData.TimeOfEvent.NIGHTTM && MainWindow.Mnt_Night)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DAWN && MainWindow.Mnt_AstDw)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DAWN && MainWindow.Mnt_NauDw)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DAWN && MainWindow.Mnt_CivDw)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.DAYTIME && MainWindow.Mnt_Daytm)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DUSK && MainWindow.Mnt_CivDs)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DUSK && MainWindow.Mnt_NauDs)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
+                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DUSK && MainWindow.Mnt_AstDs)
+                    {
+                        currentEvents.RemoveAt(i);
+                    }
                 }
 
                 count++;
@@ -786,6 +789,15 @@ namespace scada_analyst
                     RtPwEvents.Add(AllPwrEvts[i]);
                 }
             }
+        }
+
+        /// <summary>
+        /// A set of methods to investigate the events and to compare them to normal behaviour in one turbine to begin with
+        /// and then after that in a set of turbines based on their proximity.
+        /// </summary>
+        public void CompareTurbineHistoricData()
+        {
+
         }
 
         #region Support Classes

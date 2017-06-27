@@ -65,22 +65,25 @@ namespace scada_analyst
         private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
 
-        private CancellationTokenSource cts;
+        private CancellationTokenSource _cts;
 
-        private DateTime dataExportStart = new DateTime();
-        private DateTime dataExportEndTm = new DateTime();
-        
-        private static TimeSpan duratFilter = new TimeSpan(0, 10, 0);
+        private DateTime _dataExportStart = new DateTime();
+        private DateTime _dataExportEndTm = new DateTime();
+
+        public static TimeSpan _workHrsMorning = new TimeSpan(7, 0, 0);
+        public static TimeSpan _workHrsEvening = new TimeSpan(20, 0, 0);
+
+        private static TimeSpan _duratFilter = new TimeSpan(0, 10, 0);
 
         // this is to allow changing the property of the timestep in the loaded scada data at some point
-        private static TimeSpan scadaSeprtr = new TimeSpan(0, 10, 0);
+        private static TimeSpan _scadaSeprtr = new TimeSpan(0, 10, 0);
 
         private Analysis analyser = new Analysis();
         private GeoData geoFile;
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
         
-        private List<DataOverview> overview = new List<DataOverview>();
+        private List<DataOverview> _overview = new List<DataOverview>();
 
         private ObservableCollection<Structure> _assetsVw = new ObservableCollection<Structure>();
         private ObservableCollection<EventData> _allWtrVw = new ObservableCollection<EventData>();
@@ -90,9 +93,9 @@ namespace scada_analyst
         private ObservableCollection<EventData> _noPwView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _rtPwView = new ObservableCollection<EventData>();
            
-        private ObservableCollection<ScadaData.ScadaSample> thisEventData;
-        private ObservableCollection<ScadaData.ScadaSample> weekEventData;
-        private ObservableCollection<ScadaData.ScadaSample> histEventData;
+        private ObservableCollection<ScadaData.ScadaSample> _thisEventData;
+        private ObservableCollection<ScadaData.ScadaSample> _weekEventData;
+        private ObservableCollection<ScadaData.ScadaSample> _histEventData;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -152,8 +155,8 @@ namespace scada_analyst
 
         private void UpdateDurationLabel()
         {
-            LBL_DurationFilter.Content = "Duration Filter: " + duratFilter.ToString();
-            LBL_DurationFilter2.Content = "Duration Filter: " + duratFilter.ToString();
+            LBL_DurationFilter.Content = "Duration Filter: " + _duratFilter.ToString();
+            LBL_DurationFilter2.Content = "Duration Filter: " + _duratFilter.ToString();
         }
 
         #endregion
@@ -175,8 +178,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void AddDaytimesToEvents(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -316,28 +319,28 @@ namespace scada_analyst
 
                 LineSeries newLine = new LineSeries();
 
-                for (int i = 0; i < weekEventData.Count; i++)
+                for (int i = 0; i < _weekEventData.Count; i++)
                 {
                     double variable = 0;
                     
                     if (input == "Gearbox")
                     {
                         newLine.Title = "HS Gens.";
-                        variable = weekEventData[i].Gearbox.Hs.Gens.Mean;
+                        variable = _weekEventData[i].Gearbox.Hs.Gens.Mean;
                     }
                     else if (input == "Generator")
                     {
                         newLine.Title = "Bearing G";
-                        variable = weekEventData[i].Genny.bearingG.Mean;
+                        variable = _weekEventData[i].Genny.bearingG.Mean;
                     }
                     else if (input == "Main bearing")
                     {
                         newLine.Title = "Main Bearing.";
-                        variable = weekEventData[i].MainBear.Standards.Mean;
+                        variable = _weekEventData[i].MainBear.Standards.Mean;
                     }
 
                     list.Add(variable != -9999 ? variable : double.NaN);
-                    times.Add(weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
+                    times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
                 }
 
                 newLine.Values = new ChartValues<double>(list);
@@ -360,8 +363,8 @@ namespace scada_analyst
 
             ClearEvents(sender, e);
 
-            dataExportStart = new DateTime();
-            dataExportEndTm = new DateTime();
+            _dataExportStart = new DateTime();
+            _dataExportEndTm = new DateTime();
         }
         
         /// <summary>
@@ -467,11 +470,11 @@ namespace scada_analyst
         private void EditDurationFilter(object sender, RoutedEventArgs e)
         {
             Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
-                "Hours", "Minutes", false, false, duratFilter.TotalHours, duratFilter.Minutes);
+                "Hours", "Minutes", false, false, _duratFilter.TotalHours, _duratFilter.Minutes);
 
             if (getTimeDur.ShowDialog().Value)
             {
-                duratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
+                _duratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
                 UpdateDurationLabel();
             }
         }
@@ -493,8 +496,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void ExportMeteoDataAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -517,21 +520,21 @@ namespace scada_analyst
 
                         if (CBox_DateRangeExport.IsChecked)
                         {
-                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", dataExportStart);
-                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", dataExportEndTm);
+                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", _dataExportStart);
+                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", _dataExportEndTm);
 
                             if (startCal.ShowDialog().Value)
                             {
-                                dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
+                                _dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
                             }
 
                             if (endCal.ShowDialog().Value)
                             {
-                                dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
+                                _dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
                             }
                         }
 
-                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName,dataExportStart,dataExportEndTm));
+                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName,_dataExportStart,_dataExportEndTm));
 
                         ProgressBarInvisible();
                     }
@@ -554,8 +557,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void ExportScadaDataAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -578,17 +581,17 @@ namespace scada_analyst
 
                         if (CBox_DateRangeExport.IsChecked)
                         {
-                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", dataExportStart);
-                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", dataExportEndTm);
+                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", _dataExportStart);
+                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", _dataExportEndTm);
 
                             if (startCal.ShowDialog().Value)
                             {
-                                dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
+                                _dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, false);
                             }
 
                             if (endCal.ShowDialog().Value)
                             {
-                                dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
+                                _dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, false);
                             }
                         }
 
@@ -599,7 +602,7 @@ namespace scada_analyst
                             exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
                             exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
                             exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
-                            dataExportStart, dataExportEndTm));
+                            _dataExportStart, _dataExportEndTm));
 
                         ProgressBarInvisible();
                     }
@@ -622,8 +625,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void FindEventsAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -661,8 +664,8 @@ namespace scada_analyst
         {
             // this method to invoke the analysis class and do some work there
 
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -725,8 +728,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void LoadGeoDataAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -806,8 +809,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void LoadMeteoDataAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -892,8 +895,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void LoadScadaDataAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;    
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;    
 
             var progress = new Progress<int>(value =>
             {
@@ -942,8 +945,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void MatchEventsAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -993,8 +996,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void ProcessDurationFilterAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -1003,7 +1006,7 @@ namespace scada_analyst
 
             try
             {
-                if (duratFilter.TotalSeconds == 0)
+                if (_duratFilter.TotalSeconds == 0)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "The duration filter is set to 0 seconds. Please change the length of this filter.");
@@ -1039,8 +1042,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void RemoveMatchedEventsAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -1095,8 +1098,8 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void RemoveProcessedDaytimesAsync(object sender, RoutedEventArgs e)
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -1146,7 +1149,7 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ResetNoPwrProdEvents(object sender, RoutedEventArgs e)
         {
-            duratFilter = new TimeSpan(0, 10, 0);
+            _duratFilter = new TimeSpan(0, 10, 0);
             UpdateDurationLabel();
 
             analyser.ResetEventList();
@@ -1161,7 +1164,7 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ResetRtdPwrProdEvents(object sender, RoutedEventArgs e)
         {
-            duratFilter = new TimeSpan(0, 10, 0);
+            _duratFilter = new TimeSpan(0, 10, 0);
             UpdateDurationLabel();
 
             analyser.ResetEventList();
@@ -1192,7 +1195,7 @@ namespace scada_analyst
             // more options for expanding the code if necessary (which it no doubt will be)
 
             Window_AnalysisSettings anaSets = new Window_AnalysisSettings(this, cutIn, cutOut, ratedPwr,
-                mnt_Night, mnt_AstDw, mnt_NauDw, mnt_CivDw, mnt_Daytm, mnt_CivDs, mnt_NauDs, mnt_AstDs);
+                mnt_Night, mnt_AstDw, mnt_NauDw, mnt_CivDw, mnt_Daytm, mnt_CivDs, mnt_NauDs, mnt_AstDs, _workHrsMorning, _workHrsEvening);
 
             if (anaSets.ShowDialog().Value)
             {
@@ -1208,6 +1211,9 @@ namespace scada_analyst
                 mnt_CivDs = anaSets.Mnt_CivDs;
                 mnt_NauDs = anaSets.Mnt_NauDs;
                 mnt_AstDs = anaSets.Mnt_AstDs;
+
+                _workHrsMorning = anaSets.WorkHoursMorning;
+                _workHrsEvening = anaSets.WorkHoursEvening;
 
                 RtdPowView.Clear();
                 LBL_PwrProdAmount.Content = GetPowerProdLabel();
@@ -1295,9 +1301,9 @@ namespace scada_analyst
 
         void CancelProgress_Click(object sender, RoutedEventArgs e)
         {
-            if (cts != null)
+            if (_cts != null)
             {
-                cts.Cancel();
+                _cts.Cancel();
 
                 ProgressBarInvisible();
             }
@@ -1307,14 +1313,14 @@ namespace scada_analyst
         {
             LView_LoadedOverview.ItemsSource = null;
 
-            overview.Clear();
-            overview.Add(new DataOverview("Structures", AssetsView.Count));
-            overview.Add(new DataOverview("Low Winds", LoSpdViews.Count));
-            overview.Add(new DataOverview("High Winds", HiSpdViews.Count));
-            overview.Add(new DataOverview("Power: None", NoPowViews.Count));
-            overview.Add(new DataOverview("Power: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
+            _overview.Clear();
+            _overview.Add(new DataOverview("Structures", AssetsView.Count));
+            _overview.Add(new DataOverview("Low Winds", LoSpdViews.Count));
+            _overview.Add(new DataOverview("High Winds", HiSpdViews.Count));
+            _overview.Add(new DataOverview("Power: None", NoPowViews.Count));
+            _overview.Add(new DataOverview("Power: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
-            LView_LoadedOverview.ItemsSource = overview;
+            LView_LoadedOverview.ItemsSource = _overview;
         }
 
         void PopulateOverview()
@@ -1366,14 +1372,14 @@ namespace scada_analyst
 
             if (AssetsView != null && AssetsView.Count > 0)
             {
-                dataExportStart = AssetsView[0].StartTime;
-                dataExportEndTm = AssetsView[0].EndTime;
+                _dataExportStart = AssetsView[0].StartTime;
+                _dataExportEndTm = AssetsView[0].EndTime;
 
                 // i is 1 below because the first values have already been assigned by the above code
                 for (int i = 1; i < AssetsView.Count; i++)
                 {
-                    if (AssetsView[i].StartTime < dataExportStart) { dataExportStart = AssetsView[i].StartTime; }
-                    if (AssetsView[i].EndTime > dataExportEndTm) { dataExportEndTm = AssetsView[i].EndTime; }
+                    if (AssetsView[i].StartTime < _dataExportStart) { _dataExportStart = AssetsView[i].StartTime; }
+                    if (AssetsView[i].EndTime > _dataExportEndTm) { _dataExportEndTm = AssetsView[i].EndTime; }
                 }
 
                 CreateAndUpdateDataSummary();
@@ -1595,9 +1601,9 @@ namespace scada_analyst
                     }
 
                     // assign the created dataset lists to their global variables
-                    thisEventData = new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
-                    weekEventData = new ObservableCollection<ScadaData.ScadaSample>(weekHistory);
-                    histEventData = new ObservableCollection<ScadaData.ScadaSample>(dataHistory);
+                    _thisEventData = new ObservableCollection<ScadaData.ScadaSample>(thisEvScada);
+                    _weekEventData = new ObservableCollection<ScadaData.ScadaSample>(weekHistory);
+                    _histEventData = new ObservableCollection<ScadaData.ScadaSample>(dataHistory);
 
                     // now sent the thisEvScada to the new ListView to populate it
                     InitializeEventExploration(sender, e);
@@ -1617,15 +1623,15 @@ namespace scada_analyst
 
             if (CBox_DataSetChoice.IsChecked.Value)
             {
-                LView_EventExplorer_Gearbox.ItemsSource = histEventData;
-                LView_EventExplorer_Generator.ItemsSource = histEventData;
-                LView_EventExplorer_MainBear.ItemsSource = histEventData;
+                LView_EventExplorer_Gearbox.ItemsSource = _histEventData;
+                LView_EventExplorer_Generator.ItemsSource = _histEventData;
+                LView_EventExplorer_MainBear.ItemsSource = _histEventData;
             }
             else
             {
-                LView_EventExplorer_Gearbox.ItemsSource = thisEventData;
-                LView_EventExplorer_Generator.ItemsSource = thisEventData;
-                LView_EventExplorer_MainBear.ItemsSource = thisEventData;
+                LView_EventExplorer_Gearbox.ItemsSource = _thisEventData;
+                LView_EventExplorer_Generator.ItemsSource = _thisEventData;
+                LView_EventExplorer_MainBear.ItemsSource = _thisEventData;
             }
         }
 
@@ -1636,9 +1642,9 @@ namespace scada_analyst
             CBox_DataSetChoice.IsEnabled = true;
 
             // first add it to the gridview on the list
-            LView_EventExplorer_Gearbox.ItemsSource = thisEventData;
-            LView_EventExplorer_Generator.ItemsSource = thisEventData;
-            LView_EventExplorer_MainBear.ItemsSource = thisEventData;
+            LView_EventExplorer_Gearbox.ItemsSource = _thisEventData;
+            LView_EventExplorer_Generator.ItemsSource = _thisEventData;
+            LView_EventExplorer_MainBear.ItemsSource = _thisEventData;
 
             ChangeListViewDataset(sender, e);
             DisplayCorrectEventDetails();
@@ -1747,18 +1753,20 @@ namespace scada_analyst
         public static double CutOut { get { return cutOut; } set { cutOut = value; } }
         public static double PowerLim { get { return powerLim; } set { powerLim = value; } }
         public static double RatedPwr { get { return ratedPwr; } set { ratedPwr = value; } }
-        public static TimeSpan ScadaSeprtr { get { return scadaSeprtr; } set { scadaSeprtr = value; } }
 
-        public static TimeSpan DuratFilter { get { return duratFilter; } set { duratFilter = value; } }
+        public static TimeSpan ScadaSeprtr { get { return _scadaSeprtr; } set { _scadaSeprtr = value; } }
+        public static TimeSpan DuratFilter { get { return _duratFilter; } set { _duratFilter = value; } }
+        public static TimeSpan WorkHoursMorning { get { return _workHrsMorning; } set { _workHrsMorning = value; } }
+        public static TimeSpan WorkHoursEvening { get { return _workHrsEvening; } set { _workHrsEvening = value; } }
 
         public List<DataOverview> Overview
         {
-            get { return overview; }
+            get { return _overview; }
             set
             {
-                if (overview != value)
+                if (_overview != value)
                 {
-                    overview = value;
+                    _overview = value;
                     OnPropertyChanged("Overview");
                 }
             }
