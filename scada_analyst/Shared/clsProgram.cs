@@ -14,6 +14,15 @@ namespace scada_analyst.Shared
 
             #region Version 0.200
 
+            ProgramVersion v0251 = new ProgramVersion(0251, new DateTime(2017, 06, 26));
+            v0251.AddChange("Day-time processing takes into account minimum and maximum working hours to account for a long summer day.");
+            results.Add(v0251);
+
+            ProgramVersion v0250 = new ProgramVersion(0250, new DateTime(2017, 06, 26));
+            v0250.AddChange("Can display charts of basic event temperatures for a duration of a week before it happened.");
+            v0250.AddChange("Events and charts both show the same information though the chart only has one variable.");
+            results.Add(v0250);
+
             ProgramVersion v0240 = new ProgramVersion(0240, new DateTime(2017, 06, 23));
             v0240.AddChange("Display of events based lists.");
             v0240.AddChange("Slowly working towards chart display with the same datasets.");

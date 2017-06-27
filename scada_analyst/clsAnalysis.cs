@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using scada_analyst.Shared;
-using System.Collections.ObjectModel;
 
 namespace scada_analyst
 {
@@ -22,69 +22,10 @@ namespace scada_analyst
 
         private List<Structure> _assetList = new List<Structure>();
         private List<Distances> _intervals = new List<Distances>();
-
-
+        
         #endregion
 
         public Analysis() { }
-
-        /// <summary>
-        /// Processes loaded power events and returns the collection with the respective time-of-day fields
-        /// </summary>
-        /// <param name="currentEvents"></param>
-        /// <param name="progress"></param>
-        /// <returns></returns>
-        public void AddDaytimesToEvents(IProgress<int> progress)
-        {
-            try
-            {
-                _allPwrEvts.Clear();
-
-                _noPwEvents = AddDaytimesToEvents(_noPwEvents, progress);
-                _rtPwEvents = AddDaytimesToEvents(_rtPwEvents, progress, 50);
-
-                foreach (EventData singleEvent in _noPwEvents)
-                {
-                    _allPwrEvts.Add(singleEvent);
-                }
-
-                foreach (EventData singleEvent in _rtPwEvents)
-                {
-                    _allPwrEvts.Add(singleEvent);
-                }
-
-                _allPwrEvts.OrderBy(o => o.Start);
-            }
-            catch { throw; }
-        }
-
-        private List<EventData> AddDaytimesToEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
-        {
-            // this method will contain the search for whether a non power production
-            // event took place during the day or during the night by calculating the 
-            // relevant sunrise and sunset for that day
-
-            int count = 0;
-
-            for (int i = 0; i < currentEvents.Count; i++)
-            {
-                Structure asset = _assetList.Where(x => x.UnitID == currentEvents[i].FromAsset).FirstOrDefault();
-
-                currentEvents[i].DayTime = EventData.GetEventDayTime(currentEvents[i], asset);
-
-                count++;
-
-                if (count % 10 == 0)
-                {
-                    if (progress != null)
-                    {
-                        progress.Report((int)(start + 0.5 * i / currentEvents.Count * 100.0));
-                    }
-                }
-            }
-
-            return currentEvents;
-        }
 
         /// <summary>
         /// Bool on whether locations could be added to loaded assets or not
@@ -152,86 +93,23 @@ namespace scada_analyst
             catch { throw; }
         }
 
-        /// <summary>
-        /// Method looks for matching events based on timestamps in the loaded power and wind datasets
-        /// </summary>
-        /// <param name="progress"></param>
-        public void AssociateEvents(IProgress<int> progress)
+        public void ResetEventList()
         {
-            try
+            //this method resets the eventlist in case the user so wishes
+            for (int i = 0; i < AllPwrEvts.Count; i++)
             {
-                _allPwrEvts.Clear();
-
-                _noPwEvents = AssociateEvents(_noPwEvents, progress);
-                _rtPwEvents = AssociateEvents(_rtPwEvents, progress, 50);
-
-                foreach (EventData singleEvent in _noPwEvents)
+                if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.NOPROD)
                 {
-                    _allPwrEvts.Add(singleEvent);
+                    NoPwEvents.Add(AllPwrEvts[i]);
                 }
-
-                foreach (EventData singleEvent in _rtPwEvents)
+                else if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.RATEDP)
                 {
-                    _allPwrEvts.Add(singleEvent);
+                    RtPwEvents.Add(AllPwrEvts[i]);
                 }
-
-                _allPwrEvts.OrderBy(o => o.Start);
             }
-            catch { throw; }
         }
-        
-        private List<EventData> AssociateEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
-        {
-            try
-            {
-                int count = 0;
 
-                for (int i = 0; i < currentEvents.Count; i++)
-                {
-                    bool goIntoHiSpEvents = true;
-
-                    for (int j = 0; j < _loSpEvents.Count; j++)
-                    {
-                        if (currentEvents[i].EvTimes.Intersect(_loSpEvents[j].EvTimes).Any())
-                        {
-                            currentEvents[i].AssocEv = EventData.EventAssoct.LO_SP;
-
-                            goIntoHiSpEvents = false;
-                            break;
-                        }
-                    }
-
-                    if (goIntoHiSpEvents)
-                    {
-                        for (int k = 0; k < _hiSpEvents.Count; k++)
-                        {
-                            if (currentEvents[i].EvTimes.Intersect(_hiSpEvents[k].EvTimes).Any())
-                            {
-                                currentEvents[i].AssocEv = EventData.EventAssoct.HI_SP;
-
-                                break;
-                            }
-                        }
-                    }
-
-                    if (currentEvents[i].AssocEv == EventData.EventAssoct.NONE)
-                    { currentEvents[i].AssocEv = EventData.EventAssoct.OTHER; }
-
-                    count++;
-
-                    if (count % 10 == 0)
-                    {
-                        if (progress != null)
-                        {
-                            progress.Report((int)(start + 0.5 * i / currentEvents.Count * 100.0));
-                        }
-                    }
-                }
-
-                return currentEvents;
-            }
-            catch { throw; }
-        }
+        #region Finding Events
 
         /// <summary>
         /// Overall method for finding events: references separate functions that call the required
@@ -562,6 +440,10 @@ namespace scada_analyst
             }
         }
 
+        #endregion
+
+        #region Structure Distance Tasks
+
         /// <summary>
         /// Get distances between all of the various loaded in positions; doesn't use the full extent
         /// of the geographic data file, but only loaded assets with meteorological or SCADA data.
@@ -614,6 +496,10 @@ namespace scada_analyst
             return Math.Round(Math.Sqrt(Math.Pow(deltaLat * m_per_deg_lat, 2) + Math.Pow(deltaLon * m_per_deg_lon, 2)), 3);
         }
 
+        #endregion 
+
+        #region Event Duration Tasks
+
         /// <summary>
         /// Duration filter takes a timespan and uses it to remove shorter events from loaded events list. In this implementation
         /// this works on both no power production and high power production events
@@ -641,6 +527,91 @@ namespace scada_analyst
                     {
                         currentEvents.RemoveAt(i);
                     }
+
+                    count++;
+
+                    if (count % 10 == 0)
+                    {
+                        if (progress != null)
+                        {
+                            progress.Report((int)(start + 0.5 * i / currentEvents.Count * 100.0));
+                        }
+                    }
+                }
+
+                return currentEvents;
+            }
+            catch { throw; }
+        }
+
+        #endregion 
+
+        #region Cross-type Event Tasks
+
+        /// <summary>
+        /// Method looks for matching events based on timestamps in the loaded power and wind datasets
+        /// </summary>
+        /// <param name="progress"></param>
+        public void AssociateEvents(IProgress<int> progress)
+        {
+            try
+            {
+                _allPwrEvts.Clear();
+
+                _noPwEvents = AssociateEvents(_noPwEvents, progress);
+                _rtPwEvents = AssociateEvents(_rtPwEvents, progress, 50);
+
+                foreach (EventData singleEvent in _noPwEvents)
+                {
+                    _allPwrEvts.Add(singleEvent);
+                }
+
+                foreach (EventData singleEvent in _rtPwEvents)
+                {
+                    _allPwrEvts.Add(singleEvent);
+                }
+
+                _allPwrEvts.OrderBy(o => o.Start);
+            }
+            catch { throw; }
+        }
+
+        private List<EventData> AssociateEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
+        {
+            try
+            {
+                int count = 0;
+
+                for (int i = 0; i < currentEvents.Count; i++)
+                {
+                    bool goIntoHiSpEvents = true;
+
+                    for (int j = 0; j < _loSpEvents.Count; j++)
+                    {
+                        if (currentEvents[i].EvTimes.Intersect(_loSpEvents[j].EvTimes).Any())
+                        {
+                            currentEvents[i].AssocEv = EventData.EventAssoct.LO_SP;
+
+                            goIntoHiSpEvents = false;
+                            break;
+                        }
+                    }
+
+                    if (goIntoHiSpEvents)
+                    {
+                        for (int k = 0; k < _hiSpEvents.Count; k++)
+                        {
+                            if (currentEvents[i].EvTimes.Intersect(_hiSpEvents[k].EvTimes).Any())
+                            {
+                                currentEvents[i].AssocEv = EventData.EventAssoct.HI_SP;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    if (currentEvents[i].AssocEv == EventData.EventAssoct.NONE)
+                    { currentEvents[i].AssocEv = EventData.EventAssoct.OTHER; }
 
                     count++;
 
@@ -701,13 +672,76 @@ namespace scada_analyst
             }
             catch { throw; }
         }
-        
+
+        #endregion
+
+        #region Day-time Tasks
+
         /// <summary>
         /// Removes events which have been qualified as likely to be not during the right time of day. Extension of this method
         /// also checks that the removed time is not between likely work hours in order to account for the early morning and 
         /// evening sunshine in the respective hemispheric summers.
         /// </summary>
         /// <param name="progress"></param>
+
+        /// <summary>
+        /// Processes loaded power events and returns the collection with the respective time-of-day fields
+        /// </summary>
+        /// <param name="currentEvents"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
+        public void AddDaytimesToEvents(IProgress<int> progress)
+        {
+            try
+            {
+                _allPwrEvts.Clear();
+
+                _noPwEvents = AddDaytimesToEvents(_noPwEvents, progress);
+                _rtPwEvents = AddDaytimesToEvents(_rtPwEvents, progress, 50);
+
+                foreach (EventData singleEvent in _noPwEvents)
+                {
+                    _allPwrEvts.Add(singleEvent);
+                }
+
+                foreach (EventData singleEvent in _rtPwEvents)
+                {
+                    _allPwrEvts.Add(singleEvent);
+                }
+
+                _allPwrEvts.OrderBy(o => o.Start);
+            }
+            catch { throw; }
+        }
+
+        private List<EventData> AddDaytimesToEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
+        {
+            // this method will contain the search for whether a non power production
+            // event took place during the day or during the night by calculating the 
+            // relevant sunrise and sunset for that day
+
+            int count = 0;
+
+            for (int i = 0; i < currentEvents.Count; i++)
+            {
+                Structure asset = _assetList.Where(x => x.UnitID == currentEvents[i].FromAsset).FirstOrDefault();
+
+                currentEvents[i].DayTime = EventData.GetEventDayTime(currentEvents[i], asset);
+
+                count++;
+
+                if (count % 10 == 0)
+                {
+                    if (progress != null)
+                    {
+                        progress.Report((int)(start + 0.5 * i / currentEvents.Count * 100.0));
+                    }
+                }
+            }
+
+            return currentEvents;
+        }
+
         public void RemoveProcessedDaytimes(IProgress<int> progress)
         {
             try
@@ -724,6 +758,8 @@ namespace scada_analyst
 
             for (int i = currentEvents.Count - 1; i >= 0; i--)
             {
+                // condition here checks whether the event started before or after the likely working hours of that day
+                // and does not proceed into the method if it did not
                 if (currentEvents[i].Start.TimeOfDay > MainWindow.WorkHoursMorning &&
                     currentEvents[i].Start.TimeOfDay < MainWindow.WorkHoursEvening)
                 {
@@ -774,31 +810,55 @@ namespace scada_analyst
 
             return currentEvents;
         }
-        
-        public void ResetEventList()
-        {
-            //this method resets the eventlist in case the user so wishes
-            for (int i = 0; i < AllPwrEvts.Count; i++)
-            {
-                if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.NOPROD)
-                {
-                    NoPwEvents.Add(AllPwrEvts[i]);
-                }
-                else if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.RATEDP)
-                {
-                    RtPwEvents.Add(AllPwrEvts[i]);
-                }
-            }
-        }
+
+        #endregion 
+
+        #region Event Comparison Tasks
 
         /// <summary>
         /// A set of methods to investigate the events and to compare them to normal behaviour in one turbine to begin with
         /// and then after that in a set of turbines based on their proximity.
         /// </summary>
-        public void CompareTurbineHistoricData()
+        public void TurbineEventComparison(EventCheckType task)
         {
+            // now I need to decide how to go about this -- first option should be to check against events from the same turbine
+            // to see whether the temperatures were similar say one year before and one month before at the same power level
+            //
+            // then an option should enable checking whether other turbines in the vicinity experienced any downtimes in a 
+            // similar timeframe
+
+            if (task == EventCheckType.SAME_TURBINE)
+            {
+                // this side should check the performance of the same turbine temperature-wise at similar power outputs in the past
+                TurbinePastPerformanceCheck();
+            }
+            else if (task == EventCheckType.NEARBY_TRBNS)
+            {
+                // this side should go and check whether any nearby turbines experienced similar behaviour under conditions
+                TurbineNeighbourPerformanceCheck();
+            }
+        }
+
+        public void TurbinePastPerformanceCheck()
+        {
+            // investigate same power outputs at different times in the past
 
         }
+
+        public void TurbineNeighbourPerformanceCheck()
+        {
+            // investigate turbine events at nearby neighbours around the same time of the event
+
+        }
+
+        public enum EventCheckType
+        {
+            // keys to check what's going on and which type of comparison we want to go into
+            SAME_TURBINE,
+            NEARBY_TRBNS
+        }
+
+        #endregion 
 
         #region Support Classes
 

@@ -234,109 +234,111 @@ namespace scada_analyst
                                 if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
                                 else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
 
-                                if (exportPowMaxm) { hB.Append("wtc_ActPower_max" + ","); sB.Append(unit.Powers.Maxm + ","); }
-                                if (exportPowMinm) { hB.Append("wtc_ActPower_min" + ","); sB.Append(unit.Powers.Minm + ","); }
-                                if (exportPowMean) { hB.Append("wtc_ActPower_mean" + ","); sB.Append(unit.Powers.Mean + ","); }
-                                if (exportPowStdv) { hB.Append("wtc_ActPower_stddev" + ","); sB.Append(unit.Powers.Stdv + ","); }
-                                if (exportPowMean) { hB.Append("wtc_ActPower_endvalue" + ","); sB.Append(unit.Powers.EndVal + ","); }
-                                if (exportPowMean) { hB.Append("wtc_ActPower_Quality_endvalue" + ","); sB.Append(unit.Powers.QualEndVal + ","); }
+                                if (exportPowMaxm) { hB.Append("wtc_ActPower_max" + ","); sB.Append(Math.Round(unit.Powers.Maxm,3) + ","); }
+                                if (exportPowMinm) { hB.Append("wtc_ActPower_min" + ","); sB.Append(Math.Round(unit.Powers.Minm, 3) + ","); }
+                                if (exportPowMean) { hB.Append("wtc_ActPower_mean" + ","); sB.Append(Math.Round(unit.Powers.Mean, 3) + ","); }
+                                if (exportPowStdv) { hB.Append("wtc_ActPower_stddev" + ","); sB.Append(Math.Round(unit.Powers.Stdv, 3) + ","); }
+                                if (exportPowMean) { hB.Append("wtc_ActPower_endvalue" + ","); sB.Append(Math.Round(unit.Powers.EndVal, 3) + ","); }
+                                if (exportPowMean) { hB.Append("wtc_ActPower_Quality_endvalue" + ","); sB.Append(Math.Round(unit.Powers.QualEndVal, 3) + ","); }
 
-                                if (exportAmbMaxm) { hB.Append("wtc_AmbieTmp_max" + ","); sB.Append(unit.AmbTemps.Maxm + ","); }
-                                if (exportAmbMinm) { hB.Append("wtc_AmbieTmp_min" + ","); sB.Append(unit.AmbTemps.Minm + ","); }
-                                if (exportAmbMean) { hB.Append("wtc_AmbieTmp_mean" + ","); sB.Append(unit.AmbTemps.Mean + ","); }
-                                if (exportAmbStdv) { hB.Append("wtc_AmbieTmp_stddev" + ","); sB.Append(unit.AmbTemps.Stdv + ","); }
-                                if (exportAmbMean) { hB.Append("wtc_twrhumid_mean" + ","); sB.Append(unit.Towers.Humid.Mean + ","); }
+                                if (exportAmbMaxm) { hB.Append("wtc_AmbieTmp_max" + ","); sB.Append(Math.Round(unit.AmbTemps.Maxm, 3) + ","); }
+                                if (exportAmbMinm) { hB.Append("wtc_AmbieTmp_min" + ","); sB.Append(Math.Round(unit.AmbTemps.Minm, 3) + ","); }
+                                if (exportAmbMean) { hB.Append("wtc_AmbieTmp_mean" + ","); sB.Append(Math.Round(unit.AmbTemps.Mean, 3) + ","); }
+                                if (exportAmbStdv) { hB.Append("wtc_AmbieTmp_stddev" + ","); sB.Append(Math.Round(unit.AmbTemps.Stdv, 3) + ","); }
+                                if (exportAmbMean) { hB.Append("wtc_twrhumid_mean" + ","); sB.Append(Math.Round(unit.Towers.Humid.Mean, 3) + ","); }
 
-                                if (exportWSpMaxm) { hB.Append("wtc_AcWindSp_max" + ","); sB.Append(unit.AnemoM.ActWinds.Maxm + ","); }
-                                if (exportWSpMinm) { hB.Append("wtc_AcWindSp_min" + ","); sB.Append(unit.AnemoM.ActWinds.Minm + ","); }
-                                if (exportWSpMean) { hB.Append("wtc_AcWindSp_mean" + ","); sB.Append(unit.AnemoM.ActWinds.Mean + ","); }
-                                if (exportWSpStdv) { hB.Append("wtc_AcWindSp_stddev" + ","); sB.Append(unit.AnemoM.ActWinds.Stdv + ","); }
-                                if (exportWSpMaxm) { hB.Append("wtc_PriAnemo_max" + ","); sB.Append(unit.AnemoM.PriAnemo.Maxm + ","); }
-                                if (exportWSpMinm) { hB.Append("wtc_PriAnemo_min" + ","); sB.Append(unit.AnemoM.PriAnemo.Minm + ","); }
-                                if (exportWSpMean) { hB.Append("wtc_PriAnemo_mean" + ","); sB.Append(unit.AnemoM.PriAnemo.Mean + ","); }
-                                if (exportWSpStdv) { hB.Append("wtc_PriAnemo_stddev" + ","); sB.Append(unit.AnemoM.PriAnemo.Stdv + ","); }
-                                if (exportWSpMaxm) { hB.Append("wtc_SecAnemo_max" + ","); sB.Append(unit.AnemoM.SecAnemo.Maxm + ","); }
-                                if (exportWSpMinm) { hB.Append("wtc_SecAnemo_min" + ","); sB.Append(unit.AnemoM.SecAnemo.Minm + ","); }
-                                if (exportWSpMean) { hB.Append("wtc_SecAnemo_mean" + ","); sB.Append(unit.AnemoM.SecAnemo.Mean + ","); }
-                                if (exportWSpStdv) { hB.Append("wtc_SecAnemo_stddev" + ","); sB.Append(unit.AnemoM.SecAnemo.Stdv + ","); }
-                                if (exportWSpMaxm) { hB.Append("wtc_TetAnemo_max" + ","); sB.Append(unit.AnemoM.TerAnemo.Maxm + ","); }
-                                if (exportWSpMinm) { hB.Append("wtc_TetAnemo_min" + ","); sB.Append(unit.AnemoM.TerAnemo.Minm + ","); }
-                                if (exportWSpMean) { hB.Append("wtc_TetAnemo_mean" + ","); sB.Append(unit.AnemoM.TerAnemo.Mean + ","); }
-                                if (exportWSpStdv) { hB.Append("wtc_TetAnemo_stddev" + ","); sB.Append(unit.AnemoM.TerAnemo.Stdv + ","); }
+                                if (exportWSpMaxm) { hB.Append("wtc_AcWindSp_max" + ","); sB.Append(Math.Round(unit.AnemoM.ActWinds.Maxm, 3) + ","); }
+                                if (exportWSpMinm) { hB.Append("wtc_AcWindSp_min" + ","); sB.Append(Math.Round(unit.AnemoM.ActWinds.Minm, 3) + ","); }
+                                if (exportWSpMean) { hB.Append("wtc_AcWindSp_mean" + ","); sB.Append(Math.Round(unit.AnemoM.ActWinds.Mean, 3) + ","); }
+                                if (exportWSpStdv) { hB.Append("wtc_AcWindSp_stddev" + ","); sB.Append(Math.Round(unit.AnemoM.ActWinds.Stdv, 3) + ","); }
+                                if (exportWSpMaxm) { hB.Append("wtc_PriAnemo_max" + ","); sB.Append(Math.Round(unit.AnemoM.PriAnemo.Maxm, 3) + ","); }
+                                if (exportWSpMinm) { hB.Append("wtc_PriAnemo_min" + ","); sB.Append(Math.Round(unit.AnemoM.PriAnemo.Minm, 3) + ","); }
+                                if (exportWSpMean) { hB.Append("wtc_PriAnemo_mean" + ","); sB.Append(Math.Round(unit.AnemoM.PriAnemo.Mean, 3) + ","); }
+                                if (exportWSpStdv) { hB.Append("wtc_PriAnemo_stddev" + ","); sB.Append(Math.Round(unit.AnemoM.PriAnemo.Stdv, 3) + ","); }
+                                if (exportWSpMaxm) { hB.Append("wtc_SecAnemo_max" + ","); sB.Append(Math.Round(unit.AnemoM.SecAnemo.Maxm, 3) + ","); }
+                                if (exportWSpMinm) { hB.Append("wtc_SecAnemo_min" + ","); sB.Append(Math.Round(unit.AnemoM.SecAnemo.Minm, 3) + ","); }
+                                if (exportWSpMean) { hB.Append("wtc_SecAnemo_mean" + ","); sB.Append(Math.Round(unit.AnemoM.SecAnemo.Mean, 3) + ","); }
+                                if (exportWSpStdv) { hB.Append("wtc_SecAnemo_stddev" + ","); sB.Append(Math.Round(unit.AnemoM.SecAnemo.Stdv, 3) + ","); }
+                                if (exportWSpMaxm) { hB.Append("wtc_TetAnemo_max" + ","); sB.Append(Math.Round(unit.AnemoM.TerAnemo.Maxm, 3) + ","); }
+                                if (exportWSpMinm) { hB.Append("wtc_TetAnemo_min" + ","); sB.Append(Math.Round(unit.AnemoM.TerAnemo.Minm, 3) + ","); }
+                                if (exportWSpMean) { hB.Append("wtc_TetAnemo_mean" + ","); sB.Append(Math.Round(unit.AnemoM.TerAnemo.Mean, 3) + ","); }
+                                if (exportWSpStdv) { hB.Append("wtc_TetAnemo_stddev" + ","); sB.Append(Math.Round(unit.AnemoM.TerAnemo.Stdv, 3) + ","); }
 
-                                if (exportWSpMaxm) { hB.Append("wtc_PrWindSp_max" + ","); sB.Append(unit.AnemoM.PriWinds.Maxm + ","); }
-                                if (exportWSpMinm) { hB.Append("wtc_PrWindSp_min" + ","); sB.Append(unit.AnemoM.PriWinds.Minm + ","); }
-                                if (exportWSpMean) { hB.Append("wtc_PrWindSp_mean" + ","); sB.Append(unit.AnemoM.PriWinds.Mean + ","); }
-                                if (exportWSpStdv) { hB.Append("wtc_PrWindSp_stddev" + ","); sB.Append(unit.AnemoM.PriWinds.Stdv + ","); }
-                                if (exportWSpMaxm) { hB.Append("wtc_SeWindSp_max" + ","); sB.Append(unit.AnemoM.SecWinds.Maxm + ","); }
-                                if (exportWSpMinm) { hB.Append("wtc_SeWindSp_min" + ","); sB.Append(unit.AnemoM.SecWinds.Minm + ","); }
-                                if (exportWSpMean) { hB.Append("wtc_SeWindSp_mean" + ","); sB.Append(unit.AnemoM.SecWinds.Mean + ","); }
-                                if (exportWSpStdv) { hB.Append("wtc_SeWindSp_stddev" + ","); sB.Append(unit.AnemoM.SecWinds.Stdv + ","); }
+                                if (exportWSpMaxm) { hB.Append("wtc_PrWindSp_max" + ","); sB.Append(Math.Round(unit.AnemoM.PriWinds.Maxm, 3) + ","); }
+                                if (exportWSpMinm) { hB.Append("wtc_PrWindSp_min" + ","); sB.Append(Math.Round(unit.AnemoM.PriWinds.Minm, 3) + ","); }
+                                if (exportWSpMean) { hB.Append("wtc_PrWindSp_mean" + ","); sB.Append(Math.Round(unit.AnemoM.PriWinds.Mean, 3) + ","); }
+                                if (exportWSpStdv) { hB.Append("wtc_PrWindSp_stddev" + ","); sB.Append(Math.Round(unit.AnemoM.PriWinds.Stdv, 3) + ","); }
+                                if (exportWSpMaxm) { hB.Append("wtc_SeWindSp_max" + ","); sB.Append(Math.Round(unit.AnemoM.SecWinds.Maxm, 3) + ","); }
+                                if (exportWSpMinm) { hB.Append("wtc_SeWindSp_min" + ","); sB.Append(Math.Round(unit.AnemoM.SecWinds.Minm, 3) + ","); }
+                                if (exportWSpMean) { hB.Append("wtc_SeWindSp_mean" + ","); sB.Append(Math.Round(unit.AnemoM.SecWinds.Mean, 3) + ","); }
+                                if (exportWSpStdv) { hB.Append("wtc_SeWindSp_stddev" + ","); sB.Append(Math.Round(unit.AnemoM.SecWinds.Stdv, 3) + ","); }
 
-                                if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(unit.Genny.bearingG.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(unit.Genny.bearingG.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_mean" + ","); sB.Append(unit.Genny.bearingG.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_GenBeGTm_stddev" + ","); sB.Append(unit.Genny.bearingG.Stdv + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_GenBeRTm_max" + ","); sB.Append(unit.Genny.bearingR.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_GenBeRTm_min" + ","); sB.Append(unit.Genny.bearingR.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_mean" + ","); sB.Append(unit.Genny.bearingR.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_GenBeRTm_stddev" + ","); sB.Append(unit.Genny.bearingR.Stdv + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(Math.Round(unit.Genny.bearingG.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(Math.Round(unit.Genny.bearingG.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_mean" + ","); sB.Append(Math.Round(unit.Genny.bearingG.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_GenBeGTm_stddev" + ","); sB.Append(Math.Round(unit.Genny.bearingG.Stdv, 3) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_GenBeRTm_max" + ","); sB.Append(Math.Round(unit.Genny.bearingR.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_GenBeRTm_min" + ","); sB.Append(Math.Round(unit.Genny.bearingR.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_mean" + ","); sB.Append(Math.Round(unit.Genny.bearingR.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_GenBeRTm_stddev" + ","); sB.Append(Math.Round(unit.Genny.bearingR.Stdv, 3) + ","); }
 
-                                if (exportGenMaxm) { hB.Append("wtc_Gen1U1Tm_max" + ","); sB.Append(unit.Genny.G1u1.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_Gen1U1Tm_min" + ","); sB.Append(unit.Genny.G1u1.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_Gen1U1Tm_mean" + ","); sB.Append(unit.Genny.G1u1.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_Gen1U1Tm_stddev" + ","); sB.Append(unit.Genny.G1u1.Stdv + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_Gen1V1Tm_max" + ","); sB.Append(unit.Genny.G1v1.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_Gen1V1Tm_min" + ","); sB.Append(unit.Genny.G1v1.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_Gen1V1Tm_mean" + ","); sB.Append(unit.Genny.G1v1.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_Gen1V1Tm_stddev" + ","); sB.Append(unit.Genny.G1v1.Stdv + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_Gen1W1Tm_max" + ","); sB.Append(unit.Genny.G1w1.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_Gen1W1Tm_min" + ","); sB.Append(unit.Genny.G1w1.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_Gen1W1Tm_mean" + ","); sB.Append(unit.Genny.G1w1.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_Gen1W1Tm_stddev" + ","); sB.Append(unit.Genny.G1w1.Stdv + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_Gen2U1Tm_max" + ","); sB.Append(unit.Genny.G2u1.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_Gen2U1Tm_min" + ","); sB.Append(unit.Genny.G2u1.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_Gen2U1Tm_mean" + ","); sB.Append(unit.Genny.G2u1.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_Gen2U1Tm_stddev" + ","); sB.Append(unit.Genny.G2u1.Stdv + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_Gen2V1Tm_max" + ","); sB.Append(unit.Genny.G2v1.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_Gen2V1Tm_min" + ","); sB.Append(unit.Genny.G2v1.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_Gen2V1Tm_mean" + ","); sB.Append(unit.Genny.G2v1.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_Gen2V1Tm_stddev" + ","); sB.Append(unit.Genny.G2v1.Stdv + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_Gen2W1Tm_max" + ","); sB.Append(unit.Genny.G2w1.Maxm + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_Gen2W1Tm_min" + ","); sB.Append(unit.Genny.G2w1.Minm + ","); }
-                                if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_mean" + ","); sB.Append(unit.Genny.G2w1.Mean + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(unit.Genny.G2w1.Stdv + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_Gen1U1Tm_max" + ","); sB.Append(Math.Round(unit.Genny.G1u1.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_Gen1U1Tm_min" + ","); sB.Append(Math.Round(unit.Genny.G1u1.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen1U1Tm_mean" + ","); sB.Append(Math.Round(unit.Genny.G1u1.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_Gen1U1Tm_stddev" + ","); sB.Append(Math.Round(unit.Genny.G1u1.Stdv, 3) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_Gen1V1Tm_max" + ","); sB.Append(Math.Round(unit.Genny.G1v1.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_Gen1V1Tm_min" + ","); sB.Append(Math.Round(unit.Genny.G1v1.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen1V1Tm_mean" + ","); sB.Append(Math.Round(unit.Genny.G1v1.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_Gen1V1Tm_stddev" + ","); sB.Append(Math.Round(unit.Genny.G1v1.Stdv, 3) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_Gen1W1Tm_max" + ","); sB.Append(Math.Round(unit.Genny.G1w1.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_Gen1W1Tm_min" + ","); sB.Append(Math.Round(unit.Genny.G1w1.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen1W1Tm_mean" + ","); sB.Append(Math.Round(unit.Genny.G1w1.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_Gen1W1Tm_stddev" + ","); sB.Append(Math.Round(unit.Genny.G1w1.Stdv, 3) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_Gen2U1Tm_max" + ","); sB.Append(Math.Round(unit.Genny.G2u1.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_Gen2U1Tm_min" + ","); sB.Append(Math.Round(unit.Genny.G2u1.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen2U1Tm_mean" + ","); sB.Append(Math.Round(unit.Genny.G2u1.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_Gen2U1Tm_stddev" + ","); sB.Append(Math.Round(unit.Genny.G2u1.Stdv, 3) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_Gen2V1Tm_max" + ","); sB.Append(Math.Round(unit.Genny.G2v1.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_Gen2V1Tm_min" + ","); sB.Append(Math.Round(unit.Genny.G2v1.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen2V1Tm_mean" + ","); sB.Append(Math.Round(unit.Genny.G2v1.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_Gen2V1Tm_stddev" + ","); sB.Append(Math.Round(unit.Genny.G2v1.Stdv, 3) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_Gen2W1Tm_max" + ","); sB.Append(Math.Round(unit.Genny.G2w1.Maxm, 3) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_Gen2W1Tm_min" + ","); sB.Append(Math.Round(unit.Genny.G2w1.Minm, 3) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_mean" + ","); sB.Append(Math.Round(unit.Genny.G2w1.Mean, 3) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(Math.Round(unit.Genny.G2w1.Stdv, 3) + ","); }
 
-                                if (exportMBrMaxm) { hB.Append("wtc_MainBTmp_max" + ","); sB.Append(unit.MainBear.Standards.Maxm + ","); }
-                                if (exportMBrMinm) { hB.Append("wtc_MainBTmp_mean" + ","); sB.Append(unit.MainBear.Standards.Minm + ","); }
-                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_min" + ","); sB.Append(unit.MainBear.Standards.Mean + ","); }
-                                if (exportMBrStdv) { hB.Append("wtc_MainBTmp_stddev" + ","); sB.Append(unit.MainBear.Standards.Stdv + ","); }
+                                if (exportMBrMaxm) { hB.Append("wtc_MainBTmp_max" + ","); sB.Append(Math.Round(unit.MainBear.Standards.Maxm, 3) + ","); }
+                                if (exportMBrMinm) { hB.Append("wtc_MainBTmp_mean" + ","); sB.Append(Math.Round(unit.MainBear.Standards.Minm, 3) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_min" + ","); sB.Append(Math.Round(unit.MainBear.Standards.Mean, 3) + ","); }
+                                if (exportMBrStdv) { hB.Append("wtc_MainBTmp_stddev" + ","); sB.Append(Math.Round(unit.MainBear.Standards.Stdv, 3) + ","); }
 
-                                if (exportMBrMaxm) { hB.Append("wtc_MBearGTm_max" + ","); sB.Append(unit.MainBear.Gs.Maxm + ","); }
-                                if (exportMBrMinm) { hB.Append("wtc_MBearGTm_mean" + ","); sB.Append(unit.MainBear.Gs.Minm + ","); }
-                                if (exportMBrMean) { hB.Append("wtc_MBearGTm_min" + ","); sB.Append(unit.MainBear.Gs.Mean + ","); }
-                                if (exportMBrStdv) { hB.Append("wtc_MBearGTm_stddev" + ","); sB.Append(unit.MainBear.Gs.Stdv + ","); }
-                                if (exportMBrMaxm) { hB.Append("wtc_MBearHTm_max" + ","); sB.Append(unit.MainBear.Hs.Maxm + ","); }
-                                if (exportMBrMinm) { hB.Append("wtc_MBearHTm_mean" + ","); sB.Append(unit.MainBear.Hs.Minm + ","); }
-                                if (exportMBrMean) { hB.Append("wtc_MBearHTm_min" + ","); sB.Append(unit.MainBear.Hs.Mean + ","); }
-                                if (exportMBrStdv) { hB.Append("wtc_MBearHTm_stddev" + ","); sB.Append(unit.MainBear.Hs.Stdv + ","); }
+                                if (exportMBrMaxm) { hB.Append("wtc_MBearGTm_max" + ","); sB.Append(Math.Round(unit.MainBear.Gs.Maxm, 3) + ","); }
+                                if (exportMBrMinm) { hB.Append("wtc_MBearGTm_mean" + ","); sB.Append(Math.Round(unit.MainBear.Gs.Minm, 3) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MBearGTm_min" + ","); sB.Append(Math.Round(unit.MainBear.Gs.Mean, 3) + ","); }
+                                if (exportMBrStdv) { hB.Append("wtc_MBearGTm_stddev" + ","); sB.Append(Math.Round(unit.MainBear.Gs.Stdv, 3) + ","); }
+                                if (exportMBrMaxm) { hB.Append("wtc_MBearHTm_max" + ","); sB.Append(Math.Round(unit.MainBear.Hs.Maxm, 3) + ","); }
+                                if (exportMBrMinm) { hB.Append("wtc_MBearHTm_mean" + ","); sB.Append(Math.Round(unit.MainBear.Hs.Minm, 3) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MBearHTm_min" + ","); sB.Append(Math.Round(unit.MainBear.Hs.Mean, 3) + ","); }
+                                if (exportMBrStdv) { hB.Append("wtc_MBearHTm_stddev" + ","); sB.Append(Math.Round(unit.MainBear.Hs.Stdv, 3) + ","); }
 
-                                if (exportGBxMaxm) { hB.Append("wtc_HSGenTmp_max" + ","); sB.Append(unit.Gearbox.Hs.Gens.Maxm + ","); }
-                                if (exportGBxMinm) { hB.Append("wtc_HSGenTmp_min" + ","); sB.Append(unit.Gearbox.Hs.Gens.Minm + ","); }
-                                if (exportGBxMean) { hB.Append("wtc_HSGenTmp_mean" + ","); sB.Append(unit.Gearbox.Hs.Gens.Mean + ","); }
-                                if (exportGBxStdv) { hB.Append("wtc_HSGenTmp_stddev" + ","); sB.Append(unit.Gearbox.Hs.Gens.Stdv + ","); }
-                                if (exportGBxMaxm) { hB.Append("wtc_HSRotTmp_max" + ","); sB.Append(unit.Gearbox.Hs.Rots.Maxm + ","); }
-                                if (exportGBxMinm) { hB.Append("wtc_HSRotTmp_min" + ","); sB.Append(unit.Gearbox.Hs.Rots.Minm + ","); }
-                                if (exportGBxMean) { hB.Append("wtc_HSRotTmp_mean" + ","); sB.Append(unit.Gearbox.Hs.Rots.Mean + ","); }
-                                if (exportGBxStdv) { hB.Append("wtc_HSRotTmp_stddev" + ","); sB.Append(unit.Gearbox.Hs.Rots.Stdv + ","); }
-                                if (exportGBxMaxm) { hB.Append("wtc_IMSGenTm_max" + ","); sB.Append(unit.Gearbox.Ims.Gens.Maxm + ","); }
-                                if (exportGBxMinm) { hB.Append("wtc_IMSGenTm_min" + ","); sB.Append(unit.Gearbox.Ims.Gens.Minm + ","); }
-                                if (exportGBxMean) { hB.Append("wtc_IMSGenTm_mean" + ","); sB.Append(unit.Gearbox.Ims.Gens.Mean + ","); }
-                                if (exportGBxStdv) { hB.Append("wtc_IMSGenTm_stddev" + ","); sB.Append(unit.Gearbox.Ims.Gens.Stdv + ","); }
-                                if (exportGBxMaxm) { hB.Append("wtc_IMSRotTm_max" + ","); sB.Append(unit.Gearbox.Ims.Rots.Maxm + ","); }
-                                if (exportGBxMinm) { hB.Append("wtc_IMSRotTm_min" + ","); sB.Append(unit.Gearbox.Ims.Rots.Minm + ","); }
-                                if (exportGBxMean) { hB.Append("wtc_IMSRotTm_mean" + ","); sB.Append(unit.Gearbox.Ims.Rots.Mean + ","); }
-                                if (exportGBxStdv) { hB.Append("wtc_IMSRotTm_stddev" + ","); sB.Append(unit.Gearbox.Ims.Rots.Stdv + ","); }
+                                if (exportGBxMaxm) { hB.Append("wtc_HSGenTmp_max" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Gens.Maxm, 3) + ","); }
+                                if (exportGBxMinm) { hB.Append("wtc_HSGenTmp_min" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Gens.Minm, 3) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_HSGenTmp_mean" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Gens.Mean, 3) + ","); }
+                                if (exportGBxStdv) { hB.Append("wtc_HSGenTmp_stddev" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Gens.Stdv, 3) + ","); }
+                                if (exportGBxMaxm) { hB.Append("wtc_HSRotTmp_max" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Rots.Maxm, 3) + ","); }
+                                if (exportGBxMinm) { hB.Append("wtc_HSRotTmp_min" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Rots.Minm, 3) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_HSRotTmp_mean" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Rots.Mean, 3) + ","); }
+                                if (exportGBxStdv) { hB.Append("wtc_HSRotTmp_stddev" + ","); sB.Append(Math.Round(unit.Gearbox.Hs.Rots.Stdv, 3) + ","); }
+                                if (exportGBxMaxm) { hB.Append("wtc_IMSGenTm_max" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Gens.Maxm, 3) + ","); }
+                                if (exportGBxMinm) { hB.Append("wtc_IMSGenTm_min" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Gens.Minm, 3) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_IMSGenTm_mean" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Gens.Mean, 3) + ","); }
+                                if (exportGBxStdv) { hB.Append("wtc_IMSGenTm_stddev" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Gens.Stdv, 3) + ","); }
+                                if (exportGBxMaxm) { hB.Append("wtc_IMSRotTm_max" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Rots.Maxm, 3) + ","); }
+                                if (exportGBxMinm) { hB.Append("wtc_IMSRotTm_min" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Rots.Minm, 3) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_IMSRotTm_mean" + ","); sB.Append(Math.Round(unit.Gearbox.Ims.Rots.Mean, 3) + ","); }
+                                if (exportGBxStdv) { hB.Append("wtc_IMSRotTm_stddev"); sB.Append(Math.Round(unit.Gearbox.Ims.Rots.Stdv, 3)); }
+
+                                // note the last one does not use a comma so if you add more lines, add in a comma
 
                                 if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
                                 sW.WriteLine(sB.ToString());
@@ -996,8 +998,6 @@ namespace scada_analyst
 
             #region Variables
             
-            private int error = -9999;
-
             private string[] nullValues = { "\\N" };
 
             private DateTime curTime = new DateTime();
@@ -1257,18 +1257,6 @@ namespace scada_analyst
                 tower.Humid.Minm = GetVals(tower.Humid.Minm, data, header.Towers.Humid.Minm);
 
                 #endregion
-            }
-
-            private double GetVals(double value, string[] data, double index)
-            {
-                if (value == -999999 || value == error)
-                {
-                    return Common.GetVals(data, (int)index, error);
-                }
-                else
-                {
-                    return value;
-                }
             }
             
             #region Support Classes
@@ -1669,9 +1657,9 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected double endValue = -9999;
-                protected double qualEndVal = -9999;
-                protected double rgStEndVal = -9999;
+                protected double endValue = double.NaN;
+                protected double qualEndVal = double.NaN;
+                protected double rgStEndVal = double.NaN;
                 protected int endValCol = -1, qualEndValCol = -1, rgStEndValCol = -1;
 
                 protected GridFrequency gridFreq = new GridFrequency();
@@ -1686,7 +1674,7 @@ namespace scada_analyst
                 {
                     #region Variables
 
-                    protected double endVal = -9999;
+                    protected double endVal = double.NaN;
                     protected int endValCol = -1;
 
                     #endregion
@@ -1703,7 +1691,7 @@ namespace scada_analyst
                 {
                     #region Variables
 
-                    protected double endValue = -9999;
+                    protected double endValue = double.NaN;
                     protected int endValCol = -1;
 
                     #endregion
@@ -1720,7 +1708,7 @@ namespace scada_analyst
                 {
                     #region Variables
 
-                    protected double endVal = -9999;
+                    protected double endVal = double.NaN;
                     protected int endValCol = -1;
 
                     #endregion
@@ -1878,8 +1866,6 @@ namespace scada_analyst
             #endregion
 
             #region Properties
-
-            public int Error { get { return error; } set { error = value; } }
 
             public DateTime CurTime {  get { return curTime; } set { curTime = value; } }
 

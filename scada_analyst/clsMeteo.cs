@@ -217,10 +217,10 @@ namespace scada_analyst
                                 // need to add in the respective actual meteorology file columns to make
                                 // this work properly
 
-                                hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(unit.WSpdR.Mean + ",");
-                                hB.Append("met_Winddirection10_mean" + ","); sB.Append(unit.WDirc.Mean + ",");
-                                hB.Append("met_TemperatureTen_mean" + ","); sB.Append(unit.Tempr.Mean + ",");
-                                hB.Append("met_Humidity_mean" + ","); sB.Append(unit.Humid.Mean + ",");
+                                hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Math.Round(unit.WSpdR.Mean, 3) + ",");
+                                hB.Append("met_Winddirection10_mean" + ","); sB.Append(Math.Round(unit.WDirc.Mean, 3) + ",");
+                                hB.Append("met_TemperatureTen_mean" + ","); sB.Append(Math.Round(unit.Tempr.Mean, 3) + ",");
+                                hB.Append("met_Humidity_mean"); sB.Append(Math.Round(unit.Humid.Mean, 3));
 
                                 if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
                                 sW.WriteLine(sB.ToString());
@@ -411,9 +411,7 @@ namespace scada_analyst
         public class MeteoSample : BaseSampleData
         {
             #region Variables
-
-            private int metError = -9998;
-
+            
             private Humidity humid = new Humidity();
             private Tempratr tempr = new Tempratr();
             private WndDrctn wDirc = new WndDrctn();
@@ -475,18 +473,6 @@ namespace scada_analyst
                 wSpdR.Maxm = GetVals(wSpdR.Maxm, data, header.WSpdR.Maxm);
                 wSpdR.Minm = GetVals(wSpdR.Minm, data, header.WSpdR.Minm);
             }
-
-            private double GetVals(double value, string[] data, double index)
-            { 
-                if (value == -999999 || value == metError)
-                {
-                    return Common.GetVals(data, (int)index, metError);
-                }
-                else
-                {
-                    return value;
-                }
-            }
             
             #region Support Classes
 
@@ -498,7 +484,7 @@ namespace scada_analyst
             #endregion
 
             #region Properties
-
+            
             public Humidity Humid { get { return humid; } set { humid = value; } }
             public Tempratr Tempr { get { return tempr; } set { tempr = value; } }
             public WndDrctn WDirc { get { return wDirc; } set { wDirc = value; } }

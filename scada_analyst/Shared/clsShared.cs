@@ -224,12 +224,7 @@ namespace scada_analyst.Shared
 
             return number.ToString("N", numberFormat);
         }
-
-        public static double GetVals(string[] data, int index, double error = -9999)
-        {
-            return index != -1 && Common.CanConvert<double>(data[index]) ? Convert.ToDouble(data[index]) : error;
-        }
-
+        
         public static string RemoveAllSpaces(string input)
         {
             while (input.Contains(" "))
