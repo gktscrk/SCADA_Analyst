@@ -120,9 +120,6 @@
     <Compile Include="Controls\Sunriset.cs" />
     <Compile Include="Helper\ObservableObject.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
-    <Compile Include="Model\AssetListModel.cs" />
-    <Compile Include="Model\EventDetailsModel.cs" />
-    <Compile Include="Model\EventListModel.cs" />
     <Compile Include="Shared\clsProgram.cs" />
     <Compile Include="Shared\Window_CalendarChooser.xaml.cs">
       <DependentUpon>Window_CalendarChooser.xaml</DependentUpon>
@@ -130,18 +127,7 @@
     <Compile Include="Shared\Window_NumberTwo.xaml.cs">
       <DependentUpon>Window_NumberTwo.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModel\AssetListViewModel.cs" />
-    <Compile Include="ViewModel\EventDetailsViewModel.cs" />
-    <Compile Include="ViewModel\EventListViewModel.cs" />
-    <Compile Include="Views\AssetListView.xaml.cs">
-      <DependentUpon>AssetListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\EventDetailsView.xaml.cs">
-      <DependentUpon>EventDetailsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\EventListView.xaml.cs">
-      <DependentUpon>EventListView.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="Windows\Window_About.xaml.cs">
       <DependentUpon>Window_About.xaml</DependentUpon>
     </Compile>
@@ -184,18 +170,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Shared\Window_NumberTwo.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\AssetListView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EventDetailsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EventListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

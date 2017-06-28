@@ -83,7 +83,7 @@ namespace scada_analyst
         private MeteoData meteoFile = new MeteoData();
         private ScadaData scadaFile = new ScadaData();
         
-        private List<DataOverview> _overview = new List<DataOverview>();
+        private List<DirectoryItem> _overview = new List<DirectoryItem>();
 
         private ObservableCollection<Structure> _assetsVw = new ObservableCollection<Structure>();
         private ObservableCollection<EventData> _allWtrVw = new ObservableCollection<EventData>();
@@ -108,10 +108,11 @@ namespace scada_analyst
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
 
+            //MainWindowViewModel mwVM = new MainWindowViewModel();
+
             progress_ProgrBar.Visibility = Visibility.Collapsed;
             label_ProgressBar.Visibility = Visibility.Collapsed;
             cancel_ProgressBar.Visibility = Visibility.Collapsed;
-            //counter_ProgressBar.Visibility = Visibility.Collapsed;
 
             List<string> newNames = new List<string>();
             newNames.Add(" ");
@@ -176,6 +177,37 @@ namespace scada_analyst
         {
             return "Power Production: " + ratedPwr.ToString() + " kW";
         }
+
+        #region Duration Filter Editing
+
+        /// <summary>
+        /// Changes the duration of the filter than can be used to remove events from active consideration
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void EditDurationFilter()
+        {
+            Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
+                            "Hours", "Minutes", false, false, _duratFilter.TotalHours, _duratFilter.Minutes);
+
+            if (getTimeDur.ShowDialog().Value)
+            {
+                _duratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
+                UpdateDurationLabel();
+            }
+        }
+
+        private void EditDurationFilter(object sender, RoutedEventArgs e)
+        {
+            EditDurationFilter();
+        }
+
+        private void LBL_DurationFilter_Click(object sender, MouseButtonEventArgs e)
+        {
+            EditDurationFilter();
+        }
+
+        #endregion
 
         private void UpdateDurationLabel()
         {
@@ -483,24 +515,7 @@ namespace scada_analyst
             catch (CancelLoadingException) { }
             catch { throw new Exception(); }
         }
-
-        /// <summary>
-        /// Changes the duration of the filter than can be used to remove events from active consideration
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void EditDurationFilter(object sender, RoutedEventArgs e)
-        {
-            Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
-                "Hours", "Minutes", false, false, _duratFilter.TotalHours, _duratFilter.Minutes);
-
-            if (getTimeDur.ShowDialog().Value)
-            {
-                _duratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
-                UpdateDurationLabel();
-            }
-        }
-
+        
         /// <summary>
         /// Exports meteorology data
         /// </summary>
@@ -1355,6 +1370,35 @@ namespace scada_analyst
 
         #region Background Methods
 
+        private void LView_LoadedOverview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LView_LoadedOverview.SelectedItems.Count == 1)
+            {
+                DirectoryItem thisItem = (DirectoryItem)LView_LoadedOverview.SelectedItem;
+
+                if (thisItem.StringData == Overview[0].StringData)
+                {
+                    Tab_EventsS.IsSelected = true;
+                }
+                else if (thisItem.StringData == Overview[1].StringData)
+                {
+                    Tab_LoWinds.IsSelected = true;
+                }
+                else if (thisItem.StringData == Overview[2].StringData)
+                {
+                    Tab_HiWinds.IsSelected = true;
+                }
+                else if (thisItem.StringData == Overview[3].StringData)
+                {
+                    Tab_NoPower.IsSelected = true;
+                }
+                else if (thisItem.StringData == Overview[4].StringData)
+                {
+                    Tab_RtPower.IsSelected = true;
+                }
+            }
+        }
+
         void CancelProgress_Click(object sender, RoutedEventArgs e)
         {
             if (_cts != null)
@@ -1370,11 +1414,12 @@ namespace scada_analyst
             LView_LoadedOverview.ItemsSource = null;
 
             _overview.Clear();
-            _overview.Add(new DataOverview("Structures", AssetsView.Count));
-            _overview.Add(new DataOverview("Low Winds", LoSpdViews.Count));
-            _overview.Add(new DataOverview("High Winds", HiSpdViews.Count));
-            _overview.Add(new DataOverview("Power: None", NoPowViews.Count));
-            _overview.Add(new DataOverview("Power: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
+            //_overview.Add(new DirectoryItem("Structures", AssetsView.Count));
+            _overview.Add(new DirectoryItem("Events Summary", AllWtrView.Count + AllPowView.Count));
+            _overview.Add(new DirectoryItem("Wind Speeds: Low", LoSpdViews.Count));
+            _overview.Add(new DirectoryItem("Wind Speeds: High", HiSpdViews.Count));
+            _overview.Add(new DirectoryItem("Power Prod: None", NoPowViews.Count));
+            _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
             LView_LoadedOverview.ItemsSource = _overview;
         }
@@ -1717,72 +1762,29 @@ namespace scada_analyst
 
         #region Treeview Controls
 
-        private void TWI_Ev_LoSp_Click(object sender, MouseButtonEventArgs e)
+        private void TWI_Ev_LoSp_Click()
         {
             Tab_LoWinds.IsSelected = true;
         }
 
-        private void TWI_Ev_HiSp_Click(object sender, MouseButtonEventArgs e)
-        {
-            Tab_HiWinds.IsSelected = true;
-        }
-        
-        private void TWI_Ev_NoPw_Click(object sender, MouseButtonEventArgs e)
-        {
-            Tab_NoPower.IsSelected = true;
-        }
-
-        private void TWI_Ev_RtPw_Click(object sender, MouseButtonEventArgs e)
-        {
-            Tab_RtPower.IsSelected = true;
-        }
-
-        private void TWI_Ev_LoSp_Click(object sender, RoutedEventArgs e)
-        {
-            Tab_LoWinds.IsSelected = true;
-        }
-
-        private void TWI_Ev_HiSp_Click(object sender, RoutedEventArgs e)
+        private void TWI_Ev_HiSp_Click()
         {
             Tab_HiWinds.IsSelected = true;
         }
 
-        private void TWI_Ev_NoPw_Click(object sender, RoutedEventArgs e)
+        private void TWI_Ev_NoPw_Click()
         {
             Tab_NoPower.IsSelected = true;
         }
 
-        private void TWI_Ev_RtPw_Click(object sender, RoutedEventArgs e)
+        private void TWI_Ev_RtPw_Click()
         {
             Tab_RtPower.IsSelected = true;
         }
 
-        #endregion 
+        #endregion
 
         #region Support Classes
-        
-        public class DataOverview
-        {
-            #region Variables
-
-            private int intValue;
-            private string strValue;
-
-            #endregion 
-
-            public DataOverview(string strValue, int intValue)
-            {
-                this.strValue = strValue;
-                this.intValue = intValue;
-            }
-
-            #region Properties
-
-            public int IntegerData { get { return intValue; } set { intValue = value; } }
-            public string StringData { get { return strValue; } set { strValue = value; } }
-
-            #endregion
-        }
 
         #endregion
 
@@ -1797,6 +1799,7 @@ namespace scada_analyst
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
         
         public static bool Mnt_Night { get { return mnt_Night; } set { mnt_Night = value; } }
+        
         public static bool Mnt_AstDw { get { return mnt_AstDw; } set { mnt_AstDw = value; } }
         public static bool Mnt_NauDw { get { return mnt_NauDw; } set { mnt_NauDw = value; } }
         public static bool Mnt_CivDw { get { return mnt_CivDw; } set { mnt_CivDw = value; } }
@@ -1815,7 +1818,7 @@ namespace scada_analyst
         public static TimeSpan WorkHoursMorning { get { return _workHrsMorning; } set { _workHrsMorning = value; } }
         public static TimeSpan WorkHoursEvening { get { return _workHrsEvening; } set { _workHrsEvening = value; } }
 
-        public List<DataOverview> Overview
+        public List<DirectoryItem> Overview
         {
             get { return _overview; }
             set
@@ -1823,7 +1826,7 @@ namespace scada_analyst
                 if (_overview != value)
                 {
                     _overview = value;
-                    OnPropertyChanged("Overview");
+                    OnPropertyChanged(nameof(Overview));
                 }
             }
         }
