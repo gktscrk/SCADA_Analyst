@@ -326,20 +326,20 @@ namespace scada_analyst
                     if (input == "Gearbox")
                     {
                         newLine.Title = "HS Gens.";
-                        variable = _weekEventData[i].Gearbox.Hs.Gens.Mean;
+                        variable = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
                     }
                     else if (input == "Generator")
                     {
                         newLine.Title = "Bearing G";
-                        variable = _weekEventData[i].Genny.bearingG.Mean;
+                        variable = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
                     }
                     else if (input == "Main bearing")
                     {
                         newLine.Title = "Main Bearing.";
-                        variable = _weekEventData[i].MainBear.Standards.Mean;
+                        variable = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
                     }
 
-                    list.Add(variable != -9999 ? variable : double.NaN);
+                    list.Add(!double.IsNaN(variable) ? variable : double.NaN);
                     times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
                 }
 
@@ -981,6 +981,39 @@ namespace scada_analyst
                 RefreshEvents();
 
                 eventsMatchedAcrossTypes = true;
+            }
+            catch (CancelLoadingException) { }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        private async void PopulateFleetAverages(object sender, RoutedEventArgs e)
+        {
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                if (loadedAsset == null || loadedAsset.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No turbines or metmasts are loaded. Load data before trying to process it.");
+
+                    throw new CancelLoadingException();
+                }
+
+                ProgressBarVisible();
+
+                await Task.Run(() => scadaFile = analyser.FleetStats(scadaFile, progress));
+
+                ProgressBarInvisible();
             }
             catch (CancelLoadingException) { }
             catch (Exception ex)

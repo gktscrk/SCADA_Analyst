@@ -60,6 +60,7 @@
                 <MenuItem Header="_Calculate Distances Between Structures" Click="GetDistancesBetweenStructuresAsync" />
                 <Separator />
                 <MenuItem Header="_Process Events" Click="FindEventsAsync" />
+                <MenuItem Header="_Add Averages to Data" Click="PopulateFleetAverages" />
                 <Separator />
                 <MenuItem Header="_Match Power and Weather Event Times" Click="MatchEventsAsync" />
                 <MenuItem Header="_Compute Time of Day for Power Events" Click="AddDaytimesToEvents" />
@@ -650,45 +651,52 @@
                                             <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="HS Gen." Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Gearbox.Hs.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="HS Rot." Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Gearbox.Hs.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="IMS Gen." Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Gearbox.Ims.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="IMS Rot." Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Gearbox.Ims.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Gearbox Oil" Width="80" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Gearbox.Oils.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Ambient" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AmbTemps.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="HS Gen." Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Gearbox.Hs.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="HS Rot." Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Gearbox.Hs.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="IMS Gen." Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Gearbox.Ims.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="IMS Rot." Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Gearbox.Ims.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Gearbox Oil" Width="80" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Gearbox.Oils.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
 
                 <ListView Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Grid.ColumnSpan="4" 
                               Name="LView_EventExplorer_Generator"                       
@@ -714,6 +722,13 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                             </GridViewColumn>
+                            <GridViewColumn Header="Ambient" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AmbTemps.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                             <GridViewColumn Header="RPM" Width="60" >
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
@@ -722,64 +737,64 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                             <GridViewColumn Header="G-Bearing" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.bearingG.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="R-Bearing" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.bearingR.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G1U1" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.G1u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G1V1" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.G1v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G1W1" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.G1w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G2U1" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.G2u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G2V1" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.G2v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="G2W1" Width="60" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Genny.G2w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.bearingG.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="R-Bearing" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.bearingR.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G1U1" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.G1u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G1V1" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.G1v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G1W1" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.G1w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G2U1" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.G2u1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G2V1" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.G2v1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="G2W1" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Genny.G2w1.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
                 
                 <ListView Grid.Column="0" Grid.Row="3" Margin="5,5,5,5" Grid.ColumnSpan="4" 
                               Name="LView_EventExplorer_MainBear"                       
@@ -804,29 +819,64 @@
                                         <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Main Bearing" Width="80" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MainBear.Standards.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Main Bearing GS" Width="100" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MainBear.Gs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate> 
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                                <GridViewColumn Header="Main Bearing HS" Width="100" >
-                                    <GridViewColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding MainBear.Hs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Ambient" Width="60" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AmbTemps.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Δ Ambient" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AmbTemps.DMean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Bearing" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MainBear.Standards.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Δ Bearing" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MainBear.Standards.DMean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="GS" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MainBear.Gs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate> 
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Δ GS" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MainBear.Gs.DMean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="HS" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MainBear.Hs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Δ HS" Width="70" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MainBear.Hs.DMean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
                     </ListView.View>
                 </ListView>
                           

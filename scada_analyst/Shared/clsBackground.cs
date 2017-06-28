@@ -299,7 +299,9 @@ namespace scada_analyst.Shared
         protected double maxm = double.NaN;
         protected double mean = double.NaN;
         protected double stdv = double.NaN;
-        
+
+        protected double dMean = double.NaN;
+
         #endregion
 
         public Stats() { }
@@ -310,7 +312,9 @@ namespace scada_analyst.Shared
         public double Maxm { get { return maxm; } set { maxm = value; } }
         public double Mean { get { return mean; } set { mean = value; } }
         public double Stdv { get { return stdv; } set { stdv = value; } }
-        
+
+        public double DMean { get { return dMean; } set { dMean = value; } }
+
         #endregion
     }
 }
