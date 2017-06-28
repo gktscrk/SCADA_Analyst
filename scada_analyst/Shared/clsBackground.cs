@@ -163,7 +163,7 @@ namespace scada_analyst.Shared
 
         public bool PositionsLoaded { get { return positionsLoaded; } set { positionsLoaded = value; } }
 
-        public string PositionsLoadedDisplay { get { return PositionsLoaded == true ? "Yes" : "No"; } set { PositionsLoadedDisplay = value; } }
+        public string PositionsLoadedDisplay { get { return PositionsLoaded == true ? "Added" : "None"; } set { PositionsLoadedDisplay = value; } }
         public int UnitID { get { return unitID; } set { unitID = value; } }
 
         public List<DateTime> InclDtTm { get { return inclDtTm; } set { inclDtTm = value; } }

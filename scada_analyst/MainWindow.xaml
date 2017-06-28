@@ -37,7 +37,7 @@
                 <Separator />
                 <MenuItem Header="_Exit" Click="Exit" />
             </MenuItem>
-            <MenuItem Header="_Load and Unload">
+            <MenuItem Header="_Load and Unload Data">
                 <MenuItem Header="_Geographic Data" Click="LoadGeoDataAsync" />
                 <MenuItem Header="_Meteorologic Data" Click="LoadMeteoDataAsync" />
                 <MenuItem Header="_SCADA Data" Click="LoadScadaDataAsync" />
@@ -123,7 +123,7 @@
 
             </GroupBox>
 
-            <GroupBox Grid.Column="0" Grid.Row="1" Margin="15,5,5,5" Header="Summary">
+            <GroupBox Grid.Column="0" Grid.Row="1" Margin="15,5,5,5" Header="Loaded Overview">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -167,7 +167,7 @@
 
         </Grid>
 
-        <GroupBox Grid.Column="1" Grid.Row="1" Header="Loaded Assets Overview" Margin="5,5,5,5" >
+        <GroupBox Grid.Column="1" Grid.Row="1" Header="Assets Overview" Margin="5,5,5,5" >
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -192,35 +192,35 @@
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                        <GridViewColumn Header="Asset ID" Width="70" >
+                        <GridViewColumn Header="Asset ID" Width="60" >
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Label Content="{Binding UnitID, Mode=OneWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Type" Width="90">
+                        <GridViewColumn Header="Type" Width="80">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Label Content="{Binding Type, Mode=OneWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Start Time" Width="120">
+                        <GridViewColumn Header="Start Time" Width="110">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding StartTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="End Time" Width="120">
+                        <GridViewColumn Header="End Time" Width="110">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                         <TextBlock Text="{Binding EndTime, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Header="Positions" Width="80">
+                            <GridViewColumn Header="Positions" Width="60">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding PositionsLoadedDisplay, Mode=TwoWay}" />

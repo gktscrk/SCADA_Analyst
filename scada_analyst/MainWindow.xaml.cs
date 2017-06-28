@@ -142,6 +142,30 @@ namespace scada_analyst
 
         #endregion
 
+        #region About & Exit
+
+        /// <summary>
+        /// Brings up the About window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AboutClick(object sender, RoutedEventArgs e)
+        {
+            new Window_About(this).ShowDialog();
+        }
+
+        /// <summary>
+        /// Quit
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Exit(object sender, RoutedEventArgs e)
+        {
+            this.Close();            
+        }
+
+        #endregion 
+
         #region UI Updating
 
         /// <summary>
@@ -161,194 +185,7 @@ namespace scada_analyst
 
         #endregion
 
-        /// <summary>
-        /// Brings up the About window
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AboutClick(object sender, RoutedEventArgs e)
-        {
-            new Window_About(this).ShowDialog();
-        }
-
-        /// <summary>
-        /// The function that is called by the button
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void AddDaytimesToEvents(object sender, RoutedEventArgs e)
-        {
-            _cts = new CancellationTokenSource();
-            var token = _cts.Token;
-
-            var progress = new Progress<int>(value =>
-            {
-                UpdateProgress(value);
-            });
-
-            try
-            {
-                // these conditions check that the function is not used in a situation
-                // where it would cause a nullreference exception or some other bad result
-
-                if (AssetsView == null || AssetsView.Count == 0)
-                {
-                    await this.ShowMessageAsync("Warning!",
-                        "No structures have been loaded. Load structures before using this function.");
-
-                    throw new CancelLoadingException();
-                }
-                else if ((Tab_NoPower.IsSelected && NoPowViews.Count == 0) ||
-                        (Tab_RtPower.IsSelected && RtdPowView.Count == 0))
-                {
-                    await this.ShowMessageAsync("Warning!",
-                        "There are no respective power production events to process.");
-
-                    throw new CancelLoadingException();
-                }
-                else if (geoFile == null || !positionsAddedToData)
-                {
-                    await this.ShowMessageAsync("Warning!",
-                        "Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
-
-                    throw new CancelLoadingException();
-                }
-
-                // if the above conditions are not fulfilled, the process can continue
-
-                ProgressBarVisible();
-                
-                await Task.Run(() => analyser.AddDaytimesToEvents(progress));                 
-
-                ProgressBarInvisible();
-                RefreshEvents();
-            }
-            catch (CancelLoadingException) { }
-            catch (Exception ex)
-            {
-                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Method called by the UI that references the AddStructureLocations bool
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void AddStructureLocationsAsync(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (geoFile == null || geoFile.GeoInfo.Count == 0)
-                {
-                    await this.ShowMessageAsync("Warning!",
-                        "No geographic data is loaded.");
-
-                    throw new CancelLoadingException();
-                }
-                else if (meteoFile.MetMasts.Count == 0 && scadaFile.WindFarm.Count == 0)
-                {
-                    await this.ShowMessageAsync("Warning!",
-                        "No meteorologic or SCADA data is loaded.");
-
-                    throw new CancelLoadingException();
-                }
-
-                positionsAddedToData = analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
-            }
-            catch (CancelLoadingException) { }
-            catch { throw new Exception(); }
-        }
-
-        /// <summary>
-        /// Method to deal with the equipment chosen; should change what the graph and the listview display
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Comb_EquipmentChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // only go into this event if the below conditions are true; probably will disable the combobox as well though
-            DisplayCorrectEventDetails();
-        }
-
-        private void DisplayCorrectEventDetails()
-        {
-            if (Comb_EquipmentChoice.SelectedIndex != -1)
-            {
-                if (Comb_EquipmentChoice.SelectedIndex == 0)
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    LChart_Basic.Visibility = Visibility.Collapsed;
-                }
-                else if ((string)Comb_EquipmentChoice.SelectedItem == "Gearbox")
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-
-                    //try it with a normal view as the List<DateTimePoint> did not work particularly well
-                    ChartShowSeries("Gearbox");
-                }
-                else if ((string)Comb_EquipmentChoice.SelectedItem == "Generator")
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Visible;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries("Generator");
-                }
-                else if ((string)Comb_EquipmentChoice.SelectedItem == "Main bearing")
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
-                    ChartShowSeries("Main bearing");
-                }
-            }
-        }
-
-        private void ChartShowSeries(string input)
-        {
-            try
-            {
-                if (LChart_Basic.Series.Count == 1) { LChart_Basic.Series.RemoveAt(0); }
-
-                List<double> list = new List<double>();
-                List<string> times = new List<string>();
-
-                LineSeries newLine = new LineSeries();
-
-                for (int i = 0; i < _weekEventData.Count; i++)
-                {
-                    double variable = 0;
-                    
-                    if (input == "Gearbox")
-                    {
-                        newLine.Title = "HS Gens.";
-                        variable = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
-                    }
-                    else if (input == "Generator")
-                    {
-                        newLine.Title = "Bearing G";
-                        variable = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
-                    }
-                    else if (input == "Main bearing")
-                    {
-                        newLine.Title = "Main Bearing.";
-                        variable = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
-                    }
-
-                    list.Add(!double.IsNaN(variable) ? variable : double.NaN);
-                    times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
-                }
-
-                newLine.Values = new ChartValues<double>(list);
-                newLine.Fill = Brushes.Transparent;
-                LChart_Basic.Series.Add(newLine);
-            }
-            catch { }
-        }
+        #region Clear Data Methods
 
         /// <summary>
         /// Calls other clear events, leaves nothing
@@ -462,6 +299,191 @@ namespace scada_analyst
             PopulateOverview();
         }
 
+        #endregion
+
+        #region Event Details View
+
+        /// <summary>
+        /// Method to deal with the equipment chosen; should change what the graph and the listview display
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Comb_EquipmentChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // only go into this event if the below conditions are true; probably will disable the combobox as well though
+            DisplayCorrectEventDetails();
+        }
+
+        private void DisplayCorrectEventDetails()
+        {
+            if (Comb_EquipmentChoice.SelectedIndex != -1)
+            {
+                if (Comb_EquipmentChoice.SelectedIndex == 0)
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    LChart_Basic.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_EquipmentChoice.SelectedItem == "Gearbox")
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+
+                    //try it with a normal view as the List<DateTimePoint> did not work particularly well
+                    ChartShowSeries("Gearbox");
+                }
+                else if ((string)Comb_EquipmentChoice.SelectedItem == "Generator")
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Visible;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    ChartShowSeries("Generator");
+                }
+                else if ((string)Comb_EquipmentChoice.SelectedItem == "Main bearing")
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
+                    ChartShowSeries("Main bearing");
+                }
+            }
+        }
+
+        private void ChartShowSeries(string input)
+        {
+            try
+            {
+                if (LChart_Basic.Series.Count == 1) { LChart_Basic.Series.RemoveAt(0); }
+
+                List<double> list = new List<double>();
+                List<string> times = new List<string>();
+
+                LineSeries newLine = new LineSeries();
+
+                for (int i = 0; i < _weekEventData.Count; i++)
+                {
+                    double variable = 0;
+                    
+                    if (input == "Gearbox")
+                    {
+                        newLine.Title = "HS Gens.";
+                        variable = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
+                    }
+                    else if (input == "Generator")
+                    {
+                        newLine.Title = "Bearing G";
+                        variable = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
+                    }
+                    else if (input == "Main bearing")
+                    {
+                        newLine.Title = "Main Bearing.";
+                        variable = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
+                    }
+
+                    list.Add(!double.IsNaN(variable) ? variable : double.NaN);
+                    times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
+                }
+
+                newLine.Values = new ChartValues<double>(list);
+                newLine.Fill = Brushes.Transparent;
+                LChart_Basic.Series.Add(newLine);
+            }
+            catch { }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// The function that is called by the button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void AddDaytimesToEvents(object sender, RoutedEventArgs e)
+        {
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                // these conditions check that the function is not used in a situation
+                // where it would cause a nullreference exception or some other bad result
+
+                if (AssetsView == null || AssetsView.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No structures have been loaded. Load structures before using this function.");
+
+                    throw new CancelLoadingException();
+                }
+                else if ((Tab_NoPower.IsSelected && NoPowViews.Count == 0) ||
+                        (Tab_RtPower.IsSelected && RtdPowView.Count == 0))
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "There are no respective power production events to process.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (geoFile == null || !positionsAddedToData)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
+
+                    throw new CancelLoadingException();
+                }
+
+                // if the above conditions are not fulfilled, the process can continue
+
+                ProgressBarVisible();
+                
+                await Task.Run(() => analyser.AddDaytimesToEvents(progress));                 
+
+                ProgressBarInvisible();
+                RefreshEvents();
+            }
+            catch (CancelLoadingException) { }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Method called by the UI that references the AddStructureLocations bool
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void AddStructureLocationsAsync(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (geoFile == null || geoFile.GeoInfo.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No geographic data is loaded.");
+
+                    throw new CancelLoadingException();
+                }
+                else if (meteoFile.MetMasts.Count == 0 && scadaFile.WindFarm.Count == 0)
+                {
+                    await this.ShowMessageAsync("Warning!",
+                        "No meteorologic or SCADA data is loaded.");
+
+                    throw new CancelLoadingException();
+                }
+
+                positionsAddedToData = analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
+            }
+            catch (CancelLoadingException) { }
+            catch { throw new Exception(); }
+        }
+
         /// <summary>
         /// Changes the duration of the filter than can be used to remove events from active consideration
         /// </summary>
@@ -477,16 +499,6 @@ namespace scada_analyst
                 _duratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
                 UpdateDurationLabel();
             }
-        }
-
-        /// <summary>
-        /// Quit
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Exit(object sender, RoutedEventArgs e)
-        {
-            this.Close();            
         }
 
         /// <summary>
@@ -660,6 +672,11 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Calculates distances between various loaded assets
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void GetDistancesBetweenStructuresAsync(object sender, RoutedEventArgs e)
         {
             // this method to invoke the analysis class and do some work there
@@ -989,6 +1006,12 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// This function populates the DMean field for several variables, allowing fleetwide averages
+        /// to be investigated with respect to every timestep.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void PopulateFleetAverages(object sender, RoutedEventArgs e)
         {
             _cts = new CancellationTokenSource();
