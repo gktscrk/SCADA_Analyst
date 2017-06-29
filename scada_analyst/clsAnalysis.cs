@@ -19,7 +19,7 @@ namespace scada_analyst
         private List<EventData> _loSpEvents = new List<EventData>();
         private List<EventData> _hiSpEvents = new List<EventData>();
         private List<EventData> _noPwEvents = new List<EventData>();
-        private List<EventData> _rtPwEvents = new List<EventData>();
+        private List<EventData> _hiPwEvents = new List<EventData>();
         private List<EventData> _allPwrEvts = new List<EventData>();
 
         private List<Structure> _assetList = new List<Structure>();
@@ -40,11 +40,11 @@ namespace scada_analyst
             //this method resets the eventlist in case the user so wishes
             for (int i = 0; i < AllPwrEvts.Count; i++)
             {
-                if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.NOPROD)
+                if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.NO_PWR)
                 {
                     NoPwEvents.Add(AllPwrEvts[i]);
                 }
-                else if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.RATEDP)
+                else if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.HI_PWR)
                 {
                     RtPwEvents.Add(AllPwrEvts[i]);
                 }
@@ -68,14 +68,14 @@ namespace scada_analyst
                 _allPwrEvts.Clear();
 
                 _noPwEvents = AssociateEvents(_noPwEvents, progress);
-                _rtPwEvents = AssociateEvents(_rtPwEvents, progress, 50);
+                _hiPwEvents = AssociateEvents(_hiPwEvents, progress, 50);
 
                 foreach (EventData singleEvent in _noPwEvents)
                 {
                     _allPwrEvts.Add(singleEvent);
                 }
 
-                foreach (EventData singleEvent in _rtPwEvents)
+                foreach (EventData singleEvent in _hiPwEvents)
                 {
                     _allPwrEvts.Add(singleEvent);
                 }
@@ -147,7 +147,7 @@ namespace scada_analyst
             try
             {
                 _noPwEvents = RemovedMatchedEvents(_noPwEvents, progress);
-                _rtPwEvents = RemovedMatchedEvents(_rtPwEvents, progress, 50);
+                _hiPwEvents = RemovedMatchedEvents(_hiPwEvents, progress, 50);
             }
             catch { throw; }
         }
@@ -206,14 +206,14 @@ namespace scada_analyst
                 _allPwrEvts.Clear();
 
                 _noPwEvents = AddDaytimesToEvents(_noPwEvents, progress);
-                _rtPwEvents = AddDaytimesToEvents(_rtPwEvents, progress, 50);
+                _hiPwEvents = AddDaytimesToEvents(_hiPwEvents, progress, 50);
 
                 foreach (EventData singleEvent in _noPwEvents)
                 {
                     _allPwrEvts.Add(singleEvent);
                 }
 
-                foreach (EventData singleEvent in _rtPwEvents)
+                foreach (EventData singleEvent in _hiPwEvents)
                 {
                     _allPwrEvts.Add(singleEvent);
                 }
@@ -256,7 +256,7 @@ namespace scada_analyst
             try
             {
                 _noPwEvents = RemoveProcessedDaytimes(_noPwEvents, progress);
-                _rtPwEvents = RemoveProcessedDaytimes(_rtPwEvents, progress, 50);
+                _hiPwEvents = RemoveProcessedDaytimes(_hiPwEvents, progress, 50);
             }
             catch { throw; }
         }
@@ -381,7 +381,7 @@ namespace scada_analyst
             try
             {
                 _noPwEvents = RemoveByDuration(_noPwEvents, progress);
-                _rtPwEvents = RemoveByDuration(_rtPwEvents, progress, 50);
+                _hiPwEvents = RemoveByDuration(_hiPwEvents, progress, 50);
             }
             catch { throw; }
         }
@@ -489,7 +489,7 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _noPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.NOPROD));
+                                _noPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.NO_PWR));
                             }
 
                             count++;
@@ -549,7 +549,7 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _rtPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.RATEDP));
+                                _hiPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.HI_PWR));
                             }
 
                             count++;
@@ -1243,13 +1243,21 @@ namespace scada_analyst
                 List<EventData> noPowrEvents, List<EventData> hiPowrEvents)
             {
                 this.UnitID = thisAsset.UnitID;
+                this.Type = thisAsset.Type;
 
-                _hiWinds = new EventsCounter(EventData.WeatherType.HI_SPD, hiWindEvents);
-                _loWinds = new EventsCounter(EventData.WeatherType.LO_SPD, loWindEvents);
+                //the below also needs to take into account the right asset ID only
+                _hiWinds = new EventsCounter(this.UnitID, EventData.WeatherType.HI_SPD, hiWindEvents);
+                _loWinds = new EventsCounter(this.UnitID, EventData.WeatherType.LO_SPD, loWindEvents);
+
+                if (this.Type == Types.TURBINE)
+                {
+                    _hiPower = new EventsCounter(this.UnitID, EventData.PwrProdType.HI_PWR, hiPowrEvents);
+                    _noPower = new EventsCounter(this.UnitID, EventData.PwrProdType.NO_PWR, noPowrEvents);
+                }
             }
 
             #region Support Classes
-            
+
             public class EventsCounter : ObservableObject
             {
                 #region Variables
@@ -1264,23 +1272,33 @@ namespace scada_analyst
 
                 #endregion
 
-                public EventsCounter(EventData.PwrProdType thisType, List<EventData> theseEvents)
+                public EventsCounter(int asset, EventData.PwrProdType thisType, List<EventData> theseEvents)
                 {
-                    _cntrType = thisType == EventData.PwrProdType.RATEDP ? EventType.HI_PWR : EventType.LO_PWR;
+                    _cntrType = thisType == EventData.PwrProdType.HI_PWR ? EventType.HI_PWR : EventType.LO_PWR;
 
-                    
+                    AssignCounters(asset, theseEvents);
                 }
 
-                public EventsCounter(EventData.WeatherType thisType, List<EventData> theseEvents)
+                public EventsCounter(int asset, EventData.WeatherType thisType, List<EventData> theseEvents)
                 {
                     _cntrType = thisType == EventData.WeatherType.HI_SPD ? EventType.HI_SPD : EventType.LO_SPD;
 
-
+                    AssignCounters(asset, theseEvents);
                 }
 
-                private int AssessEvents(List<EventData> theseEvents, EventData.EvtDuration counter)
+                private void AssignCounters(int asset, List<EventData> theseEvents)
                 {
-                    int count = theseEvents.Count(x => x.EvtDrtn == counter);
+                    _shortEvs = AssessEvents(asset, theseEvents, EventData.EvtDuration.SHORT);
+                    _deciMins = AssessEvents(asset, theseEvents, EventData.EvtDuration.DECIMINS);
+                    _hourLong = AssessEvents(asset, theseEvents, EventData.EvtDuration.HOURS);
+                    _manyHors = AssessEvents(asset, theseEvents, EventData.EvtDuration.MANYHOURS);
+                    _daysLong = AssessEvents(asset, theseEvents, EventData.EvtDuration.DAYS);
+                }
+
+                private int AssessEvents(int asset, List<EventData> theseEvents, EventData.EvtDuration counter)
+                {
+                    int count = theseEvents.Where(id => id.FromAsset == asset).Count(x => x.EvtDrtn == counter);
+
                     return count;
                 }
 
@@ -1332,11 +1350,23 @@ namespace scada_analyst
         public List<EventData> LoSpEvents { get { return _loSpEvents; } set { _loSpEvents = value; } }
         public List<EventData> HiSpEvents { get { return _hiSpEvents; } set { _hiSpEvents = value; } }
         public List<EventData> NoPwEvents { get { return _noPwEvents; } set { _noPwEvents = value; } }
-        public List<EventData> RtPwEvents { get { return _rtPwEvents; } set { _rtPwEvents = value; } }
+        public List<EventData> RtPwEvents { get { return _hiPwEvents; } set { _hiPwEvents = value; } }
         public List<EventData> AllPwrEvts { get { return _allPwrEvts; } set { _allPwrEvts = value; } }
 
         public List<Structure> AssetsList { get { return _assetList; } set { _assetList = value; } }
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
+
+        public List<StructureSmry> Summary()
+        {
+            List<StructureSmry> temp = new List<StructureSmry>();
+
+            for (int i = 0; i < _assetList.Count; i++)
+            {
+                temp.Add(new StructureSmry(_assetList[i], _loSpEvents, _hiSpEvents, _noPwEvents, _hiPwEvents));
+            }
+
+            return temp;
+        }
 
         #endregion
     }

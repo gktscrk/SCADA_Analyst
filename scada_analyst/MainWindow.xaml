@@ -174,7 +174,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Type" Width="80">
+                                <GridViewColumn Header="TypeString" Width="80">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Label Content="{Binding Type, Mode=OneWay}" />
@@ -228,6 +228,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -235,9 +236,11 @@
                         </Grid.RowDefinitions>
 
                         <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0,3,0"
-                              Content="Summary" FontWeight="Bold" />
+                               Content="Summary" FontWeight="Bold" />
 
-                        <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5"
+                        <ComboBox Grid.Column="1" Grid.Row="0" Margin="5,5,5,5" Name="Comb_SummaryChoose" />
+
+                        <ListView Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="5,5,5,5"
                                   Name="LView_EventsS"
                                   VerticalAlignment="Top" HorizontalAlignment="Left"
                                   ScrollViewer.CanContentScroll="True" >
@@ -256,21 +259,56 @@
                                     <GridViewColumn Header="Asset ID" Width="80" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                                <Label Content="{Binding UnitID, Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
                                     <GridViewColumn Header="Type" Width="80" >
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Label Content="{Binding ESource, Mode=OneWay}" />
+                                                <Label Content="{Binding TypeString, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="&lt;30 min" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding NoPower.ShortEvs, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="30 min &lt; 2 h" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding NoPower.DeciMins, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="2 h &lt; 8 h" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding NoPower.HourLong, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="8 h &lt; 2 days" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding NoPower.ManyHors, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="&gt;2 days" Width="80" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding NoPower.DaysLong, Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
                                 </GridView>
                             </ListView.View>
                         </ListView>
-
+                        
                     </Grid>
                 </TabItem>
 

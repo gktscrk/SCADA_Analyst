@@ -143,6 +143,7 @@ namespace scada_analyst.Shared
         #region Variables
 
         private bool positionsLoaded = false;
+        private float prevailingWinds = 0;
         private int unitID = -1;
 
         private List<DateTime> inclDtTm = new List<DateTime>();
@@ -162,9 +163,12 @@ namespace scada_analyst.Shared
         #region Properties
 
         public bool PositionsLoaded { get { return positionsLoaded; } set { positionsLoaded = value; } }
+        public float WindDirection {  get { return prevailingWinds; } set { prevailingWinds = value; } }
+        public int UnitID { get { return unitID; } set { unitID = value; } }
 
         public string PositionsLoadedDisplay { get { return PositionsLoaded == true ? "Added" : "None"; } set { PositionsLoadedDisplay = value; } }
-        public int UnitID { get { return unitID; } set { unitID = value; } }
+        public string TypeString {  get { return type == Types.METMAST ? "MetMast" : type == Types.TURBINE ? "Turbine" : "Unknown"; } set { TypeString = value; } }
+        public string PrevailingWindString { get { return Common.BearingStringConversion(prevailingWinds); } set { PrevailingWindString = value; } }
 
         public List<DateTime> InclDtTm { get { return inclDtTm; } set { inclDtTm = value; } }
 

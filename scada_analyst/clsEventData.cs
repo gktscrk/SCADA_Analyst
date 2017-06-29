@@ -116,13 +116,13 @@ namespace scada_analyst
 
             for (int i = 0; i < data.Count; i++)
             {
-                if (pwrProd == PwrProdType.NOPROD)
+                if (pwrProd == PwrProdType.NO_PWR)
                 {
                     if (i == 0) { extrmPwr = data[i].Powers.Mean; }
 
                     if (data[i].Powers.Mean < extrmPwr) { extrmPwr = data[i].Powers.Mean; }
                 }
-                else if (pwrProd == PwrProdType.RATEDP)
+                else if (pwrProd == PwrProdType.HI_PWR)
                 {
                     if (i == 0) { extrmPwr = data[i].Powers.Mean; }
 
@@ -267,8 +267,8 @@ namespace scada_analyst
         public enum PwrProdType
         {
             NORMAL,
-            NOPROD, // for no power production events
-            RATEDP  // for rated power
+            NO_PWR, // for no power production events
+            HI_PWR  // for rated power
         }
 
         public enum TimeOfEvent

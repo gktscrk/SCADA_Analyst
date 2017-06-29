@@ -128,7 +128,7 @@ namespace scada_analyst
             LView_PowrNone.IsEnabled = false;
             LView_PowrRted.IsEnabled = false;
 
-            CreateAndUpdateDataSummary(); // Call this before GetPowerProdLabel as that will change one of the strings here
+            CreateSummaries(); // Call this before GetPowerProdLabel as that will change one of the strings here
             UpdateDurationLabel();
             LBL_PwrProdAmount.Content = GetPowerProdLabel();
 
@@ -207,13 +207,13 @@ namespace scada_analyst
             EditDurationFilter();
         }
 
-        #endregion
-
         private void UpdateDurationLabel()
         {
             LBL_DurationFilter.Content = "Duration Filter: " + _duratFilter.ToString();
             LBL_DurationFilter2.Content = "Duration Filter: " + _duratFilter.ToString();
         }
+
+        #endregion
 
         #endregion
 
@@ -263,7 +263,7 @@ namespace scada_analyst
             LView_WSpdEvHi.ItemsSource = null;
             LView_WSpdEvHi.IsEnabled = false;
 
-            CreateAndUpdateDataSummary();
+            CreateSummaries();
 
             eventsMatchedAcrossTypes = false;
             eventsAreProcessed = false;
@@ -280,7 +280,7 @@ namespace scada_analyst
             geoFile = null; geoLoaded = false; positionsAddedToData = false;
 
             analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
-            CreateAndUpdateDataSummary();
+            CreateSummaries();
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace scada_analyst
             meteoFile = new MeteoData(); meteoLoaded = false;            
 
             analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
-            CreateAndUpdateDataSummary();
+            CreateSummaries();
             PopulateOverview();
         }
 
@@ -327,7 +327,7 @@ namespace scada_analyst
             scadaFile = new ScadaData(); scadaLoaded = false;
 
             analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
-            CreateAndUpdateDataSummary();
+            CreateSummaries();
             PopulateOverview();
         }
 
@@ -1288,7 +1288,7 @@ namespace scada_analyst
 
                 RtdPowView.Clear();
                 LBL_PwrProdAmount.Content = GetPowerProdLabel();
-                CreateAndUpdateDataSummary(); 
+                CreateSummaries(); 
             }
         }
         
@@ -1409,12 +1409,17 @@ namespace scada_analyst
             }
         }
 
-        void CreateAndUpdateDataSummary()
+        void CreateSummaries()
+        {
+            DataSummary();
+            EventsSummary();
+        }
+
+        private void DataSummary()
         {
             LView_LoadedOverview.ItemsSource = null;
 
             _overview.Clear();
-            //_overview.Add(new DirectoryItem("Structures", AssetsView.Count));
             _overview.Add(new DirectoryItem("Events Summary", AllWtrView.Count + AllPowView.Count));
             _overview.Add(new DirectoryItem("Wind Speeds: Low", LoSpdViews.Count));
             _overview.Add(new DirectoryItem("Wind Speeds: High", HiSpdViews.Count));
@@ -1422,6 +1427,15 @@ namespace scada_analyst
             _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
             LView_LoadedOverview.ItemsSource = _overview;
+        }
+
+        void EventsSummary()
+        {
+            LView_EventsS.ItemsSource = null;
+
+            ObservableCollection<Analysis.StructureSmry> sumEvents = new ObservableCollection<Analysis.StructureSmry>(analyser.Summary());
+            
+            LView_EventsS.ItemsSource = sumEvents;
         }
 
         void PopulateOverview()
@@ -1483,7 +1497,7 @@ namespace scada_analyst
                     if (AssetsView[i].EndTime > _dataExportEndTm) { _dataExportEndTm = AssetsView[i].EndTime; }
                 }
 
-                CreateAndUpdateDataSummary();
+                CreateSummaries();
             }
         }
 
@@ -1538,7 +1552,7 @@ namespace scada_analyst
                 LView_WSpdEvHi.Items.Refresh();
             }
 
-            CreateAndUpdateDataSummary();
+            CreateSummaries();
         }
         
         void RemoveSingleAsset(int toRemove)
@@ -1561,7 +1575,7 @@ namespace scada_analyst
 
             LView_Overview.ItemsSource = AssetsView;
             LView_Overview.Items.Refresh();
-            CreateAndUpdateDataSummary();
+            CreateSummaries();
         }
 
         void OnPropertyChanged(string name)
