@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using scada_analyst.Shared;
 
@@ -146,6 +144,17 @@ namespace scada_analyst
 
             SortMeteorology();
             PopulateTimeDif();
+            GetBearings();
+        }
+
+        private void GetBearings()
+        {
+            for (int i = 0; i < metMasts.Count;i++)
+            {
+                string mode = metMasts[i].MetDataSorted.GroupBy(v => v.WSpdR.DStr).OrderByDescending(g => g.Count()).First().Key;
+
+                metMasts[i].PrevailingWindString = mode;
+            }
         }
 
         private void PopulateTimeDif()
@@ -227,10 +236,10 @@ namespace scada_analyst
                                 // need to add in the respective actual meteorology file columns to make
                                 // this work properly
 
-                                hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Math.Round(unit.WSpdR.Mean, 3) + ",");
-                                hB.Append("met_Winddirection10_mean" + ","); sB.Append(Math.Round(unit.WDirc.Mean, 3) + ",");
-                                hB.Append("met_TemperatureTen_mean" + ","); sB.Append(Math.Round(unit.Tempr.Mean, 3) + ",");
-                                hB.Append("met_Humidity_mean"); sB.Append(Math.Round(unit.Humid.Mean, 3));
+                                hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.Mean, 3) + ",");
+                                hB.Append("met_Winddirection10_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.Dirc, 1) + ",");
+                                hB.Append("met_TemperatureTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Tempr.Mean, 1) + ",");
+                                hB.Append("met_Humidity_mean"); sB.Append(Common.GetStringDecimals(unit.Humid.Mean, 1));
 
                                 if (header == false) { sW.WriteLine(hB.ToString()); header = true; }
                                 sW.WriteLine(sB.ToString());
@@ -344,16 +353,12 @@ namespace scada_analyst
                 Tempr.Stdv = noVal;
                 Tempr.Maxm = noVal;
                 Tempr.Minm = noVal;
-
-                WDirc.Mean = noVal;
-                WDirc.Stdv = noVal;
-                WDirc.Maxm = noVal;
-                WDirc.Minm = noVal;
-
+                
                 WSpdR.Mean = noVal;
                 WSpdR.Stdv = noVal;
                 WSpdR.Maxm = noVal;
                 WSpdR.Minm = noVal;
+                WSpdR.Dirc = noVal;
             }
 
             private void HeaderSeparation(string headerLine)
@@ -393,10 +398,7 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "winddirection10")
                             {
-                                if (parts[2] == "mean") { WDirc.Mean = i; }
-                                else if (parts[2] == "stddev") { WDirc.Stdv = i; }
-                                else if (parts[2] == "max") { WDirc.Maxm = i; }
-                                else if (parts[2] == "min") { WDirc.Minm = i; }
+                                if (parts[2] == "mean") { WSpdR.Dirc = i; }
                             }
                             else if (parts[1] == "windspeedrot")
                             {
@@ -426,7 +428,6 @@ namespace scada_analyst
             
             private Humidity humid = new Humidity();
             private Tempratr tempr = new Tempratr();
-            private WndDrctn wDirc = new WndDrctn();
             private WndSpRtr wSpdR = new WndSpRtr();
             
             #endregion
@@ -474,24 +475,19 @@ namespace scada_analyst
                 tempr.Stdv = GetVals(tempr.Stdv, data, header.Tempr.Stdv);
                 tempr.Maxm = GetVals(tempr.Maxm, data, header.Tempr.Maxm);
                 tempr.Minm = GetVals(tempr.Minm, data, header.Tempr.Minm);
-
-                wDirc.Mean = GetVals(wDirc.Mean, data, header.WDirc.Mean);
-                wDirc.Stdv = GetVals(wDirc.Stdv, data, header.WDirc.Stdv);
-                wDirc.Maxm = GetVals(wDirc.Maxm, data, header.WDirc.Maxm);
-                wDirc.Minm = GetVals(wDirc.Minm, data, header.WDirc.Minm);
-
+                
                 wSpdR.Mean = GetVals(wSpdR.Mean, data, header.WSpdR.Mean);
                 wSpdR.Stdv = GetVals(wSpdR.Stdv, data, header.WSpdR.Stdv);
                 wSpdR.Maxm = GetVals(wSpdR.Maxm, data, header.WSpdR.Maxm);
                 wSpdR.Minm = GetVals(wSpdR.Minm, data, header.WSpdR.Minm);
+                wSpdR.Dirc = GetVals(wSpdR.Dirc, data, header.WSpdR.Dirc);
             }
             
             #region Support Classes
 
             public class Humidity : Stats { }
             public class Tempratr : Stats { }
-            public class WndDrctn : Stats { }
-            public class WndSpRtr : Stats { }
+            public class WndSpRtr : WindSpeeds { }
 
             #endregion
 
@@ -499,7 +495,6 @@ namespace scada_analyst
             
             public Humidity Humid { get { return humid; } set { humid = value; } }
             public Tempratr Tempr { get { return tempr; } set { tempr = value; } }
-            public WndDrctn WDirc { get { return wDirc; } set { wDirc = value; } }
             public WndSpRtr WSpdR { get { return wSpdR; } set { wSpdR = value; } }
 
             #endregion

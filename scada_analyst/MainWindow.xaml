@@ -174,10 +174,10 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="TypeString" Width="80">
+                                <GridViewColumn Header="Type" Width="80">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Label Content="{Binding Type, Mode=OneWay}" />
+                                            <Label Content="{Binding TypeString, Mode=OneWay}" />
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -267,6 +267,13 @@
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Label Content="{Binding TypeString, Mode=OneWay}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Prevailing Winds" Width="100" >
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label Content="{Binding PrevailingWindString, Mode=OneWay}" />
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>

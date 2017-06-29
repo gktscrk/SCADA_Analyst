@@ -120,7 +120,9 @@
     <Compile Include="Controls\Sunriset.cs" />
     <Compile Include="Helper\ObservableObject.cs" />
     <Compile Include="Helper\RelayCommand.cs" />
+    <Compile Include="Shared\clsPosition.cs" />
     <Compile Include="Shared\clsProgram.cs" />
+    <Compile Include="Shared\clsStructure.cs" />
     <Compile Include="Shared\Window_CalendarChooser.xaml.cs">
       <DependentUpon>Window_CalendarChooser.xaml</DependentUpon>
     </Compile>
@@ -157,7 +159,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="clsMeteo.cs" />
-    <Compile Include="Shared\clsBackground.cs" />
+    <Compile Include="Shared\clsBaseClasses.cs" />
     <Compile Include="clsGeo.cs" />
     <Compile Include="clsScada.cs" />
     <Compile Include="Shared\clsShared.cs" />

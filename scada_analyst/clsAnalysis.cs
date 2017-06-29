@@ -1244,6 +1244,7 @@ namespace scada_analyst
             {
                 this.UnitID = thisAsset.UnitID;
                 this.Type = thisAsset.Type;
+                this.PrevailingWindString = thisAsset.PrevailingWindString;
 
                 //the below also needs to take into account the right asset ID only
                 _hiWinds = new EventsCounter(this.UnitID, EventData.WeatherType.HI_SPD, hiWindEvents);

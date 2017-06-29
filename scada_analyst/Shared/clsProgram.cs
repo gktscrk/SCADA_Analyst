@@ -12,7 +12,29 @@ namespace scada_analyst.Shared
         {
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
+            #region Verson 1.000 and after
+            
+            ProgramVersion v1000 = new ProgramVersion(1000, new DateTime(2017, 06, 29));
+            v1000.AddChange("Redefined program version number as v1.000.");
+            results.Add(v1000);
+
+            #endregion
+
             #region Version 0.200
+
+            ProgramVersion v0280 = new ProgramVersion(0280, new DateTime(2017, 06, 29));
+            v0280.AddChange("Defining constant wind speed directions to enable assessing their relation to power events' locations.");
+            v0280.AddChange("Events summary implementation to see the distribution of power events by asset and duration.");
+            results.Add(v0280);
+
+            ProgramVersion v0270 = new ProgramVersion(0270, new DateTime(2017, 06, 28));
+            v0270.AddChange("Implemented fleet-wde temperature comparison outputting a delta temperature for certain variables.");
+            results.Add(v0270);
+
+            ProgramVersion v0260 = new ProgramVersion(0260, new DateTime(2017, 06, 27));
+            v0260.AddChange("Redefined programming objectives for future functions.");
+            v0260.AddChange("Improvment: Manual working hours defineable to avoid excluding low power events at say 4 AM in the summer.");
+            results.Add(v0260);
 
             ProgramVersion v0251 = new ProgramVersion(0251, new DateTime(2017, 06, 26));
             v0251.AddChange("Day-time processing takes into account minimum and maximum working hours to account for a long summer day.");
