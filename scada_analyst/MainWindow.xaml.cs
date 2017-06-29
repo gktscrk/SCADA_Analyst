@@ -64,6 +64,8 @@ namespace scada_analyst
 
         private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
+        private List<string> eventDetailsSelection = new List<string>();
+        private List<string> eventSummarySelection = new List<string>();
 
         private CancellationTokenSource _cts;
 
@@ -109,18 +111,7 @@ namespace scada_analyst
             this.WindowState = WindowState.Maximized;
 
             //MainWindowViewModel mwVM = new MainWindowViewModel();
-
-            progress_ProgrBar.Visibility = Visibility.Collapsed;
-            label_ProgressBar.Visibility = Visibility.Collapsed;
-            cancel_ProgressBar.Visibility = Visibility.Collapsed;
-
-            List<string> newNames = new List<string>();
-            newNames.Add(" ");
-            newNames.Add("Gearbox");
-            newNames.Add("Generator");
-            newNames.Add("Main bearing");
-            Comb_EquipmentChoice.ItemsSource = newNames;
-
+            
             LView_Overview.IsEnabled = false;
 
             LView_WSpdEvLo.IsEnabled = false;
@@ -128,17 +119,16 @@ namespace scada_analyst
             LView_PowrNone.IsEnabled = false;
             LView_PowrRted.IsEnabled = false;
 
+            ProgressBarInvisible();
+            CreateEventDetailsView();
+            CreateEventSummaryCombo();
             CreateSummaries(); // Call this before GetPowerProdLabel as that will change one of the strings here
             UpdateDurationLabel();
             LBL_PwrProdAmount.Content = GetPowerProdLabel();
 
-            Comb_EquipmentChoice.IsEnabled = false;
+            Comb_DisplayEvDetails.IsEnabled = false;
             LBL_EquipmentChoice.IsEnabled = false;
             CBox_DataSetChoice.IsEnabled = false;
-
-            LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-            LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-            LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
         }
 
         #endregion
@@ -333,14 +323,75 @@ namespace scada_analyst
 
         #endregion
 
+        #region Events Summary View
+
+        private void CreateEventSummaryCombo()
+        {
+            eventSummarySelection.Add("No Power Production Events");
+            eventSummarySelection.Add("High Power Production Events");
+            eventSummarySelection.Add("Low Wind Speed Events");
+            eventSummarySelection.Add("High Wind Speed Events");
+
+            Comb_SummaryChoose.ItemsSource = eventSummarySelection;
+            Comb_SummaryChoose.SelectedIndex = 0;
+        }
+
+        private void Comb_DisplaySummary_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Comb_SummaryChoose.SelectedIndex != -1)
+            {
+                if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[0])
+                {
+                    LView_EventsSumPwrNone.Visibility = Visibility.Visible;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[1])
+                {
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[2])
+                {
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Visible;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[3])
+                {
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        #endregion 
+
         #region Event Details View
+
+        private void CreateEventDetailsView()
+        {
+            eventDetailsSelection.Add(" ");
+            eventDetailsSelection.Add("Gearbox");
+            eventDetailsSelection.Add("Generator");
+            eventDetailsSelection.Add("Main bearing");
+
+            Comb_DisplayEvDetails.ItemsSource = eventDetailsSelection;
+            Comb_DisplayEvDetails.SelectedIndex = 0;
+        }
 
         /// <summary>
         /// Method to deal with the equipment chosen; should change what the graph and the listview display
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Comb_EquipmentChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Comb_DisplayEvDetails_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // only go into this event if the below conditions are true; probably will disable the combobox as well though
             DisplayCorrectEventDetails();
@@ -348,37 +399,39 @@ namespace scada_analyst
 
         private void DisplayCorrectEventDetails()
         {
-            if (Comb_EquipmentChoice.SelectedIndex != -1)
+            if (Comb_DisplayEvDetails.SelectedIndex != -1)
             {
-                if (Comb_EquipmentChoice.SelectedIndex == 0)
+                LChart_Basic.Visibility = Visibility.Visible;
+
+                if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[0])
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_EquipmentChoice.SelectedItem == "Gearbox")
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[1])
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
 
                     //try it with a normal view as the List<DateTimePoint> did not work particularly well
-                    ChartShowSeries("Gearbox");
+                    ChartShowSeries(eventDetailsSelection[1]);
                 }
-                else if ((string)Comb_EquipmentChoice.SelectedItem == "Generator")
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[2])
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Visible;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries("Generator");
+                    ChartShowSeries(eventDetailsSelection[2]);
                 }
-                else if ((string)Comb_EquipmentChoice.SelectedItem == "Main bearing")
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[3])
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
-                    ChartShowSeries("Main bearing");
+                    ChartShowSeries(eventDetailsSelection[3]);
                 }
             }
         }
@@ -398,19 +451,19 @@ namespace scada_analyst
                 {
                     double variable = 0;
                     
-                    if (input == "Gearbox")
+                    if (input == eventDetailsSelection[1])
                     {
                         newLine.Title = "HS Gens.";
                         variable = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
                     }
-                    else if (input == "Generator")
+                    else if (input == eventDetailsSelection[2])
                     {
                         newLine.Title = "Bearing G";
                         variable = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
                     }
-                    else if (input == "Main bearing")
+                    else if (input == eventDetailsSelection[3])
                     {
-                        newLine.Title = "Main Bearing.";
+                        newLine.Title = "Main Bearing";
                         variable = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
                     }
 
@@ -1415,7 +1468,7 @@ namespace scada_analyst
             EventsSummary();
         }
 
-        private void DataSummary()
+        void DataSummary()
         {
             LView_LoadedOverview.ItemsSource = null;
 
@@ -1431,11 +1484,17 @@ namespace scada_analyst
 
         void EventsSummary()
         {
-            LView_EventsS.ItemsSource = null;
+            LView_EventsSumPwrNone.ItemsSource = null;
+            LView_EventsSumPwrHigh.ItemsSource = null;
+            LView_EventsSumWndLows.ItemsSource = null;
+            LView_EventsSumWndHigh.ItemsSource = null;
 
             ObservableCollection<Analysis.StructureSmry> sumEvents = new ObservableCollection<Analysis.StructureSmry>(analyser.Summary());
             
-            LView_EventsS.ItemsSource = sumEvents;
+            LView_EventsSumPwrNone.ItemsSource = sumEvents;
+            LView_EventsSumPwrHigh.ItemsSource = sumEvents;
+            LView_EventsSumWndLows.ItemsSource = sumEvents;
+            LView_EventsSumWndHigh.ItemsSource = sumEvents;
         }
 
         void PopulateOverview()
@@ -1752,7 +1811,7 @@ namespace scada_analyst
 
         private void InitializeEventExploration(object sender, RoutedEventArgs e)
         {
-            Comb_EquipmentChoice.IsEnabled = true;
+            Comb_DisplayEvDetails.IsEnabled = true;
             LBL_EquipmentChoice.IsEnabled = true;
             CBox_DataSetChoice.IsEnabled = true;
 
@@ -1813,7 +1872,6 @@ namespace scada_analyst
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
         
         public static bool Mnt_Night { get { return mnt_Night; } set { mnt_Night = value; } }
-        
         public static bool Mnt_AstDw { get { return mnt_AstDw; } set { mnt_AstDw = value; } }
         public static bool Mnt_NauDw { get { return mnt_NauDw; } set { mnt_NauDw = value; } }
         public static bool Mnt_CivDw { get { return mnt_CivDw; } set { mnt_CivDw = value; } }
