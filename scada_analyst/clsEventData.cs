@@ -50,7 +50,7 @@ namespace scada_analyst
 
             for (int i = 0; i < data.Count; i++)
             {
-                if (input == WeatherType.LOW_SP)
+                if (input == WeatherType.LO_SPD)
                 {
                     if (i == 0) { extrmSpd = data[i].WSpdR.Mean; }
 
@@ -84,7 +84,7 @@ namespace scada_analyst
 
             for (int i = 0; i < data.Count; i++)
             {
-                if (input == WeatherType.LOW_SP)
+                if (input == WeatherType.LO_SPD)
                 {
                     if (i == 0) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
 
@@ -289,7 +289,7 @@ namespace scada_analyst
         public enum WeatherType
         {
             NORMAL,
-            LOW_SP, // below cutin
+            LO_SPD, // below cutin
             HI_SPD  // above cutout
         }
 

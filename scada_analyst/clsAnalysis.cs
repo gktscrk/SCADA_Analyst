@@ -612,8 +612,8 @@ namespace scada_analyst
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                                 }
 
-                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
-                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
+                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
+                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
                             }
                             else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > MainWindow.CutOut)
                             {
@@ -700,8 +700,8 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
-                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LOW_SP));
+                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
+                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
                             }
                             else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > MainWindow.CutOut)
                             {
@@ -1219,6 +1219,105 @@ namespace scada_analyst
             public int To { get { return _to; } set { _to = value; } }
 
             public double Intervals { get { return _interval; } set { _interval = value; } }
+
+            #endregion
+        }
+
+        public class StructureSmry : Structure
+        {
+            /// <summary>
+            /// This class should be able to count for each set of events what the number of 
+            /// specific events of various durations and types exist for it.
+            /// </summary>
+
+            #region Variables
+
+            private EventsCounter _hiWinds;
+            private EventsCounter _loWinds;
+            private EventsCounter _noPower;
+            private EventsCounter _hiPower;
+
+            #endregion
+
+            public StructureSmry(Structure thisAsset, List<EventData> loWindEvents, List<EventData> hiWindEvents,
+                List<EventData> noPowrEvents, List<EventData> hiPowrEvents)
+            {
+                this.UnitID = thisAsset.UnitID;
+
+                _hiWinds = new EventsCounter(EventData.WeatherType.HI_SPD, hiWindEvents);
+                _loWinds = new EventsCounter(EventData.WeatherType.LO_SPD, loWindEvents);
+            }
+
+            #region Support Classes
+            
+            public class EventsCounter : ObservableObject
+            {
+                #region Variables
+
+                private int _shortEvs = 0;
+                private int _deciMins = 0;
+                private int _hourLong = 0;
+                private int _manyHors = 0;
+                private int _daysLong = 0;
+
+                private EventType _cntrType = EventType.UNKNOWN;
+
+                #endregion
+
+                public EventsCounter(EventData.PwrProdType thisType, List<EventData> theseEvents)
+                {
+                    _cntrType = thisType == EventData.PwrProdType.RATEDP ? EventType.HI_PWR : EventType.LO_PWR;
+
+                    
+                }
+
+                public EventsCounter(EventData.WeatherType thisType, List<EventData> theseEvents)
+                {
+                    _cntrType = thisType == EventData.WeatherType.HI_SPD ? EventType.HI_SPD : EventType.LO_SPD;
+
+
+                }
+
+                private int AssessEvents(List<EventData> theseEvents, EventData.EvtDuration counter)
+                {
+                    int count = theseEvents.Count(x => x.EvtDrtn == counter);
+                    return count;
+                }
+
+                #region Support Classes
+
+                public enum EventType
+                {
+                    UNKNOWN,
+                    LO_SPD,
+                    HI_SPD,
+                    LO_PWR,
+                    HI_PWR
+                }
+
+                #endregion
+
+                #region Properties
+
+                public int ShortEvs { get { return _shortEvs; } set { _shortEvs = value; } }
+                public int DeciMins { get { return _deciMins; } set { _deciMins = value; } }
+                public int HourLong { get { return _hourLong; } set { _hourLong = value; } }
+                public int ManyHors { get { return _manyHors; } set { _manyHors = value; } }
+                public int DaysLong { get { return _daysLong; } set { _daysLong = value; } }
+
+                public EventType CntrType { get { return _cntrType; } set { _cntrType = value; } }
+
+                #endregion
+            }
+            
+            #endregion
+
+            #region Properties
+
+            public EventsCounter HiWinds { get { return _hiWinds; } set { _hiWinds = value; } }
+            public EventsCounter LoWinds { get { return _loWinds; } set { _loWinds = value; } }
+            public EventsCounter NoPower { get { return _noPower; } set { _noPower = value; } }
+            public EventsCounter HiPower { get { return _hiPower; } set { _hiPower = value; } }
 
             #endregion
         }
