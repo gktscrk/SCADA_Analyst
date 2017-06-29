@@ -253,6 +253,7 @@ namespace scada_analyst
                                 if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
                                 else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
 
+                                #region Necessary Data
                                 if (exportPowMaxm) { hB.Append("wtc_ActPower_max" + ","); sB.Append(Common.GetStringDecimals(unit.Powers.Maxm, 1) + ","); }
                                 if (exportPowMinm) { hB.Append("wtc_ActPower_min" + ","); sB.Append(Common.GetStringDecimals(unit.Powers.Minm, 1) + ","); }
                                 if (exportPowMean) { hB.Append("wtc_ActPower_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Powers.Mean, 1) + ","); }
@@ -296,6 +297,13 @@ namespace scada_analyst
                                 if (exportWSpMinm) { hB.Append("wtc_YawPos_min" + ","); sB.Append(Common.GetStringDecimals(unit.YawPostn.Minm, 1) + ","); }
                                 if (exportWSpMean) { hB.Append("wtc_YawPos_mean" + ","); sB.Append(Common.GetStringDecimals(unit.YawPostn.Mean, 1) + ","); }
                                 if (exportWSpStdv) { hB.Append("wtc_YawPos_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.YawPostn.Stdv, 1) + ","); }
+                                #endregion
+
+                                #region Generator
+                                if (exportGenMaxm) { hB.Append("wtc_GenRpm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Maxm, 1) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_GenRpm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Minm, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenRpm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Mean, 1) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_GenRpm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Stdv, 1) + ","); }
 
                                 if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Maxm, 1) + ","); }
                                 if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Minm, 1) + ","); }
@@ -330,7 +338,9 @@ namespace scada_analyst
                                 if (exportGenMinm) { hB.Append("wtc_Gen2W1Tm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Minm, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Mean, 1) + ","); }
                                 if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Stdv, 1) + ","); }
+                                #endregion
 
+                                #region Main Bearing
                                 if (exportMBrMaxm) { hB.Append("wtc_MainBTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Maxm, 1) + ","); }
                                 if (exportMBrMinm) { hB.Append("wtc_MainBTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Minm, 1) + ","); }
                                 if (exportMBrMean) { hB.Append("wtc_MainBTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Mean, 1) + ","); }
@@ -344,7 +354,8 @@ namespace scada_analyst
                                 if (exportMBrMinm) { hB.Append("wtc_MBearHTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Minm, 1) + ","); }
                                 if (exportMBrMean) { hB.Append("wtc_MBearHTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Mean, 1) + ","); }
                                 if (exportMBrStdv) { hB.Append("wtc_MBearHTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Stdv, 1) + ","); }
-
+                                #endregion
+                                #region Gearbox
                                 if (exportGBxMaxm) { hB.Append("wtc_HSGenTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Gens.Maxm, 1) + ","); }
                                 if (exportGBxMinm) { hB.Append("wtc_HSGenTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Gens.Minm, 1) + ","); }
                                 if (exportGBxMean) { hB.Append("wtc_HSGenTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Gens.Mean, 1) + ","); }
@@ -360,7 +371,12 @@ namespace scada_analyst
                                 if (exportGBxMaxm) { hB.Append("wtc_IMSRotTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Rots.Maxm, 1) + ","); }
                                 if (exportGBxMinm) { hB.Append("wtc_IMSRotTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Rots.Minm, 1) + ","); }
                                 if (exportGBxMean) { hB.Append("wtc_IMSRotTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Rots.Mean, 1) + ","); }
-                                if (exportGBxStdv) { hB.Append("wtc_IMSRotTm_stddev"); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Rots.Stdv, 1)); }
+                                if (exportGBxStdv) { hB.Append("wtc_IMSRotTm_stddev" + ", "); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Rots.Stdv, 1) + ", "); }
+                                if (exportGBxMaxm) { hB.Append("wtc_GeOilTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Maxm, 1) + ","); }
+                                if (exportGBxMinm) { hB.Append("wtc_GeOilTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Minm, 1) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_GeOilTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Mean, 1) + ","); }
+                                if (exportGBxStdv) { hB.Append("wtc_GeOilTmp_stddev"); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Stdv, 1)); }
+                                #endregion
 
                                 // note the last one does not use a comma so if you add more lines, add in a comma
 
@@ -1160,12 +1176,12 @@ namespace scada_analyst
                 #endregion
                 #region Temperature File
 
-                _ambTmp.Maxm = GetVals(_ambTmp.Mean, data, header.AmbTemps.Mean);
+                _ambTmp.Mean = GetVals(_ambTmp.Mean, data, header.AmbTemps.Mean);
                 _ambTmp.Stdv = GetVals(_ambTmp.Stdv, data, header.AmbTemps.Stdv);
                 _ambTmp.Maxm = GetVals(_ambTmp.Maxm, data, header.AmbTemps.Maxm);
                 _ambTmp.Minm = GetVals(_ambTmp.Minm, data, header.AmbTemps.Minm);
 
-                _deltaT.Maxm = GetVals(_deltaT.Mean, data, header.DeltaTs.Mean);
+                _deltaT.Mean = GetVals(_deltaT.Mean, data, header.DeltaTs.Mean);
                 _deltaT.Stdv = GetVals(_deltaT.Stdv, data, header.DeltaTs.Stdv);
                 _deltaT.Maxm = GetVals(_deltaT.Maxm, data, header.DeltaTs.Maxm);
                 _deltaT.Minm = GetVals(_deltaT.Minm, data, header.DeltaTs.Minm);
@@ -1192,7 +1208,7 @@ namespace scada_analyst
                 _grbox.Oils.Stdv = GetVals(_grbox.Oils.Stdv, data, header.Gearbox.Oils.Stdv);
                 _grbox.Oils.Maxm = GetVals(_grbox.Oils.Maxm, data, header.Gearbox.Oils.Maxm);
                 _grbox.Oils.Minm = GetVals(_grbox.Oils.Minm, data, header.Gearbox.Oils.Minm);
-
+                                
                 _genny.G1u1.Mean = GetVals(_genny.G1u1.Mean, data, header.Genny.G1u1.Mean);
                 _genny.G1u1.Stdv = GetVals(_genny.G1u1.Stdv, data, header.Genny.G1u1.Stdv);
                 _genny.G1u1.Maxm = GetVals(_genny.G1u1.Maxm, data, header.Genny.G1u1.Maxm);

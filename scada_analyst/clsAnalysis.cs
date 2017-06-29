@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using scada_analyst.Shared;
 
@@ -759,8 +756,8 @@ namespace scada_analyst
                 _fleetMeans = new ScadaData.TurbineData();
 
                 FleetTotalValues(scadaFile, progress);
-                OverallAverages(progress, 33);
-                FleetWiseDeviation(scadaFile, progress, 66);
+                OverallAverages(progress, 50);
+                FleetWiseDeviation(scadaFile, progress, 55);
 
                 scadaFile = SortScada(scadaFile);
             }
@@ -773,7 +770,7 @@ namespace scada_analyst
         /// This function calculates the fleet-wise average of several variables.
         /// </summary>
         /// <param name="scadaFile"></param>
-        private void FleetTotalValues(ScadaData scadaFile, IProgress<int> progress, int start = 0)
+        private void FleetTotalValues(ScadaData scadaFile, IProgress<int> progress)
         {
             int count = 0;
 
@@ -832,20 +829,18 @@ namespace scada_analyst
                         _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
                         _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Hs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Hs.Mean) ? 1 : 0;
                         _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Standards.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Standards.Mean) ? 1 : 0;
-
-                        //ProcessAverageDataValues(scadaFile.WindFarm[i].DataSorted[j], _fleetMeans.Data.Count - 1);
-
+                        
                         _fleetMeans.InclDtTm.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
                     }
-                }
 
-                count++;
+                    count++;
 
-                if (count % 1 == 0)
-                {
-                    if (progress != null)
+                    if (count % 1000 == 0)
                     {
-                        progress.Report((int)(start + 0.3 * i / scadaFile.WindFarm.Count * 100.0));
+                        if (progress != null)
+                        {
+                            progress.Report((int)((scadaFile.WindFarm[i].DataSorted.Count*i + j) * 50.0 / (scadaFile.WindFarm.Count * scadaFile.WindFarm[i].DataSorted.Count)));
+                        }
                     }
                 }
             }
@@ -983,7 +978,7 @@ namespace scada_analyst
                 {
                     if (progress != null)
                     {
-                        progress.Report((int)(start + 0.3 * i / _fleetMeans.Data.Count * 100.0));
+                        progress.Report((int)(start + 0.05 * i / _fleetMeans.Data.Count * 100.0));
                     }
                 }
             }
@@ -1035,15 +1030,15 @@ namespace scada_analyst
                     thisSample.MainBear.Gs.DMean = - flytSample.MainBear.Gs.Mean + thisSample.MainBear.Gs.Mean;
                     thisSample.MainBear.Hs.DMean = - flytSample.MainBear.Hs.Mean + thisSample.MainBear.Hs.Mean;
                     thisSample.MainBear.Standards.DMean = - flytSample.MainBear.Standards.Mean + thisSample.MainBear.Standards.Mean;
-                }
 
-                count++;
+                    count++;
 
-                if (count % 1 == 0)
-                {
-                    if (progress != null)
+                    if (count % 1000 == 0)
                     {
-                        progress.Report((int)(start + 0.3 * i / _fleetMeans.Data.Count * 100.0));
+                        if (progress != null)
+                        {
+                            progress.Report((int)(start + (scadaFile.WindFarm[i].DataSorted.Count * i + j)*45.0 / (scadaFile.WindFarm.Count * scadaFile.WindFarm[i].DataSorted.Count)));
+                        }
                     }
                 }
             }
