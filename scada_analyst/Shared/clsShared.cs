@@ -82,7 +82,7 @@ namespace scada_analyst.Shared
 
             if (bearing < 11.25)
             {
-                direction = "north";
+                direction = "North";
             }
             else if (bearing < 33.75)
             {
@@ -90,7 +90,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 56.25)
             {
-                direction = "northeast";
+                direction = "Northeast";
             }
             else if (bearing < 78.75)
             {
@@ -98,7 +98,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 101.25)
             {
-                direction = "east";
+                direction = "East";
             }
             else if (bearing < 123.75)
             {
@@ -106,7 +106,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 146.25)
             {
-                direction = "southeast";
+                direction = "Southeast";
             }
             else if (bearing < 168.75)
             {
@@ -114,7 +114,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 191.25)
             {
-                direction = "south";
+                direction = "South";
             }
             else if (bearing < 213.75)
             {
@@ -122,7 +122,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 236.25)
             {
-                direction = "southwest";
+                direction = "Southwest";
             }
             else if (bearing < 258.75)
             {
@@ -130,7 +130,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 281.25)
             {
-                direction = "west";
+                direction = "West";
             }
             else if (bearing < 303.75)
             {
@@ -138,7 +138,7 @@ namespace scada_analyst.Shared
             }
             else if (bearing < 326.25)
             {
-                direction = "northwest";
+                direction = "Northwest";
             }
             else if (bearing < 348.75)
             {
@@ -146,7 +146,7 @@ namespace scada_analyst.Shared
             }
             else
             {
-                direction = "north";
+                direction = "North";
             }
 
             return direction;

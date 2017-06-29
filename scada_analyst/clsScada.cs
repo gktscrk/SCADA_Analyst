@@ -70,6 +70,7 @@ namespace scada_analyst
 
             SortScada();
             PopulateTimeDif();
+            GetBearings();
         }
 
         private void LoadScada(IProgress<int> progress, int numberOfFiles = 1, int i = 0)
