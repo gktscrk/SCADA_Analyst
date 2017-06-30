@@ -62,6 +62,8 @@ namespace scada_analyst
 
         private static double cutIn = 4, cutOut = 25, powerLim = 0, ratedPwr = 2300; // ratedPwr always in kW !!!
 
+        private string[] _labels;
+
         private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
         private List<string> eventDetailsSelection = new List<string>();
@@ -440,42 +442,75 @@ namespace scada_analyst
         {
             try
             {
-                if (LChart_Basic.Series.Count == 1) { LChart_Basic.Series.RemoveAt(0); }
+                LChart_Basic.Series.Clear();
 
-                List<double> list = new List<double>();
+                List<double> list1 = new List<double>();
+                List<double> list2 = new List<double>();
                 List<string> times = new List<string>();
 
-                LineSeries newLine = new LineSeries();
+                LineSeries priGraph = new LineSeries();
+                LineSeries secGraph = new LineSeries();
 
                 for (int i = 0; i < _weekEventData.Count; i++)
                 {
-                    double variable = 0;
-                    
+                    double var1 = double.NaN;
+                    double var2 = double.NaN;
+
                     if (input == eventDetailsSelection[1])
                     {
-                        newLine.Title = "HS Gens.";
-                        variable = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
+                        priGraph.Title = "HS Gens.";
+                        var1 = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
+
+                        secGraph.Title = "HS Rots.";
+                        var2 = Math.Round(_weekEventData[i].Gearbox.Hs.Rots.Mean, 1);
                     }
                     else if (input == eventDetailsSelection[2])
                     {
-                        newLine.Title = "Bearing G";
-                        variable = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
+                        priGraph.Title = "G-Bearing";
+                        var1 = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
+
+                        secGraph.Title = "R-Bearing";
+                        var2 = Math.Round(_weekEventData[i].Genny.bearingR.Mean, 1);
                     }
                     else if (input == eventDetailsSelection[3])
                     {
-                        newLine.Title = "Main Bearing";
-                        variable = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
+                        priGraph.Title = "Main Bearing";
+                        var1 = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
+
+                        priGraph.Title = "HS Bearing";
+                        var2 = Math.Round(_weekEventData[i].MainBear.Hs.Mean, 1);
                     }
 
-                    list.Add(!double.IsNaN(variable) ? variable : double.NaN);
-                    times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm DD/MM"));
-                }
+                    list1.Add(!double.IsNaN(var1) ? var1 : double.NaN);
+                    list2.Add(!double.IsNaN(var2) ? var2 : double.NaN);
 
-                newLine.Values = new ChartValues<double>(list);
-                newLine.Fill = Brushes.Transparent;
-                LChart_Basic.Series.Add(newLine);
+                    times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm dd-MMM"));
+                }
+                            
+                priGraph.Values = new ChartValues<double>(list1);
+                priGraph.Fill = Brushes.Transparent;
+
+                secGraph.Values = new ChartValues<double>(list2);
+                secGraph.Fill = Brushes.Transparent;
+
+                Labels = times.ToArray();
+
+                LChart_Basic.Series.Add(priGraph);
+                LChart_Basic.Series.Add(secGraph);
+
+                LChart_XAxis.Labels = Labels;
             }
             catch { }
+        }
+
+        private void Chart_OnData_Click(object sender, ChartPoint point)
+        {
+            // bring up a messagebox to show the user the time and value of the datapoint they
+            // clicked on
+
+            string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
+
+            LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
         }
 
         #endregion
@@ -1871,6 +1906,19 @@ namespace scada_analyst
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
         
+        public string[] Labels
+        {
+            get { return _labels; }
+            set
+            {
+                if (_labels != value)
+                {
+                    _labels = value;
+                    OnPropertyChanged(nameof(_labels));
+                }
+            }
+        }
+
         public static bool Mnt_Night { get { return mnt_Night; } set { mnt_Night = value; } }
         public static bool Mnt_AstDw { get { return mnt_AstDw; } set { mnt_AstDw = value; } }
         public static bool Mnt_NauDw { get { return mnt_NauDw; } set { mnt_NauDw = value; } }

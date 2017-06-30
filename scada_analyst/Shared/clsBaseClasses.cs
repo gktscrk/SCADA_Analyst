@@ -165,7 +165,7 @@ namespace scada_analyst.Shared
         public double Mean { get { return mean; } set { mean = value; } }
         public double Stdv { get { return stdv; } set { stdv = value; } }
 
-        public double DMean { get { return dMean; } set { dMean = value; } }
+        public double Dlta { get { return dMean; } set { dMean = value; } }
 
         #endregion
     }

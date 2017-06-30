@@ -264,6 +264,7 @@ namespace scada_analyst
                                 if (exportAmbMaxm) { hB.Append("wtc_AmbieTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.AmbTemps.Maxm, 1) + ","); }
                                 if (exportAmbMinm) { hB.Append("wtc_AmbieTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.AmbTemps.Minm, 1) + ","); }
                                 if (exportAmbMean) { hB.Append("wtc_AmbieTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.AmbTemps.Mean, 1) + ","); }
+                                if (exportAmbMean) { hB.Append("wtc_AmbieTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.AmbTemps.Dlta, 1) + ","); }
                                 if (exportAmbStdv) { hB.Append("wtc_AmbieTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.AmbTemps.Stdv, 1) + ","); }
                                 if (exportAmbMean) { hB.Append("wtc_twrhumid_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Towers.Humid.Mean, 1) + ","); }
 
@@ -338,6 +339,16 @@ namespace scada_analyst
                                 if (exportGenMinm) { hB.Append("wtc_Gen2W1Tm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Minm, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Mean, 1) + ","); }
                                 if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Stdv, 1) + ","); }
+
+                                if (exportGenMean) { hB.Append("wtc_GenRpm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingR.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen1U1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1u1.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen1V1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1v1.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen1W1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1w1.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen2U1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2u1.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen2V1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2v1.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Dlta, 1) + ","); }
                                 #endregion
 
                                 #region Main Bearing
@@ -354,7 +365,12 @@ namespace scada_analyst
                                 if (exportMBrMinm) { hB.Append("wtc_MBearHTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Minm, 1) + ","); }
                                 if (exportMBrMean) { hB.Append("wtc_MBearHTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Mean, 1) + ","); }
                                 if (exportMBrStdv) { hB.Append("wtc_MBearHTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Stdv, 1) + ","); }
+
+                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Dlta, 1) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MBearGTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Gs.Dlta, 1) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MBearHTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Dlta, 1) + ","); }
                                 #endregion
+                                
                                 #region Gearbox
                                 if (exportGBxMaxm) { hB.Append("wtc_HSGenTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Gens.Maxm, 1) + ","); }
                                 if (exportGBxMinm) { hB.Append("wtc_HSGenTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Gens.Minm, 1) + ","); }
@@ -375,7 +391,13 @@ namespace scada_analyst
                                 if (exportGBxMaxm) { hB.Append("wtc_GeOilTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Maxm, 1) + ","); }
                                 if (exportGBxMinm) { hB.Append("wtc_GeOilTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Minm, 1) + ","); }
                                 if (exportGBxMean) { hB.Append("wtc_GeOilTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Mean, 1) + ","); }
-                                if (exportGBxStdv) { hB.Append("wtc_GeOilTmp_stddev"); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Stdv, 1)); }
+                                if (exportGBxStdv) { hB.Append("wtc_GeOilTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Stdv, 1) + ","); }
+
+                                if (exportGBxMean) { hB.Append("wtc_HSGenTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Gens.Dlta, 1) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_HSRotTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Hs.Rots.Dlta, 1) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_IMSGenTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Gens.Dlta, 1) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_IMSRotTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.Ims.Rots.Dlta, 1) + ","); }
+                                if (exportGBxMean) { hB.Append("wtc_GeOilTmp_delta"); sB.Append(Common.GetStringDecimals(unit.Gearbox.Oils.Dlta, 1)); }
                                 #endregion
 
                                 // note the last one does not use a comma so if you add more lines, add in a comma
@@ -565,7 +587,15 @@ namespace scada_analyst
                 Genny.G2w1.Maxm = noVal;
                 Genny.G2w1.Minm = noVal;
 
+                Genny.G1u1.Dlta = noVal;
+                Genny.G1v1.Dlta = noVal;
+                Genny.G1w1.Dlta = noVal;
+                Genny.G2u1.Dlta = noVal;
+                Genny.G2v1.Dlta = noVal;
+                Genny.G2w1.Dlta = noVal;
+
                 AmbTemps.Mean = noVal;
+                AmbTemps.Dlta = noVal;
                 AmbTemps.Stdv = noVal;
                 AmbTemps.Maxm = noVal;
                 AmbTemps.Minm = noVal;
@@ -590,10 +620,17 @@ namespace scada_analyst
                 Gearbox.Ims.Rots.Stdv = noVal;
                 Gearbox.Ims.Rots.Maxm = noVal;
                 Gearbox.Ims.Rots.Minm = noVal;
+
+                Gearbox.Ims.Gens.Dlta = noVal;
+                Gearbox.Ims.Rots.Dlta = noVal;
+                Gearbox.Hs.Gens.Dlta = noVal;
+                Gearbox.Hs.Rots.Dlta = noVal;
+
                 Gearbox.Oils.Mean = noVal;
                 Gearbox.Oils.Stdv = noVal;
                 Gearbox.Oils.Maxm = noVal;
                 Gearbox.Oils.Minm = noVal;
+                Gearbox.Oils.Dlta = noVal;
 
                 Genny.bearingG.Mean = noVal;
                 Genny.bearingG.Stdv = noVal;
@@ -603,6 +640,8 @@ namespace scada_analyst
                 Genny.bearingR.Stdv = noVal;
                 Genny.bearingR.Maxm = noVal;
                 Genny.bearingR.Minm = noVal;
+                Genny.bearingG.Dlta = noVal;
+                Genny.bearingR.Dlta = noVal;
 
                 MainBear.Standards.Mean = noVal;
                 MainBear.Standards.Stdv = noVal;
@@ -616,6 +655,10 @@ namespace scada_analyst
                 MainBear.Hs.Stdv = noVal;
                 MainBear.Hs.Maxm = noVal;
                 MainBear.Hs.Minm = noVal;
+
+                MainBear.Standards.Dlta = noVal;
+                MainBear.Gs.Dlta = noVal;
+                MainBear.Hs.Dlta = noVal;
 
                 Nacel.Mean = noVal;
                 Nacel.Stdv = noVal;
@@ -661,6 +704,7 @@ namespace scada_analyst
                 Genny.Rpms.Stdv = noVal;
                 Genny.Rpms.Maxm = noVal;
                 Genny.Rpms.Minm = noVal;
+                Genny.Rpms.Dlta = noVal;
 
                 Towers.Humid.Mean = noVal;
                 Towers.Humid.Stdv = noVal;
@@ -779,6 +823,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { AmbTemps.Stdv = i; }
                                 else if (parts[2] == "max") { AmbTemps.Maxm = i; }
                                 else if (parts[2] == "min") { AmbTemps.Minm = i; }
+                                else if (parts[2] == "delta") { AmbTemps.Dlta = i; }
                             }
                             else if (parts[1] == "deltatmp")
                             {
@@ -793,6 +838,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.G1u1.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.G1u1.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.G1u1.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.G1u1.Dlta = i; }
                             }
                             else if (parts[1] == "gen1v1tm")
                             {
@@ -800,6 +846,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.G1v1.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.G1v1.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.G1v1.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.G1v1.Dlta = i; }
                             }
                             else if (parts[1] == "gen1w1tm")
                             {
@@ -807,6 +854,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.G1w1.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.G1w1.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.G1w1.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.G1w1.Dlta = i; }
                             }
                             else if (parts[1] == "gen2u1tm")
                             {
@@ -814,6 +862,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.G2u1.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.G2u1.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.G2u1.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.G2u1.Dlta = i; }
                             }
                             else if (parts[1] == "gen2v1tm")
                             {
@@ -821,6 +870,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.G2v1.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.G2v1.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.G2v1.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.G2v1.Dlta = i; }
                             }
                             else if (parts[1] == "gen2w1tm")
                             {
@@ -828,6 +878,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.G2w1.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.G2w1.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.G2w1.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.G2w1.Dlta = i; }
                             }
                             else if (parts[1] == "genbegtm")
                             {
@@ -835,6 +886,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.bearingG.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.bearingG.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.bearingG.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.bearingG.Dlta = i; }
                             }
                             else if (parts[1] == "genbertm")
                             {
@@ -842,6 +894,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.bearingR.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.bearingR.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.bearingR.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.bearingR.Dlta = i; }
                             }
                             else if (parts[1] == "geoiltmp")
                             {
@@ -849,6 +902,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Gearbox.Oils.Stdv = i; }
                                 else if (parts[2] == "max") { Gearbox.Oils.Maxm = i; }
                                 else if (parts[2] == "min") { Gearbox.Oils.Minm = i; }
+                                else if (parts[2] == "delta") { Gearbox.Oils.Dlta = i; }
                             }
                             else if (parts[1] == "gfilb1tm")
                             {
@@ -877,6 +931,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Gearbox.Hs.Gens.Stdv = i; }
                                 else if (parts[2] == "max") { Gearbox.Hs.Gens.Maxm = i; }
                                 else if (parts[2] == "min") { Gearbox.Hs.Gens.Minm = i; }
+                                else if (parts[2] == "delta") { Gearbox.Hs.Gens.Dlta = i; }
                             }
                             else if (parts[1] == "hsrottmp")
                             {
@@ -884,6 +939,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Gearbox.Hs.Rots.Stdv = i; }
                                 else if (parts[2] == "max") { Gearbox.Hs.Rots.Maxm = i; }
                                 else if (parts[2] == "min") { Gearbox.Hs.Rots.Minm = i; }
+                                else if (parts[2] == "delta") { Gearbox.Hs.Rots.Dlta = i; }
                             }
                             else if (parts[1] == "hubbrdtm")
                             {
@@ -926,6 +982,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Gearbox.Ims.Gens.Stdv = i; }
                                 else if (parts[2] == "max") { Gearbox.Ims.Gens.Maxm = i; }
                                 else if (parts[2] == "min") { Gearbox.Ims.Gens.Minm = i; }
+                                else if (parts[2] == "delta") { Gearbox.Ims.Gens.Dlta = i; }
                             }
                             else if (parts[1] == "imsrottm")
                             {
@@ -933,6 +990,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Gearbox.Ims.Rots.Stdv = i; }
                                 else if (parts[2] == "max") { Gearbox.Ims.Rots.Maxm = i; }
                                 else if (parts[2] == "min") { Gearbox.Ims.Rots.Minm = i; }
+                                else if (parts[2] == "delta") { Gearbox.Ims.Rots.Dlta = i; }
                             }
                             else if (parts[1] == "mainbtmp")
                             {
@@ -940,6 +998,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { MainBear.Standards.Stdv = i; }
                                 else if (parts[2] == "max") { MainBear.Standards.Maxm = i; }
                                 else if (parts[2] == "min") { MainBear.Standards.Minm = i; }
+                                else if (parts[2] == "delta") { MainBear.Standards.Dlta = i; }
                             }
                             else if (parts[1] == "mbeargtm")
                             {
@@ -947,6 +1006,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { MainBear.Gs.Stdv = i; }
                                 else if (parts[2] == "max") { MainBear.Gs.Maxm = i; }
                                 else if (parts[2] == "min") { MainBear.Gs.Minm = i; }
+                                else if (parts[2] == "delta") { MainBear.Gs.Dlta = i; }
                             }
                             else if (parts[1] == "mbearhtm")
                             {
@@ -954,6 +1014,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { MainBear.Hs.Stdv = i; }
                                 else if (parts[2] == "max") { MainBear.Hs.Maxm = i; }
                                 else if (parts[2] == "min") { MainBear.Hs.Minm = i; }
+                                else if (parts[2] == "delta") { MainBear.Hs.Dlta = i; }
                             }
                             else if (parts[1] == "naceltmp")
                             {
@@ -978,6 +1039,7 @@ namespace scada_analyst
                                 else if (parts[2] == "stddev") { Genny.Rpms.Stdv = i; }
                                 else if (parts[2] == "max") { Genny.Rpms.Maxm = i; }
                                 else if (parts[2] == "min") { Genny.Rpms.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.Rpms.Dlta = i; }
                             }
                             else if (parts[1] == "prianemo")
                             {
@@ -1180,6 +1242,7 @@ namespace scada_analyst
                 _ambTmp.Stdv = GetVals(_ambTmp.Stdv, data, header.AmbTemps.Stdv);
                 _ambTmp.Maxm = GetVals(_ambTmp.Maxm, data, header.AmbTemps.Maxm);
                 _ambTmp.Minm = GetVals(_ambTmp.Minm, data, header.AmbTemps.Minm);
+                _ambTmp.Dlta = GetVals(_ambTmp.Dlta, data, header.AmbTemps.Dlta);
 
                 _deltaT.Mean = GetVals(_deltaT.Mean, data, header.DeltaTs.Mean);
                 _deltaT.Stdv = GetVals(_deltaT.Stdv, data, header.DeltaTs.Stdv);
@@ -1190,25 +1253,30 @@ namespace scada_analyst
                 _grbox.Hs.Gens.Stdv = GetVals(_grbox.Hs.Gens.Stdv, data, header.Gearbox.Hs.Gens.Stdv);
                 _grbox.Hs.Gens.Maxm = GetVals(_grbox.Hs.Gens.Maxm, data, header.Gearbox.Hs.Gens.Maxm);
                 _grbox.Hs.Gens.Minm = GetVals(_grbox.Hs.Gens.Minm, data, header.Gearbox.Hs.Gens.Minm);
+                _grbox.Hs.Gens.Dlta = GetVals(_grbox.Hs.Gens.Dlta, data, header.Gearbox.Hs.Gens.Dlta);
                 _grbox.Hs.Rots.Mean = GetVals(_grbox.Hs.Rots.Mean, data, header.Gearbox.Hs.Rots.Mean);
                 _grbox.Hs.Rots.Stdv = GetVals(_grbox.Hs.Rots.Stdv, data, header.Gearbox.Hs.Rots.Stdv);
                 _grbox.Hs.Rots.Maxm = GetVals(_grbox.Hs.Rots.Maxm, data, header.Gearbox.Hs.Rots.Maxm);
                 _grbox.Hs.Rots.Minm = GetVals(_grbox.Hs.Rots.Minm, data, header.Gearbox.Hs.Rots.Minm);
+                _grbox.Hs.Rots.Dlta = GetVals(_grbox.Hs.Rots.Dlta, data, header.Gearbox.Hs.Rots.Dlta);
 
                 _grbox.Ims.Gens.Mean = GetVals(_grbox.Ims.Gens.Mean, data, header.Gearbox.Ims.Gens.Mean);
                 _grbox.Ims.Gens.Stdv = GetVals(_grbox.Ims.Gens.Stdv, data, header.Gearbox.Ims.Gens.Stdv);
                 _grbox.Ims.Gens.Maxm = GetVals(_grbox.Ims.Gens.Maxm, data, header.Gearbox.Ims.Gens.Maxm);
                 _grbox.Ims.Gens.Minm = GetVals(_grbox.Ims.Gens.Minm, data, header.Gearbox.Ims.Gens.Minm);
+                _grbox.Ims.Gens.Dlta = GetVals(_grbox.Ims.Gens.Dlta, data, header.Gearbox.Ims.Gens.Dlta);
                 _grbox.Ims.Rots.Mean = GetVals(_grbox.Ims.Rots.Mean, data, header.Gearbox.Ims.Rots.Mean);
                 _grbox.Ims.Rots.Stdv = GetVals(_grbox.Ims.Rots.Stdv, data, header.Gearbox.Ims.Rots.Stdv);
                 _grbox.Ims.Rots.Maxm = GetVals(_grbox.Ims.Rots.Maxm, data, header.Gearbox.Ims.Rots.Maxm);
                 _grbox.Ims.Rots.Minm = GetVals(_grbox.Ims.Rots.Minm, data, header.Gearbox.Ims.Rots.Minm);
+                _grbox.Ims.Rots.Dlta = GetVals(_grbox.Ims.Rots.Dlta, data, header.Gearbox.Ims.Rots.Dlta);
 
                 _grbox.Oils.Mean = GetVals(_grbox.Oils.Mean, data, header.Gearbox.Oils.Mean);
                 _grbox.Oils.Stdv = GetVals(_grbox.Oils.Stdv, data, header.Gearbox.Oils.Stdv);
                 _grbox.Oils.Maxm = GetVals(_grbox.Oils.Maxm, data, header.Gearbox.Oils.Maxm);
                 _grbox.Oils.Minm = GetVals(_grbox.Oils.Minm, data, header.Gearbox.Oils.Minm);
-                                
+                _grbox.Oils.Dlta = GetVals(_grbox.Oils.Dlta, data, header.Gearbox.Oils.Dlta);
+
                 _genny.G1u1.Mean = GetVals(_genny.G1u1.Mean, data, header.Genny.G1u1.Mean);
                 _genny.G1u1.Stdv = GetVals(_genny.G1u1.Stdv, data, header.Genny.G1u1.Stdv);
                 _genny.G1u1.Maxm = GetVals(_genny.G1u1.Maxm, data, header.Genny.G1u1.Maxm);
@@ -1235,6 +1303,13 @@ namespace scada_analyst
                 _genny.G2w1.Maxm = GetVals(_genny.G2w1.Maxm, data, header.Genny.G2w1.Maxm);
                 _genny.G2w1.Minm = GetVals(_genny.G2w1.Minm, data, header.Genny.G2w1.Minm);
 
+                _genny.G1u1.Dlta = GetVals(_genny.G1u1.Dlta, data, header.Genny.G1u1.Dlta);
+                _genny.G1v1.Dlta = GetVals(_genny.G1v1.Dlta, data, header.Genny.G1v1.Dlta);
+                _genny.G1w1.Dlta = GetVals(_genny.G1w1.Dlta, data, header.Genny.G1w1.Dlta);
+                _genny.G2u1.Dlta = GetVals(_genny.G2u1.Dlta, data, header.Genny.G2u1.Dlta);
+                _genny.G2v1.Dlta = GetVals(_genny.G2v1.Dlta, data, header.Genny.G2v1.Dlta);
+                _genny.G2w1.Dlta = GetVals(_genny.G2w1.Dlta, data, header.Genny.G2w1.Dlta);
+
                 _genny.bearingG.Mean = GetVals(_genny.bearingG.Mean, data, header.Genny.bearingG.Mean);
                 _genny.bearingG.Stdv = GetVals(_genny.bearingG.Stdv, data, header.Genny.bearingG.Stdv);
                 _genny.bearingG.Maxm = GetVals(_genny.bearingG.Maxm, data, header.Genny.bearingG.Maxm);
@@ -1243,6 +1318,9 @@ namespace scada_analyst
                 _genny.bearingR.Stdv = GetVals(_genny.bearingR.Stdv, data, header.Genny.bearingR.Stdv);
                 _genny.bearingR.Maxm = GetVals(_genny.bearingR.Maxm, data, header.Genny.bearingR.Maxm);
                 _genny.bearingR.Minm = GetVals(_genny.bearingR.Minm, data, header.Genny.bearingR.Minm);
+
+                _genny.bearingG.Dlta = GetVals(_genny.bearingG.Dlta, data, header.Genny.bearingG.Dlta);
+                _genny.bearingR.Dlta = GetVals(_genny.bearingR.Dlta, data, header.Genny.bearingR.Dlta);
 
                 _mainBear.Standards.Mean = GetVals(_mainBear.Standards.Mean, data, header.MainBear.Standards.Mean);
                 _mainBear.Standards.Stdv = GetVals(_mainBear.Standards.Stdv, data, header.MainBear.Standards.Stdv);
@@ -1257,6 +1335,10 @@ namespace scada_analyst
                 _mainBear.Hs.Stdv = GetVals(_mainBear.Hs.Stdv, data, header.MainBear.Hs.Stdv);
                 _mainBear.Hs.Maxm = GetVals(_mainBear.Hs.Maxm, data, header.MainBear.Hs.Maxm);
                 _mainBear.Hs.Minm = GetVals(_mainBear.Hs.Minm, data, header.MainBear.Hs.Minm);
+
+                _mainBear.Standards.Dlta = GetVals(_mainBear.Standards.Dlta, data, header.MainBear.Standards.Dlta);
+                _mainBear.Gs.Dlta = GetVals(_mainBear.Gs.Dlta, data, header.MainBear.Gs.Dlta);
+                _mainBear.Hs.Dlta = GetVals(_mainBear.Hs.Dlta, data, header.MainBear.Hs.Dlta);
 
                 _nacelle.Mean = GetVals(_nacelle.Mean, data, header.Nacel.Mean);
                 _nacelle.Stdv = GetVals(_nacelle.Stdv, data, header.Nacel.Stdv);
@@ -1311,6 +1393,7 @@ namespace scada_analyst
                 _genny.Rpms.Stdv = GetVals(_genny.Rpms.Stdv, data, header.Genny.Rpms.Stdv);
                 _genny.Rpms.Maxm = GetVals(_genny.Rpms.Maxm, data, header.Genny.Rpms.Maxm);
                 _genny.Rpms.Minm = GetVals(_genny.Rpms.Minm, data, header.Genny.Rpms.Minm);
+                _genny.Rpms.Dlta = GetVals(_genny.Rpms.Dlta, data, header.Genny.Rpms.Dlta);
 
                 _tower.Humid.Mean = GetVals(_tower.Humid.Mean, data, header.Towers.Humid.Mean);
                 _tower.Humid.Stdv = GetVals(_tower.Humid.Stdv, data, header.Towers.Humid.Stdv);

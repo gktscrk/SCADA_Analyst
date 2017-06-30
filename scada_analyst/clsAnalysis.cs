@@ -1009,27 +1009,27 @@ namespace scada_analyst
 
                     // doing the calculation this way round means that a negative difference is equal to a spec value
                     // which is lower than the fleet average, and a positive difference is above the fleet average
-                    thisSample.AmbTemps.DMean = - flytSample.AmbTemps.Mean + thisSample.AmbTemps.Mean;
+                    thisSample.AmbTemps.Dlta = - flytSample.AmbTemps.Mean + thisSample.AmbTemps.Mean;
 
-                    thisSample.Gearbox.Oils.DMean = - flytSample.Gearbox.Oils.Mean + thisSample.Gearbox.Oils.Mean;
-                    thisSample.Gearbox.Hs.Gens.DMean = - flytSample.Gearbox.Hs.Gens.Mean + thisSample.Gearbox.Hs.Gens.Mean;
-                    thisSample.Gearbox.Hs.Rots.DMean = - flytSample.Gearbox.Hs.Rots.Mean + thisSample.Gearbox.Hs.Rots.Mean;
-                    thisSample.Gearbox.Ims.Gens.DMean = - flytSample.Gearbox.Ims.Gens.Mean + thisSample.Gearbox.Ims.Gens.Mean;
-                    thisSample.Gearbox.Ims.Rots.DMean = - flytSample.Gearbox.Ims.Rots.Mean + thisSample.Gearbox.Ims.Rots.Mean;
+                    thisSample.Gearbox.Oils.Dlta = - flytSample.Gearbox.Oils.Mean + thisSample.Gearbox.Oils.Mean;
+                    thisSample.Gearbox.Hs.Gens.Dlta = - flytSample.Gearbox.Hs.Gens.Mean + thisSample.Gearbox.Hs.Gens.Mean;
+                    thisSample.Gearbox.Hs.Rots.Dlta = - flytSample.Gearbox.Hs.Rots.Mean + thisSample.Gearbox.Hs.Rots.Mean;
+                    thisSample.Gearbox.Ims.Gens.Dlta = - flytSample.Gearbox.Ims.Gens.Mean + thisSample.Gearbox.Ims.Gens.Mean;
+                    thisSample.Gearbox.Ims.Rots.Dlta = - flytSample.Gearbox.Ims.Rots.Mean + thisSample.Gearbox.Ims.Rots.Mean;
 
-                    thisSample.Genny.bearingG.DMean = - flytSample.Genny.bearingG.Mean + thisSample.Genny.bearingG.Mean;
-                    thisSample.Genny.bearingR.DMean = - flytSample.Genny.bearingR.Mean + thisSample.Genny.bearingR.Mean;
-                    thisSample.Genny.Rpms.DMean = - flytSample.Genny.Rpms.Mean + thisSample.Genny.Rpms.Mean;
-                    thisSample.Genny.G1u1.DMean = - flytSample.Genny.G1u1.Mean + thisSample.Genny.G1u1.Mean;
-                    thisSample.Genny.G1v1.DMean = - flytSample.Genny.G1v1.Mean + thisSample.Genny.G1v1.Mean;
-                    thisSample.Genny.G1w1.DMean = - flytSample.Genny.G1w1.Mean + thisSample.Genny.G1w1.Mean;
-                    thisSample.Genny.G2u1.DMean = - flytSample.Genny.G2u1.Mean + thisSample.Genny.G2u1.Mean;
-                    thisSample.Genny.G2v1.DMean = - flytSample.Genny.G2v1.Mean + thisSample.Genny.G2v1.Mean;
-                    thisSample.Genny.G2w1.DMean = - flytSample.Genny.G2w1.Mean + thisSample.Genny.G2w1.Mean;
+                    thisSample.Genny.bearingG.Dlta = - flytSample.Genny.bearingG.Mean + thisSample.Genny.bearingG.Mean;
+                    thisSample.Genny.bearingR.Dlta = - flytSample.Genny.bearingR.Mean + thisSample.Genny.bearingR.Mean;
+                    thisSample.Genny.Rpms.Dlta = - flytSample.Genny.Rpms.Mean + thisSample.Genny.Rpms.Mean;
+                    thisSample.Genny.G1u1.Dlta = - flytSample.Genny.G1u1.Mean + thisSample.Genny.G1u1.Mean;
+                    thisSample.Genny.G1v1.Dlta = - flytSample.Genny.G1v1.Mean + thisSample.Genny.G1v1.Mean;
+                    thisSample.Genny.G1w1.Dlta = - flytSample.Genny.G1w1.Mean + thisSample.Genny.G1w1.Mean;
+                    thisSample.Genny.G2u1.Dlta = - flytSample.Genny.G2u1.Mean + thisSample.Genny.G2u1.Mean;
+                    thisSample.Genny.G2v1.Dlta = - flytSample.Genny.G2v1.Mean + thisSample.Genny.G2v1.Mean;
+                    thisSample.Genny.G2w1.Dlta = - flytSample.Genny.G2w1.Mean + thisSample.Genny.G2w1.Mean;
                                                   
-                    thisSample.MainBear.Gs.DMean = - flytSample.MainBear.Gs.Mean + thisSample.MainBear.Gs.Mean;
-                    thisSample.MainBear.Hs.DMean = - flytSample.MainBear.Hs.Mean + thisSample.MainBear.Hs.Mean;
-                    thisSample.MainBear.Standards.DMean = - flytSample.MainBear.Standards.Mean + thisSample.MainBear.Standards.Mean;
+                    thisSample.MainBear.Gs.Dlta = - flytSample.MainBear.Gs.Mean + thisSample.MainBear.Gs.Mean;
+                    thisSample.MainBear.Hs.Dlta = - flytSample.MainBear.Hs.Mean + thisSample.MainBear.Hs.Mean;
+                    thisSample.MainBear.Standards.Dlta = - flytSample.MainBear.Standards.Mean + thisSample.MainBear.Standards.Mean;
 
                     count++;
 
