@@ -20,17 +20,17 @@ namespace scada_analyst
 
         #endregion 
 
-        public Window_AnalysisSettings(MetroWindow owner, double spdIns, double spdOut, double ratPwr,
+        public Window_AnalysisSettings(MetroWindow owner, Analysis analyser,
             bool nightTime, bool astdwTime, bool naudwTime, bool civdwTime, 
-            bool daytmTime, bool civdsTime, bool naudsTime, bool astdsTime, TimeSpan workMorn, TimeSpan workEven)
+            bool daytmTime, bool civdsTime, bool naudsTime, bool astdsTime)
         {
             InitializeComponent();
 
             Owner = owner;
 
-            NBox_Cutin.NumericValue = spdIns;
-            NBox_Ctout.NumericValue = spdOut;
-            NBox_RaPow.NumericValue = ratPwr;
+            NBox_Cutin.NumericValue = analyser.CutIn;
+            NBox_Ctout.NumericValue = analyser.CutOut;
+            NBox_RaPow.NumericValue = analyser.RatedPwr;
 
             CBox_Mnt_Night.IsChecked = nightTime;
             CBox_Mnt_AstDw.IsChecked = astdwTime;
@@ -41,10 +41,10 @@ namespace scada_analyst
             CBox_Mnt_NauDs.IsChecked = naudsTime;
             CBox_Mnt_AstDs.IsChecked = astdsTime;
 
-            TCtrl_MorningH.NumericValue = workMorn.Hours;
-            TCtrl_MorningM.NumericValue = workMorn.Minutes;
-            TCtrl_EveningH.NumericValue = workEven.Hours;
-            TCtrl_EveningM.NumericValue = workEven.Minutes;
+            TCtrl_MorningH.NumericValue = analyser.WorkHoursMorning.Hours;
+            TCtrl_MorningM.NumericValue = analyser.WorkHoursMorning.Minutes;
+            TCtrl_EveningH.NumericValue = analyser.WorkHoursEvening.Hours;
+            TCtrl_EveningM.NumericValue = analyser.WorkHoursEvening.Minutes;
         }
 
         private void ApplyClick(object sender, RoutedEventArgs e)

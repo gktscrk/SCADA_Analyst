@@ -64,6 +64,11 @@ namespace scada_analyst
         public bool ExportMBrMean { get { return CBox_MBr_Mean.IsChecked.Value; } set { CBox_MBr_Mean.IsChecked = value; } }
         public bool ExportMBrStdv { get { return CBox_MBr_Stdv.IsChecked.Value; } set { CBox_MBr_Stdv.IsChecked = value; } }
 
+        public bool ExportNacMaxm { get { return CBox_Nac_Maxm.IsChecked.Value; } set { CBox_Nac_Maxm.IsChecked = value; } }
+        public bool ExportNacMinm { get { return CBox_Nac_Minm.IsChecked.Value; } set { CBox_Nac_Minm.IsChecked = value; } }
+        public bool ExportNacMean { get { return CBox_Nac_Mean.IsChecked.Value; } set { CBox_Nac_Mean.IsChecked = value; } }
+        public bool ExportNacStdv { get { return CBox_Nac_Stdv.IsChecked.Value; } set { CBox_Nac_Stdv.IsChecked = value; } }
+
         #endregion
     }
 }

@@ -186,6 +186,7 @@ namespace scada_analyst
             bool exportGBxMaxm, bool exportGBxMinm, bool exportGBxMean, bool exportGBxStdv,
             bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
             bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv,
+            bool exportNacMaxm, bool exportNacMinm, bool exportNacMean, bool exportNacStdv,
             DateTime expStart, DateTime exprtEnd)
         {
             // feed in proper arguments for this output file name and assign these
@@ -199,6 +200,7 @@ namespace scada_analyst
                 exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
                 exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
                 exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
+                exportNacMaxm, exportNacMinm, exportNacMean, exportNacStdv,
                 expStart, exprtEnd);
         }
 
@@ -209,6 +211,7 @@ namespace scada_analyst
             bool exportGBxMaxm, bool exportGBxMinm, bool exportGBxMean, bool exportGBxStdv,
             bool exportGenMaxm, bool exportGenMinm, bool exportGenMean, bool exportGenStdv,
             bool exportMBrMaxm, bool exportMBrMinm, bool exportMBrMean, bool exportMBrStdv,
+            bool exportNacMaxm, bool exportNacMinm, bool exportNacMean, bool exportNacStdv,
             DateTime expStart, DateTime exprtEnd)
         {
             using (StreamWriter sW = new StreamWriter(outputName))
@@ -298,6 +301,15 @@ namespace scada_analyst
                                 if (exportWSpMinm) { hB.Append("wtc_YawPos_min" + ","); sB.Append(Common.GetStringDecimals(unit.YawPostn.Minm, 1) + ","); }
                                 if (exportWSpMean) { hB.Append("wtc_YawPos_mean" + ","); sB.Append(Common.GetStringDecimals(unit.YawPostn.Mean, 1) + ","); }
                                 if (exportWSpStdv) { hB.Append("wtc_YawPos_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.YawPostn.Stdv, 1) + ","); }
+                                #endregion
+
+                                #region Nacelle
+
+                                if (exportNacMaxm) { hB.Append("wtc_NacelTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Maxm, 1) + ","); }
+                                if (exportNacMinm) { hB.Append("wtc_NacelTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Minm, 1) + ","); }
+                                if (exportNacMean) { hB.Append("wtc_NacelTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Mean, 1) + ","); }
+                                if (exportNacStdv) { hB.Append("wtc_NacelTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Stdv, 1) + ","); }
+
                                 #endregion
 
                                 #region Generator

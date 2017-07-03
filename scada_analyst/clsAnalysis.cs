@@ -6,21 +6,33 @@ using scada_analyst.Shared;
 
 namespace scada_analyst
 {
-    class Analysis : ObservableObject
+    public class Analysis : ObservableObject
     {
         #region Variables
+
+        private static double _cutIn = 4, _cutOut = 25, _powerLim = 0, _ratedPwr = 2300; // ratedPwr always in kW !!!
+
+        private TimeSpan _workHrsMorning = new TimeSpan(7, 0, 0);
+        private TimeSpan _workHrsEvening = new TimeSpan(20, 0, 0);
+
+        private TimeSpan _duratFilter = new TimeSpan(0, 10, 0);
+
+        // this is to allow changing the property of the timestep in the loaded scada data at some point
+        private TimeSpan _scadaSeprtr = new TimeSpan(0, 10, 0);
 
         private ScadaData.TurbineData _fleetMeans = new ScadaData.TurbineData();
         
         private List<EventData> _allWtrEvts = new List<EventData>();
         private List<EventData> _loSpEvents = new List<EventData>();
         private List<EventData> _hiSpEvents = new List<EventData>();
+        private List<EventData> _allPwrEvts = new List<EventData>();
         private List<EventData> _noPwEvents = new List<EventData>();
         private List<EventData> _hiPwEvents = new List<EventData>();
-        private List<EventData> _allPwrEvts = new List<EventData>();
 
         private List<Structure> _assetList = new List<Structure>();
         private List<Distances> _intervals = new List<Distances>();
+
+        private List<ThresholdLimit> _thresholds = new List<ThresholdLimit>();
 
         #endregion
 
@@ -50,7 +62,47 @@ namespace scada_analyst
 
         #endregion
 
-        #region Analysis Methods
+        #region Algorithmic Analysis
+        // these events here should be the real workhorse, trying to find connections between data, etc
+
+        /// <summary>
+        /// This method is the general introduction into checking what threshold values exist in the data as
+        /// well as highlighting when the data values are too close to the extremities of the allowed range.
+        /// </summary>
+        public void Thresholding(List<ScadaData.ScadaSample> eventData)
+        {
+            // now this method needs to call whatever other items are necessary to exercise control over
+            // the thresholding process
+
+            // all variables we are interested in will have their own threshold levels - these should be easy
+            // to change on the user side, but let's start with fixed values. We want to highlight all instances
+            // where the variables is above or below the levels we are interested in, let's say within a 10% 
+            // range of the threshold itself. 
+
+            // need new classes for threshold limits
+
+            CreateThresholdLimits();
+        }
+
+        private void CreateThresholdLimits()
+        {
+            _thresholds.Clear();
+
+            _thresholds.Add(new ThresholdLimit("Gearbox oil", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Gearbox HS generator side", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Gearbox HS rotor side", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Gearbox IMS generator side", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Gearbox IMS rotor side", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Generator G-bearing", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Generator R-bearing", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Main bearing ",0,75));
+            _thresholds.Add(new ThresholdLimit("Main bearing HS", 0, 75));
+            _thresholds.Add(new ThresholdLimit("Main bearing GS", 0, 75));
+        }
+
+        #endregion
+
+        #region Data Processing
 
         #region Cross-type Event Tasks
 
@@ -266,8 +318,8 @@ namespace scada_analyst
             {
                 // condition here checks whether the event started before or after the likely working hours of that day
                 // and does not proceed into the method if it did not
-                if (currentEvents[i].Start.TimeOfDay > MainWindow.WorkHoursMorning &&
-                    currentEvents[i].Start.TimeOfDay < MainWindow.WorkHoursEvening)
+                if (currentEvents[i].Start.TimeOfDay > WorkHoursMorning &&
+                    currentEvents[i].Start.TimeOfDay < WorkHoursEvening)
                 {
                     if (currentEvents[i].DayTime == EventData.TimeOfEvent.NIGHTTM && MainWindow.Mnt_Night)
                     {
@@ -391,7 +443,7 @@ namespace scada_analyst
 
                 for (int i = currentEvents.Count - 1; i >= 0; i--)
                 {
-                    if (currentEvents[i].Durat < MainWindow.DuratFilter)
+                    if (currentEvents[i].Durat < _duratFilter)
                     {
                         currentEvents.RemoveAt(i);
                     }
@@ -464,7 +516,7 @@ namespace scada_analyst
                     {
                         for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                         {
-                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean < MainWindow.PowerLim &&
+                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean < PowerLim &&
                                 scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
                             {
                                 List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
@@ -472,12 +524,12 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                                 {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > MainWindow.ScadaSeprtr)
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr)
                                     {
                                         j = k; break;
                                     }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > MainWindow.PowerLim)
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > PowerLim)
                                     {
                                         j = k; break;
                                     }
@@ -524,7 +576,7 @@ namespace scada_analyst
                     {
                         for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                         {
-                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean >= MainWindow.RatedPwr &&
+                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean >= RatedPwr &&
                                 scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
                             {
                                 List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
@@ -532,12 +584,12 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                                 {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > MainWindow.ScadaSeprtr)
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr)
                                     {
                                         j = k; break;
                                     }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < MainWindow.RatedPwr)
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < RatedPwr)
                                     {
                                         j = k; break;
                                     }
@@ -587,7 +639,7 @@ namespace scada_analyst
                     {
                         for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
                         {
-                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < MainWindow.CutIn &&
+                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < CutIn &&
                                 meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean >= 0)
                             {
                                 List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
@@ -600,7 +652,7 @@ namespace scada_analyst
                                         j = k; break;
                                     }
 
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > MainWindow.CutIn)
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > CutIn)
                                     {
                                         j = k; break;
                                     }
@@ -612,7 +664,7 @@ namespace scada_analyst
                                 _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
                                 _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
                             }
-                            else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > MainWindow.CutOut)
+                            else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > CutOut)
                             {
                                 List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
                                 thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
@@ -624,7 +676,7 @@ namespace scada_analyst
                                         j = k; break;
                                     }
 
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < MainWindow.CutOut)
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < CutOut)
                                     {
                                         j = k; break;
                                     }
@@ -675,7 +727,7 @@ namespace scada_analyst
                     {
                         for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                         {
-                            if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < MainWindow.CutIn &&
+                            if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < CutIn &&
                                 scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean >= 0)
                             {
                                 List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
@@ -688,7 +740,7 @@ namespace scada_analyst
                                         j = k; break;
                                     }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > MainWindow.CutIn)
+                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > CutIn)
                                     {
                                         j = k; break;
                                     }
@@ -700,7 +752,7 @@ namespace scada_analyst
                                 _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
                                 _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
                             }
-                            else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > MainWindow.CutOut)
+                            else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > CutOut)
                             {
                                 List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                                 thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
@@ -712,7 +764,7 @@ namespace scada_analyst
                                         j = k; break;
                                     }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < MainWindow.CutOut)
+                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < CutOut)
                                     {
                                         j = k; break;
                                     }
@@ -1188,6 +1240,32 @@ namespace scada_analyst
 
         #region Support Classes
 
+        public class ThresholdLimit : ObservableObject
+        {
+            #region Variables
+
+            private double _maxTemp;
+            private double _minTemp;
+            private string _varName;
+
+            #endregion
+
+            public ThresholdLimit(string variable, double minimum, double maximum)
+            {
+                _maxTemp = maximum;
+                _minTemp = minimum;
+                _varName = variable;
+            }
+
+            #region Properties
+
+            public double MaxTemp { get { return _maxTemp; } set { _maxTemp = value; } }
+            public double MinTemp { get { return _minTemp; } set { _minTemp = value; } }
+            public string VarName { get { return _varName; } set { _varName = value; } }
+
+            #endregion
+        }
+        
         public class Distances : ObservableObject
         {
             #region Variables
@@ -1340,6 +1418,29 @@ namespace scada_analyst
 
         #region Properties
 
+        public double CutIn { get { return _cutIn; } set { _cutIn = value; } }
+        public double CutOut { get { return _cutOut; } set { _cutOut = value; } }
+        public double PowerLim { get { return _powerLim; } set { _powerLim = value; } }
+        public double RatedPwr { get { return _ratedPwr; } set { _ratedPwr = value; } }
+
+        public string DurationString
+        {
+            get { return "Duration Filter: " + DuratFilter.ToString(); }
+            set
+            {
+                if (DurationString != value)
+                {
+                    DurationString = value;
+                    OnPropertyChanged(nameof(DurationString));
+                }
+            }
+        }
+
+        public TimeSpan ScadaSeprtr { get { return _scadaSeprtr; } set { _scadaSeprtr = value; } }
+        public TimeSpan DuratFilter { get { return _duratFilter; } set { _duratFilter = value; } }
+        public TimeSpan WorkHoursMorning { get { return _workHrsMorning; } set { _workHrsMorning = value; } }
+        public TimeSpan WorkHoursEvening { get { return _workHrsEvening; } set { _workHrsEvening = value; } }
+
         public ScadaData.TurbineData FleetMeans { get { return _fleetMeans; } set { _fleetMeans = value; } }
 
         public List<EventData> AllWtrEvts { get { return _allWtrEvts; } set { _allWtrEvts = value; } }
@@ -1349,8 +1450,9 @@ namespace scada_analyst
         public List<EventData> RtPwEvents { get { return _hiPwEvents; } set { _hiPwEvents = value; } }
         public List<EventData> AllPwrEvts { get { return _allPwrEvts; } set { _allPwrEvts = value; } }
 
-        public List<Structure> AssetsList { get { return _assetList; } set { _assetList = value; } }
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
+        public List<Structure> AssetsList { get { return _assetList; } set { _assetList = value; } }
+        public List<ThresholdLimit> Thresholds { get { return _thresholds; } set { _thresholds = value; } }
 
         public List<StructureSmry> Summary()
         {

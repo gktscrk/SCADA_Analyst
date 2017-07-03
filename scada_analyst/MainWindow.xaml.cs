@@ -38,7 +38,6 @@ namespace scada_analyst
         #region Variables
 
         private bool geoLoaded = false, meteoLoaded = false, scadaLoaded = false;
-
         private bool positionsAddedToData = false, eventsAreProcessed = false, eventsMatchedAcrossTypes = false;
 
         private static bool mnt_Night = false;
@@ -52,35 +51,25 @@ namespace scada_analyst
 
         private bool exportPowMaxm = false, exportAmbMaxm = false, exportWSpMaxm = false;
         private bool exportPowMinm = false, exportAmbMinm = false, exportWSpMinm = false;
-        private bool exportPowMean = false, exportAmbMean = false, exportWSpMean = false;
+        private bool exportPowMean = true, exportAmbMean = true, exportWSpMean = true;
         private bool exportPowStdv = false, exportAmbStdv = false, exportWSpStdv = false;
 
-        private bool exportGBxMaxm = false, exportGenMaxm = false, exportMBrMaxm = false;
-        private bool exportGBxMinm = false, exportGenMinm = false, exportMBrMinm = false;
-        private bool exportGBxMean = false, exportGenMean = false, exportMBrMean = false;
-        private bool exportGBxStdv = false, exportGenStdv = false, exportMBrStdv = false;
-
-        private static double cutIn = 4, cutOut = 25, powerLim = 0, ratedPwr = 2300; // ratedPwr always in kW !!!
+        private bool exportNacMaxm = false, exportGBxMaxm = false, exportGenMaxm = false, exportMBrMaxm = false;
+        private bool exportNacMinm = false, exportGBxMinm = false, exportGenMinm = false, exportMBrMinm = false;
+        private bool exportNacMean = true, exportGBxMean = true, exportGenMean = true, exportMBrMean = true;
+        private bool exportNacStdv = false, exportGBxStdv = false, exportGenStdv = false, exportMBrStdv = false;
 
         private string[] _labels;
 
         private List<int> loadedAsset = new List<int>();
         private List<string> loadedFiles = new List<string>();
-        private List<string> eventDetailsSelection = new List<string>();
-        private List<string> eventSummarySelection = new List<string>();
+        private List<string> _eventDetailsSelection = new List<string>();
+        private List<string> _eventSummarySelection = new List<string>();
 
         private CancellationTokenSource _cts;
 
         private DateTime _dataExportStart = new DateTime();
         private DateTime _dataExportEndTm = new DateTime();
-
-        public static TimeSpan _workHrsMorning = new TimeSpan(7, 0, 0);
-        public static TimeSpan _workHrsEvening = new TimeSpan(20, 0, 0);
-
-        private static TimeSpan _duratFilter = new TimeSpan(0, 10, 0);
-
-        // this is to allow changing the property of the timestep in the loaded scada data at some point
-        private static TimeSpan _scadaSeprtr = new TimeSpan(0, 10, 0);
 
         private Analysis analyser = new Analysis();
         private GeoData geoFile;
@@ -96,7 +85,9 @@ namespace scada_analyst
         private ObservableCollection<EventData> _hiSpView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _noPwView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _rtPwView = new ObservableCollection<EventData>();
-           
+
+        private ObservableCollection<Analysis.ThresholdLimit> _thresholdVw;
+
         private ObservableCollection<ScadaData.ScadaSample> _thisEventData;
         private ObservableCollection<ScadaData.ScadaSample> _weekEventData;
         private ObservableCollection<ScadaData.ScadaSample> _histEventData;
@@ -111,6 +102,7 @@ namespace scada_analyst
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
+            this.DataContext = this;
 
             //MainWindowViewModel mwVM = new MainWindowViewModel();
             
@@ -122,15 +114,16 @@ namespace scada_analyst
             LView_PowrRted.IsEnabled = false;
 
             ProgressBarInvisible();
-            CreateEventDetailsView();
-            CreateEventSummaryCombo();
-            CreateSummaries(); // Call this before GetPowerProdLabel as that will change one of the strings here
-            UpdateDurationLabel();
-            LBL_PwrProdAmount.Content = GetPowerProdLabel();
 
+            CreateEventDetailsView();
+            CreateSummaryComboInfo();
+            CreateSummaries(); // Call this before GetPowerProdLabel as that will change one of the strings here
+            
             Comb_DisplayEvDetails.IsEnabled = false;
             LBL_EquipmentChoice.IsEnabled = false;
             CBox_DataSetChoice.IsEnabled = false;
+
+            //Btn_DurationFilter.Content = DurationString;
         }
 
         #endregion
@@ -158,18 +151,7 @@ namespace scada_analyst
         }
 
         #endregion 
-
-        #region UI Updating
-
-        /// <summary>
-        /// Creates a label used in the power production tab which shows a power value
-        /// </summary>
-        /// <returns></returns>
-        private string GetPowerProdLabel()
-        {
-            return "Power Production: " + ratedPwr.ToString() + " kW";
-        }
-
+        
         #region Duration Filter Editing
 
         /// <summary>
@@ -177,35 +159,16 @@ namespace scada_analyst
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void EditDurationFilter()
+        private void EditDurationFilter(object sender, RoutedEventArgs e)
         {
             Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
-                            "Hours", "Minutes", false, false, _duratFilter.TotalHours, _duratFilter.Minutes);
+                            "Hours", "Minutes", false, false, analyser.DuratFilter.TotalHours, analyser.DuratFilter.Minutes);
 
             if (getTimeDur.ShowDialog().Value)
             {
-                _duratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
-                UpdateDurationLabel();
+                analyser.DuratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
             }
         }
-
-        private void EditDurationFilter(object sender, RoutedEventArgs e)
-        {
-            EditDurationFilter();
-        }
-
-        private void LBL_DurationFilter_Click(object sender, MouseButtonEventArgs e)
-        {
-            EditDurationFilter();
-        }
-
-        private void UpdateDurationLabel()
-        {
-            LBL_DurationFilter.Content = "Duration Filter: " + _duratFilter.ToString();
-            LBL_DurationFilter2.Content = "Duration Filter: " + _duratFilter.ToString();
-        }
-
-        #endregion
 
         #endregion
 
@@ -325,16 +288,16 @@ namespace scada_analyst
 
         #endregion
 
-        #region Events Summary View
-
-        private void CreateEventSummaryCombo()
+        #region ComboBox Navigations
+        
+        private void CreateSummaryComboInfo()
         {
-            eventSummarySelection.Add("No Power Production Events");
-            eventSummarySelection.Add("High Power Production Events");
-            eventSummarySelection.Add("Low Wind Speed Events");
-            eventSummarySelection.Add("High Wind Speed Events");
+            _eventSummarySelection.Add("No Power Production Events");
+            _eventSummarySelection.Add("High Power Production Events");
+            _eventSummarySelection.Add("Low Wind Speed Events");
+            _eventSummarySelection.Add("High Wind Speed Events");
 
-            Comb_SummaryChoose.ItemsSource = eventSummarySelection;
+            Comb_SummaryChoose.ItemsSource = _eventSummarySelection;
             Comb_SummaryChoose.SelectedIndex = 0;
         }
 
@@ -342,28 +305,28 @@ namespace scada_analyst
         {
             if (Comb_SummaryChoose.SelectedIndex != -1)
             {
-                if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[0])
+                if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[0])
                 {
                     LView_EventsSumPwrNone.Visibility = Visibility.Visible;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[1])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[1])
                 {
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[2])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[2])
                 {
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Visible;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == eventSummarySelection[3])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[3])
                 {
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -372,24 +335,20 @@ namespace scada_analyst
                 }
             }
         }
-
-        #endregion 
-
-        #region Event Details View
-
+        
         private void CreateEventDetailsView()
         {
-            eventDetailsSelection.Add(" ");
-            eventDetailsSelection.Add("Gearbox");
-            eventDetailsSelection.Add("Generator");
-            eventDetailsSelection.Add("Main bearing");
+            _eventDetailsSelection.Add(" ");
+            _eventDetailsSelection.Add("Gearbox");
+            _eventDetailsSelection.Add("Generator");
+            _eventDetailsSelection.Add("Main bearing");
 
-            Comb_DisplayEvDetails.ItemsSource = eventDetailsSelection;
+            Comb_DisplayEvDetails.ItemsSource = _eventDetailsSelection;
             Comb_DisplayEvDetails.SelectedIndex = 0;
         }
 
         /// <summary>
-        /// Method to deal with the equipment chosen; should change what the graph and the listview display
+        /// Checks what equipment is chosen from the menu and changes information displayed based on that.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -399,42 +358,37 @@ namespace scada_analyst
             DisplayCorrectEventDetails();
         }
 
-        private void DisplayCorrectEventDetails()
+        #endregion 
+
+        #region Event Details View Manipulation
+        
+        private void Chart_OnData_Click(object sender, ChartPoint point)
         {
-            if (Comb_DisplayEvDetails.SelectedIndex != -1)
+            // bring up a messagebox to show the user the time and value of the datapoint they
+            // clicked on
+
+            string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
+
+            LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
+        }
+
+        private void ChangeListViewDataset(object sender, RoutedEventArgs e)
+        {
+            // checks whether the dataset choice button has been activated and displays the respective
+            // -- either all historic data to the end of the event, or only partial data for the duration
+            // of the event
+
+            if (CBox_DataSetChoice.IsChecked.Value)
             {
-                LChart_Basic.Visibility = Visibility.Visible;
-
-                if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[0])
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    LChart_Basic.Visibility = Visibility.Collapsed;
-                }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[1])
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-
-                    //try it with a normal view as the List<DateTimePoint> did not work particularly well
-                    ChartShowSeries(eventDetailsSelection[1]);
-                }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[2])
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Visible;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries(eventDetailsSelection[2]);
-                }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == eventDetailsSelection[3])
-                {
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
-                    ChartShowSeries(eventDetailsSelection[3]);
-                }
+                LView_EventExplorer_Gearbox.ItemsSource = _histEventData;
+                LView_EventExplorer_Generator.ItemsSource = _histEventData;
+                LView_EventExplorer_MainBear.ItemsSource = _histEventData;
+            }
+            else
+            {
+                LView_EventExplorer_Gearbox.ItemsSource = _thisEventData;
+                LView_EventExplorer_Generator.ItemsSource = _thisEventData;
+                LView_EventExplorer_MainBear.ItemsSource = _thisEventData;
             }
         }
 
@@ -456,7 +410,7 @@ namespace scada_analyst
                     double var1 = double.NaN;
                     double var2 = double.NaN;
 
-                    if (input == eventDetailsSelection[1])
+                    if (input == _eventDetailsSelection[1])
                     {
                         priGraph.Title = "HS Gens.";
                         var1 = Math.Round(_weekEventData[i].Gearbox.Hs.Gens.Mean, 1);
@@ -464,7 +418,7 @@ namespace scada_analyst
                         secGraph.Title = "HS Rots.";
                         var2 = Math.Round(_weekEventData[i].Gearbox.Hs.Rots.Mean, 1);
                     }
-                    else if (input == eventDetailsSelection[2])
+                    else if (input == _eventDetailsSelection[2])
                     {
                         priGraph.Title = "G-Bearing";
                         var1 = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
@@ -472,7 +426,7 @@ namespace scada_analyst
                         secGraph.Title = "R-Bearing";
                         var2 = Math.Round(_weekEventData[i].Genny.bearingR.Mean, 1);
                     }
-                    else if (input == eventDetailsSelection[3])
+                    else if (input == _eventDetailsSelection[3])
                     {
                         priGraph.Title = "Main Bearing";
                         var1 = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
@@ -503,17 +457,48 @@ namespace scada_analyst
             catch { }
         }
 
-        private void Chart_OnData_Click(object sender, ChartPoint point)
+        private void DisplayCorrectEventDetails()
         {
-            // bring up a messagebox to show the user the time and value of the datapoint they
-            // clicked on
+            if (Comb_DisplayEvDetails.SelectedIndex != -1)
+            {
+                LChart_Basic.Visibility = Visibility.Visible;
 
-            string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
+                if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[0])
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    LChart_Basic.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[1])
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
 
-            LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
+                    //try it with a normal view as the List<DateTimePoint> did not work particularly well
+                    ChartShowSeries(_eventDetailsSelection[1]);
+                }
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[2])
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Visible;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    ChartShowSeries(_eventDetailsSelection[2]);
+                }
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[3])
+                {
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
+                    ChartShowSeries(_eventDetailsSelection[3]);
+                }
+            }
         }
 
         #endregion
+
+        #region Main Functions
 
         /// <summary>
         /// The function that is called by the button
@@ -717,6 +702,7 @@ namespace scada_analyst
                             exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
                             exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
                             exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
+                            exportNacMaxm, exportNacMinm, exportNacMean, exportNacStdv,
                             _dataExportStart, _dataExportEndTm));
 
                         ProgressBarInvisible();
@@ -1165,7 +1151,7 @@ namespace scada_analyst
 
             try
             {
-                if (_duratFilter.TotalSeconds == 0)
+                if (analyser.DuratFilter.TotalSeconds == 0)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "The duration filter is set to 0 seconds. Please change the length of this filter.");
@@ -1308,8 +1294,7 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ResetNoPwrProdEvents(object sender, RoutedEventArgs e)
         {
-            _duratFilter = new TimeSpan(0, 10, 0);
-            UpdateDurationLabel();
+            analyser.DuratFilter = new TimeSpan(0, 10, 0);
 
             analyser.ResetEventList();
             PopulateOverview();
@@ -1323,8 +1308,7 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ResetRtdPwrProdEvents(object sender, RoutedEventArgs e)
         {
-            _duratFilter = new TimeSpan(0, 10, 0);
-            UpdateDurationLabel();
+            analyser.DuratFilter = new TimeSpan(0, 10, 0);
 
             analyser.ResetEventList();
             PopulateOverview();
@@ -1353,14 +1337,14 @@ namespace scada_analyst
             // new code below with the proper analysis settings window, etc
             // more options for expanding the code if necessary (which it no doubt will be)
 
-            Window_AnalysisSettings anaSets = new Window_AnalysisSettings(this, cutIn, cutOut, ratedPwr,
-                mnt_Night, mnt_AstDw, mnt_NauDw, mnt_CivDw, mnt_Daytm, mnt_CivDs, mnt_NauDs, mnt_AstDs, _workHrsMorning, _workHrsEvening);
+            Window_AnalysisSettings anaSets = new Window_AnalysisSettings(this, analyser,
+                mnt_Night, mnt_AstDw, mnt_NauDw, mnt_CivDw, mnt_Daytm, mnt_CivDs, mnt_NauDs, mnt_AstDs);
 
             if (anaSets.ShowDialog().Value)
             {
-                cutIn = anaSets.SpdIns;
-                cutOut = anaSets.SpdOut;
-                ratedPwr = anaSets.RtdPwr;
+                analyser.CutIn = anaSets.SpdIns;
+                analyser.CutOut = anaSets.SpdOut;
+                analyser.RatedPwr = anaSets.RtdPwr;
 
                 mnt_Night = anaSets.Mnt_Night;
                 mnt_AstDw = anaSets.Mnt_AstDw;
@@ -1371,11 +1355,10 @@ namespace scada_analyst
                 mnt_NauDs = anaSets.Mnt_NauDs;
                 mnt_AstDs = anaSets.Mnt_AstDs;
 
-                _workHrsMorning = anaSets.WorkHoursMorning;
-                _workHrsEvening = anaSets.WorkHoursEvening;
+                analyser.WorkHoursMorning = anaSets.WorkHoursMorning;
+                analyser.WorkHoursEvening = anaSets.WorkHoursEvening;
 
                 RtdPowView.Clear();
-                LBL_PwrProdAmount.Content = GetPowerProdLabel();
                 CreateSummaries(); 
             }
         }
@@ -1419,6 +1402,11 @@ namespace scada_analyst
             exportOptions.ExportMBrMean = exportMBrMean;
             exportOptions.ExportMBrStdv = exportMBrStdv;
 
+            exportOptions.ExportNacMaxm = exportNacMaxm;
+            exportOptions.ExportNacMinm = exportNacMinm;
+            exportOptions.ExportNacMean = exportNacMean;
+            exportOptions.ExportNacStdv = exportNacStdv;
+
             if (exportOptions.ShowDialog().Value)
             {
                 exportPowMaxm = exportOptions.ExportPowMaxm;
@@ -1451,10 +1439,17 @@ namespace scada_analyst
                 exportMBrMean = exportOptions.ExportMBrMean;
                 exportMBrStdv = exportOptions.ExportMBrStdv;
 
+                exportNacMaxm = exportOptions.ExportNacMaxm;
+                exportNacMinm = exportOptions.ExportNacMinm;
+                exportNacMean = exportOptions.ExportNacMean;
+                exportNacStdv = exportOptions.ExportNacStdv;
+
                 // these must be used by the async task that doesn't yet exist
                 // the async task will lead into the writing method
             }
         }
+
+        #endregion 
 
         #region Background Methods
 
@@ -1466,23 +1461,47 @@ namespace scada_analyst
 
                 if (thisItem.StringData == Overview[0].StringData)
                 {
-                    Tab_EventsS.IsSelected = true;
+                    Tab_EventsSummary.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Visibility = Visibility.Collapsed;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[1].StringData)
                 {
                     Tab_LoWinds.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[1].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[2].StringData)
                 {
                     Tab_HiWinds.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[2].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[3].StringData)
                 {
                     Tab_NoPower.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[3].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
                 }
                 else if (thisItem.StringData == Overview[4].StringData)
                 {
                     Tab_RtPower.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[4].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
                 }
             }
         }
@@ -1512,9 +1531,10 @@ namespace scada_analyst
             _overview.Add(new DirectoryItem("Wind Speeds: Low", LoSpdViews.Count));
             _overview.Add(new DirectoryItem("Wind Speeds: High", HiSpdViews.Count));
             _overview.Add(new DirectoryItem("Power Prod: None", NoPowViews.Count));
-            _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(ratedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
+            _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(analyser.RatedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
             LView_LoadedOverview.ItemsSource = _overview;
+            LView_LoadedOverview.SelectedIndex = 0;
         }
 
         void EventsSummary()
@@ -1689,7 +1709,7 @@ namespace scada_analyst
 
         #endregion
 
-        #region ContextMenu
+        #region Asset List ContextMenu
 
         private void LView_Overview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -1736,6 +1756,10 @@ namespace scada_analyst
                 RemoveSingleAsset(struc.UnitID);
             }
         }
+
+        #endregion
+
+        #region Event List ContextMenu
 
         private void LView_Powr_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -1789,7 +1813,7 @@ namespace scada_analyst
                     // the index of the asset to be used below
                     int assetIndex = scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
                     // the index of the timestamp a week before the event began or otherwise the first timestamp in the series - long conditional but should work
-                    TimeSpan stepBack = new TimeSpan(0, -60 * 24 * 5, 0);
+                    TimeSpan stepBack = new TimeSpan(0, -60 * 24 * 7, 0);
                     int weekIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) != -1 ? scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) : 0;
 
                     int timeIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0]);
@@ -1824,26 +1848,6 @@ namespace scada_analyst
             }
         }
         
-        private void ChangeListViewDataset(object sender, RoutedEventArgs e)
-        {
-            // checks whether the dataset choice button has been activated and displays the respective
-            // -- either all historic data to the end of the event, or only partial data for the duration
-            // of the event
-
-            if (CBox_DataSetChoice.IsChecked.Value)
-            {
-                LView_EventExplorer_Gearbox.ItemsSource = _histEventData;
-                LView_EventExplorer_Generator.ItemsSource = _histEventData;
-                LView_EventExplorer_MainBear.ItemsSource = _histEventData;
-            }
-            else
-            {
-                LView_EventExplorer_Gearbox.ItemsSource = _thisEventData;
-                LView_EventExplorer_Generator.ItemsSource = _thisEventData;
-                LView_EventExplorer_MainBear.ItemsSource = _thisEventData;
-            }
-        }
-
         private void InitializeEventExploration(object sender, RoutedEventArgs e)
         {
             Comb_DisplayEvDetails.IsEnabled = true;
@@ -1867,36 +1871,14 @@ namespace scada_analyst
         }
 
         #endregion
-
-        #region Treeview Controls
-
-        private void TWI_Ev_LoSp_Click()
-        {
-            Tab_LoWinds.IsSelected = true;
-        }
-
-        private void TWI_Ev_HiSp_Click()
-        {
-            Tab_HiWinds.IsSelected = true;
-        }
-
-        private void TWI_Ev_NoPw_Click()
-        {
-            Tab_NoPower.IsSelected = true;
-        }
-
-        private void TWI_Ev_RtPw_Click()
-        {
-            Tab_RtPower.IsSelected = true;
-        }
-
-        #endregion
-
+        
         #region Support Classes
 
         #endregion
 
         #region Properties
+
+        public Analysis Analyser { get { return analyser; } set { analyser = value; } }
 
         public GeoData GeoFile { get { return geoFile; } set { geoFile = value; } }
         public MeteoData MeteoFile { get { return meteoFile; } set { meteoFile = value; } }
@@ -1918,7 +1900,7 @@ namespace scada_analyst
                 }
             }
         }
-
+        
         public static bool Mnt_Night { get { return mnt_Night; } set { mnt_Night = value; } }
         public static bool Mnt_AstDw { get { return mnt_AstDw; } set { mnt_AstDw = value; } }
         public static bool Mnt_NauDw { get { return mnt_NauDw; } set { mnt_NauDw = value; } }
@@ -1927,16 +1909,6 @@ namespace scada_analyst
         public static bool Mnt_CivDs { get { return mnt_CivDs; } set { mnt_CivDs = value; } }
         public static bool Mnt_NauDs { get { return mnt_NauDs; } set { mnt_NauDs = value; } }
         public static bool Mnt_AstDs { get { return mnt_AstDs; } set { mnt_AstDs = value; } }
-
-        public static double CutIn { get { return cutIn; } set { cutIn = value; } }
-        public static double CutOut { get { return cutOut; } set { cutOut = value; } }
-        public static double PowerLim { get { return powerLim; } set { powerLim = value; } }
-        public static double RatedPwr { get { return ratedPwr; } set { ratedPwr = value; } }
-
-        public static TimeSpan ScadaSeprtr { get { return _scadaSeprtr; } set { _scadaSeprtr = value; } }
-        public static TimeSpan DuratFilter { get { return _duratFilter; } set { _duratFilter = value; } }
-        public static TimeSpan WorkHoursMorning { get { return _workHrsMorning; } set { _workHrsMorning = value; } }
-        public static TimeSpan WorkHoursEvening { get { return _workHrsEvening; } set { _workHrsEvening = value; } }
 
         public List<DirectoryItem> Overview
         {
@@ -1951,6 +1923,19 @@ namespace scada_analyst
             }
         }
             
+        public ObservableCollection<Analysis.ThresholdLimit> ThresholdVw
+        {
+            get { return _thresholdVw = new ObservableCollection<Analysis.ThresholdLimit>(analyser.Thresholds); }
+            set
+            {
+                if (_thresholdVw != value)
+                {
+                    _thresholdVw = value;
+                    OnPropertyChanged(nameof(analyser.Thresholds));
+                }
+            }
+        }
+
         public ObservableCollection<EventData> AllWtrView
         {
             get { return new ObservableCollection<EventData>(analyser.AllWtrEvts); }
