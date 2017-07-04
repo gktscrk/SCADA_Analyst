@@ -13,7 +13,11 @@ namespace scada_analyst.Shared
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
             #region Verson 1.000 and after
-            
+
+            ProgramVersion v1100 = new ProgramVersion(1100, new DateTime(2017, 07, 04));
+            v1100.AddChange("Thresholding is now possible based on user-specified values.");
+            results.Add(v1100);
+
             ProgramVersion v1000 = new ProgramVersion(1000, new DateTime(2017, 06, 29));
             v1000.AddChange("Redefined program version number as v1.000.");
             results.Add(v1000);

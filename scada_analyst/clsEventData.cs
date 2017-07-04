@@ -18,6 +18,7 @@ namespace scada_analyst
 
         private TimeSpan sampleLen = new TimeSpan(0, 9, 59);
 
+        private AnomalyType anomaly = AnomalyType.NOANOMALY;
         private EventAssoct assocEv = EventAssoct.NONE;
         private EventSource eSource = EventSource.UNKNOWN;
         private EvtDuration evtDrtn = EvtDuration.UNKNOWN;
@@ -127,6 +128,86 @@ namespace scada_analyst
                     if (i == 0) { extrmPwr = data[i].Powers.Mean; }
 
                     if (data[i].Powers.Mean > extrmPwr) { extrmPwr = data[i].Powers.Mean; }
+                }
+
+                EvTimes.Add(data[i].TimeStamp);
+            }
+
+            SetEventDuration();
+        }
+
+        public EventData(List<ScadaData.ScadaSample> data, AnomalyType input)
+        {
+            FromAsset = data[0].AssetID;
+
+            Start = data[0].TimeStamp;
+            Finit = data[data.Count - 1].TimeStamp.Add(sampleLen);
+
+            anomaly = input;
+            eSource = EventSource.TURBINE;
+            Type = Types.UNKNOWN;
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                if (anomaly == AnomalyType.THRS_BEAR)
+                {
+                    if (i == 0) { extrmPwr = data[i].MainBear.Standards.Mean; }
+
+                    if (data[i].MainBear.Standards.Mean > extrmPwr) { extrmPwr = data[i].MainBear.Standards.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_BEAR_GS)
+                {
+                    if (i == 0) { extrmPwr = data[i].MainBear.Gs.Mean; }
+
+                    if (data[i].MainBear.Gs.Mean > extrmPwr) { extrmPwr = data[i].MainBear.Gs.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_BEAR_HS)
+                {
+                    if (i == 0) { extrmPwr = data[i].MainBear.Hs.Mean; }
+
+                    if (data[i].MainBear.Hs.Mean > extrmPwr) { extrmPwr = data[i].MainBear.Hs.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GEAR_HS_GENS)
+                {
+                    if (i == 0) { extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
+
+                    if (data[i].Gearbox.Hs.Gens.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GEAR_HS_ROTS)
+                {
+                    if (i == 0) { extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
+
+                    if (data[i].Gearbox.Hs.Rots.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GEAR_IM_GENS)
+                {
+                    if (i == 0) { extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
+
+                    if (data[i].Gearbox.Ims.Gens.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GEAR_IM_ROTS)
+                {
+                    if (i == 0) { extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
+
+                    if (data[i].Gearbox.Ims.Rots.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GEAR_OIL)
+                {
+                    if (i == 0) { extrmPwr = data[i].Gearbox.Oils.Mean; }
+
+                    if (data[i].Gearbox.Oils.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Oils.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GNNY_G)
+                {
+                    if (i == 0) { extrmPwr = data[i].Genny.bearingG.Mean; }
+
+                    if (data[i].Genny.bearingG.Mean > extrmPwr) { extrmPwr = data[i].Genny.bearingG.Mean; }
+                }
+                else if (anomaly == AnomalyType.THRS_GNNY_R)
+                {
+                    if (i == 0) { extrmPwr = data[i].Genny.bearingR.Mean; }
+
+                    if (data[i].Genny.bearingR.Mean > extrmPwr) { extrmPwr = data[i].Genny.bearingR.Mean; }
                 }
 
                 EvTimes.Add(data[i].TimeStamp);
@@ -293,6 +374,21 @@ namespace scada_analyst
             HI_SPD  // above cutout
         }
 
+        public enum AnomalyType
+        {
+            NOANOMALY,
+            THRS_BEAR,
+            THRS_BEAR_GS,
+            THRS_BEAR_HS,
+            THRS_GEAR_OIL,
+            THRS_GEAR_HS_GENS,
+            THRS_GEAR_HS_ROTS,
+            THRS_GEAR_IM_GENS,
+            THRS_GEAR_IM_ROTS,
+            THRS_GNNY_G,
+            THRS_GNNY_R
+        }
+
         #endregion
 
         #region Properties
@@ -329,6 +425,26 @@ namespace scada_analyst
             set { displayAssoctn = value; }
         }
 
+        public string TriggerVar
+        {
+            get
+            {
+                if (Anomaly == AnomalyType.NOANOMALY) { return "No anomaly"; }
+                else if (Anomaly == AnomalyType.THRS_BEAR) { return "Main bearing"; }
+                else if (Anomaly == AnomalyType.THRS_BEAR_GS) { return "Main bearing GS"; }
+                else if (Anomaly == AnomalyType.THRS_BEAR_HS) { return "Main bearing HS"; }
+                else if (Anomaly == AnomalyType.THRS_GEAR_HS_GENS) { return "Gearbox HS Gen. Side"; }
+                else if (Anomaly == AnomalyType.THRS_GEAR_HS_ROTS) { return "Gearbox HS Rot. Side"; }
+                else if (Anomaly == AnomalyType.THRS_GEAR_IM_GENS) { return "Gearbox IMS Gen. Side"; }
+                else if (Anomaly == AnomalyType.THRS_GEAR_IM_ROTS) { return "Gearbox IMS Rot. Side"; }
+                else if (Anomaly == AnomalyType.THRS_GEAR_OIL) { return "Gearbox Oil"; }
+                else if (Anomaly == AnomalyType.THRS_GNNY_G) { return "Generator G-Bearing"; }
+                else if (Anomaly == AnomalyType.THRS_GNNY_R) { return "Generator R-Bearing"; }
+                else { return "Unknown"; }
+            }
+        }
+
+        public AnomalyType Anomaly { get { return anomaly; } set { anomaly = value; } }
         public EventAssoct AssocEv { get { return assocEv; } set { assocEv = value; } }
         public EventSource ESource { get { return eSource; } set { eSource = value; } }
         public EvtDuration EvtDrtn { get { return evtDrtn; } set { evtDrtn = value; } }

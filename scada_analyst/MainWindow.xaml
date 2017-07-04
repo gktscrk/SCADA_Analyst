@@ -874,18 +874,23 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+                
                 <Label Grid.Column="0" Grid.Row="0" Margin="5" Name="LBL_EquipmentChoice"
-                       Content="Equipment:" />
+                       Content="Equipment:"
+                       IsEnabled="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}" />
 
                 <ComboBox Grid.Column="1" Grid.Row="0" Margin="5,5,5,5"
                           Name="Comb_DisplayEvDetails" Width="150"
-                          SelectionChanged="Comb_DisplayEvDetails_SelectionChanged" />
+                          SelectionChanged="Comb_DisplayEvDetails_SelectionChanged"
+                          IsEnabled="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}" />
 
-                <Label Grid.Column="2" Grid.Row="0" Margin="5"  x:Name="LBL_ClickInfo" />
+                <Label Grid.Column="2" Grid.Row="0" Margin="5"  x:Name="LBL_ClickInfo"
+                       Visibility="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}"/>
 
                 <CheckBox Grid.Column="3" Grid.ColumnSpan="1" Grid.Row="0" Margin="5" Name="CBox_DataSetChoice"
                           Unchecked="ChangeListViewDataset" Checked="ChangeListViewDataset" HorizontalAlignment="Right"                 
-                          Content="Include pre-event data in table" VerticalAlignment="Center" />
+                          Content="Include pre-event data in table" VerticalAlignment="Center"
+                          IsEnabled="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}" />
 
                 <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" Margin="5" />
 
@@ -898,7 +903,7 @@
                         </Style>
                     </TabControl.Resources>
 
-                    <TabItem Header="Info">
+                    <TabItem Header="Info" Name="Tab_DetailsInfo" >
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -1284,7 +1289,7 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem Header="Thresholds">
+                    <TabItem Header="Thresholds" Name="Tab_Thresholds">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -1295,8 +1300,8 @@
                             </Grid.RowDefinitions>
 
                             <ListView Grid.Column="0" Grid.Row="0" Margin="5"
-                                      Name="LView_ThresholdLimits"                       
-                                      VerticalAlignment="Top" ItemsSource="{Binding ThresholdVw}"          
+                                      Name="LView_ThresholdLimits" ItemsSource="{Binding ThresholdVw}"   
+                                      VerticalAlignment="Top"           
                                       ScrollViewer.CanContentScroll="True" >
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -1318,24 +1323,70 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Minimum Temp" Width="100" >
+                                        <GridViewColumn Header="Max Temperature" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <controls:NumericTextBox NumericValue="{Binding Minimum, Mode=TwoWay}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Maximum Temp" Width="100" >
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <controls:NumericTextBox NumericValue="{Binding Maximum, Mode=TwoWay}" />
+                                                    <controls:NumericTextBox Text="{Binding MaxTemp, Mode=TwoWay}"
+                                                                             Tag="{Binding BindsDirectlyToSource=True}"
+                                                                             Width="100" LostFocus="Threshold_LoseFocus"
+                                                                             TextChanged="Threshold_TextChanged"
+                                                                             TextAlignment="Center"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
-                            
+
+                            <ListView Grid.Column="0" Grid.Row="1" Margin="5"
+                                      Name="LView_ThresholdValues"  
+                                      VerticalAlignment="Top"           
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                                        <GridViewColumn Header="Triggering Variable" Width="200">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding TriggerVar, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Start Time" Width="120">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Duration" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Durat, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Max Temperature" Width="100" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.#0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
                         </Grid>
                     </TabItem>
 

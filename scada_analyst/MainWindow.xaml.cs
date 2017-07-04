@@ -85,9 +85,7 @@ namespace scada_analyst
         private ObservableCollection<EventData> _hiSpView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _noPwView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _rtPwView = new ObservableCollection<EventData>();
-
-        private ObservableCollection<Analysis.ThresholdLimit> _thresholdVw;
-
+        
         private ObservableCollection<ScadaData.ScadaSample> _thisEventData;
         private ObservableCollection<ScadaData.ScadaSample> _weekEventData;
         private ObservableCollection<ScadaData.ScadaSample> _histEventData;
@@ -105,7 +103,7 @@ namespace scada_analyst
             this.DataContext = this;
 
             //MainWindowViewModel mwVM = new MainWindowViewModel();
-            
+
             LView_Overview.IsEnabled = false;
 
             LView_WSpdEvLo.IsEnabled = false;
@@ -117,13 +115,13 @@ namespace scada_analyst
 
             CreateEventDetailsView();
             CreateSummaryComboInfo();
-            CreateSummaries(); // Call this before GetPowerProdLabel as that will change one of the strings here
-            
+            CreateSummaries();
+
+#if !DEBUG
             Comb_DisplayEvDetails.IsEnabled = false;
             LBL_EquipmentChoice.IsEnabled = false;
             CBox_DataSetChoice.IsEnabled = false;
-
-            //Btn_DurationFilter.Content = DurationString;
+#endif
         }
 
         #endregion
@@ -133,8 +131,8 @@ namespace scada_analyst
         /// <summary>
         /// Brings up the About window
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name = "sender" ></ param >
+        /// < param name="e"></param>
         private void AboutClick(object sender, RoutedEventArgs e)
         {
             new Window_About(this).ShowDialog();
@@ -143,15 +141,15 @@ namespace scada_analyst
         /// <summary>
         /// Quit
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name = "sender" ></ param >
+        /// < param name="e"></param>
         private void Exit(object sender, RoutedEventArgs e)
         {
-            this.Close();            
+            this.Close();
         }
 
-        #endregion 
-        
+        #endregion
+
         #region Duration Filter Editing
 
         /// <summary>
@@ -190,7 +188,7 @@ namespace scada_analyst
             _dataExportStart = new DateTime();
             _dataExportEndTm = new DateTime();
         }
-        
+
         /// <summary>
         /// Clears all processed events
         /// </summary>
@@ -255,7 +253,7 @@ namespace scada_analyst
             }
 
             loadedFiles.Clear();
-            meteoFile = new MeteoData(); meteoLoaded = false;            
+            meteoFile = new MeteoData(); meteoLoaded = false;
 
             analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
             CreateSummaries();
@@ -289,7 +287,7 @@ namespace scada_analyst
         #endregion
 
         #region ComboBox Navigations
-        
+
         private void CreateSummaryComboInfo()
         {
             _eventSummarySelection.Add("No Power Production Events");
@@ -335,7 +333,7 @@ namespace scada_analyst
                 }
             }
         }
-        
+
         private void CreateEventDetailsView()
         {
             _eventDetailsSelection.Add(" ");
@@ -358,10 +356,10 @@ namespace scada_analyst
             DisplayCorrectEventDetails();
         }
 
-        #endregion 
+        #endregion
 
         #region Event Details View Manipulation
-        
+
         private void Chart_OnData_Click(object sender, ChartPoint point)
         {
             // bring up a messagebox to show the user the time and value of the datapoint they
@@ -440,7 +438,7 @@ namespace scada_analyst
 
                     times.Add(_weekEventData[i].TimeStamp.ToString("HH:mm dd-MMM"));
                 }
-                            
+
                 priGraph.Values = new ChartValues<double>(list1);
                 priGraph.Fill = Brushes.Transparent;
 
@@ -469,15 +467,15 @@ namespace scada_analyst
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Collapsed;
+                    //analyser.CreateThresholdLimits(_eventDetailsSelection[0]);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[1])
                 {
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-
-                    //try it with a normal view as the List<DateTimePoint> did not work particularly well
                     ChartShowSeries(_eventDetailsSelection[1]);
+                    //analyser.CreateThresholdLimits(_eventDetailsSelection[1]);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[2])
                 {
@@ -485,6 +483,7 @@ namespace scada_analyst
                     LView_EventExplorer_Generator.Visibility = Visibility.Visible;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     ChartShowSeries(_eventDetailsSelection[2]);
+                    //analyser.CreateThresholdLimits(_eventDetailsSelection[2]);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[3])
                 {
@@ -492,6 +491,7 @@ namespace scada_analyst
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
                     ChartShowSeries(_eventDetailsSelection[3]);
+                    //analyser.Thresholds = analyser.CreateThresholdLimits(_eventDetailsSelection[3]);
                 }
             }
         }
@@ -546,8 +546,8 @@ namespace scada_analyst
                 // if the above conditions are not fulfilled, the process can continue
 
                 ProgressBarVisible();
-                
-                await Task.Run(() => analyser.AddDaytimesToEvents(progress));                 
+
+                await Task.Run(() => analyser.AddDaytimesToEvents(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -588,7 +588,7 @@ namespace scada_analyst
             catch (CancelLoadingException) { }
             catch { throw new Exception(); }
         }
-        
+
         /// <summary>
         /// Exports meteorology data
         /// </summary>
@@ -634,7 +634,7 @@ namespace scada_analyst
                             }
                         }
 
-                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName,_dataExportStart,_dataExportEndTm));
+                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName, _dataExportStart, _dataExportEndTm));
 
                         ProgressBarInvisible();
                     }
@@ -649,7 +649,7 @@ namespace scada_analyst
                 MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
             }
         }
-        
+
         /// <summary>
         /// Exports SCADA data
         /// </summary>
@@ -851,7 +851,7 @@ namespace scada_analyst
                 if (openFileDialog.ShowDialog().Value)
                 {
                     ProgressBarVisible();
-                    
+
                     await Task.Run(() => LoadGeoData(openFileDialog.FileNames, progress));
 
                     ProgressBarInvisible();
@@ -951,7 +951,7 @@ namespace scada_analyst
             }
             catch (WrongFileTypeException)
             {
-                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");                
+                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");
             }
             catch (Exception ex)
             {
@@ -1002,7 +1002,7 @@ namespace scada_analyst
         private async void LoadScadaDataAsync(object sender, RoutedEventArgs e)
         {
             _cts = new CancellationTokenSource();
-            var token = _cts.Token;    
+            var token = _cts.Token;
 
             var progress = new Progress<int>(value =>
             {
@@ -1359,10 +1359,10 @@ namespace scada_analyst
                 analyser.WorkHoursEvening = anaSets.WorkHoursEvening;
 
                 RtdPowView.Clear();
-                CreateSummaries(); 
+                CreateSummaries();
             }
         }
-        
+
         /// <summary>
         /// Brings up a dialog window with export settings
         /// </summary>
@@ -1449,7 +1449,7 @@ namespace scada_analyst
             }
         }
 
-        #endregion 
+        #endregion
 
         #region Background Methods
 
@@ -1506,6 +1506,31 @@ namespace scada_analyst
             }
         }
 
+        private void Threshold_LoseFocus(object sender, RoutedEventArgs e)
+        {
+            Calculator_Click(this, new RoutedEventArgs());
+        }
+
+        private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
+
+            Analysis.ThresholdLimit thL = (Analysis.ThresholdLimit)tB.Tag;
+            thL.MaxTemp = tB.NumericValue;
+            
+            Calculator_Click(this, new RoutedEventArgs());
+        }
+
+        private void Calculator_Click(object sender, RoutedEventArgs e)
+        {
+            LView_ThresholdValues.ItemsSource = null;
+
+            if (_histEventData != null) { analyser.Thresholding(_histEventData.ToList()); }
+
+            LView_ThresholdValues.ItemsSource = ThresholdEventsView;
+            LView_ThresholdValues.Items.Refresh();
+        }
+
         void CancelProgress_Click(object sender, RoutedEventArgs e)
         {
             if (_cts != null)
@@ -1545,7 +1570,7 @@ namespace scada_analyst
             LView_EventsSumWndHigh.ItemsSource = null;
 
             ObservableCollection<Analysis.StructureSmry> sumEvents = new ObservableCollection<Analysis.StructureSmry>(analyser.Summary());
-            
+
             LView_EventsSumPwrNone.ItemsSource = sumEvents;
             LView_EventsSumPwrHigh.ItemsSource = sumEvents;
             LView_EventsSumWndLows.ItemsSource = sumEvents;
@@ -1622,7 +1647,7 @@ namespace scada_analyst
             cancel_ProgressBar.Visibility = Visibility.Visible;
             //counter_ProgressBar.Visibility = Visibility.Visible;
         }
-        
+
         void ProgressBarInvisible()
         {
             progress_ProgrBar.Visibility = Visibility.Collapsed;
@@ -1668,7 +1693,7 @@ namespace scada_analyst
 
             CreateSummaries();
         }
-        
+
         void RemoveSingleAsset(int toRemove)
         {
             if (AssetsView.Count != 0)
@@ -1679,7 +1704,7 @@ namespace scada_analyst
                     {
                         //App.Current.Dispatcher.Invoke((Action)delegate // 
                         //{
-                            analyser.AssetsList.RemoveAt(i);
+                        analyser.AssetsList.RemoveAt(i);
                         //});
 
                         break;
@@ -1700,7 +1725,7 @@ namespace scada_analyst
                 changed(this, new PropertyChangedEventArgs(name));
             }
         }
-        
+
         void UpdateProgress(int value)
         {
             label_ProgressBar.Content = value + "%";
@@ -1738,7 +1763,7 @@ namespace scada_analyst
             if (LView_Overview.SelectedItems.Count == 1)
             {
                 Structure struc = (Structure)LView_Overview.SelectedItem;
-                
+
                 if (struc.Type == BaseStructure.Types.METMAST)
                 {
                     int index = meteoFile.MetMasts.FindIndex(x => x.UnitID == struc.UnitID);
@@ -1789,7 +1814,7 @@ namespace scada_analyst
                 LView_PowrRted.ContextMenu = menu;
             }
         }
-        
+
         private void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1844,10 +1869,10 @@ namespace scada_analyst
             }
             catch
             {
-                MessageBox.Show("A problem has come up with the code in loading this event. Have the programmer check the indices.","Warning!");
+                MessageBox.Show("A problem has come up with the code in loading this event. Have the programmer check the indices.", "Warning!");
             }
         }
-        
+
         private void InitializeEventExploration(object sender, RoutedEventArgs e)
         {
             Comb_DisplayEvDetails.IsEnabled = true;
@@ -1871,7 +1896,7 @@ namespace scada_analyst
         }
 
         #endregion
-        
+
         #region Support Classes
 
         #endregion
@@ -1879,7 +1904,7 @@ namespace scada_analyst
         #region Properties
 
         public Analysis Analyser { get { return analyser; } set { analyser = value; } }
-
+        
         public GeoData GeoFile { get { return geoFile; } set { geoFile = value; } }
         public MeteoData MeteoFile { get { return meteoFile; } set { meteoFile = value; } }
         public ScadaData ScadaFile { get { return scadaFile; } set { scadaFile = value; } }
@@ -1887,7 +1912,7 @@ namespace scada_analyst
         public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
-        
+
         public string[] Labels
         {
             get { return _labels; }
@@ -1900,7 +1925,7 @@ namespace scada_analyst
                 }
             }
         }
-        
+
         public static bool Mnt_Night { get { return mnt_Night; } set { mnt_Night = value; } }
         public static bool Mnt_AstDw { get { return mnt_AstDw; } set { mnt_AstDw = value; } }
         public static bool Mnt_NauDw { get { return mnt_NauDw; } set { mnt_NauDw = value; } }
@@ -1922,16 +1947,29 @@ namespace scada_analyst
                 }
             }
         }
-            
+
         public ObservableCollection<Analysis.ThresholdLimit> ThresholdVw
         {
-            get { return _thresholdVw = new ObservableCollection<Analysis.ThresholdLimit>(analyser.Thresholds); }
+            get { return new ObservableCollection<Analysis.ThresholdLimit>(analyser.Thresholds); }
             set
             {
-                if (_thresholdVw != value)
+                if (ThresholdVw != value)
                 {
-                    _thresholdVw = value;
-                    OnPropertyChanged(nameof(analyser.Thresholds));
+                    ThresholdVw = value;
+                    OnPropertyChanged(nameof(ThresholdVw));
+                }
+            }
+        }
+
+        public ObservableCollection<EventData> ThresholdEventsView
+        {
+            get { return new ObservableCollection<EventData>(analyser.ThresEvnts); }
+            set
+            {
+                if (ThresholdEventsView != value)
+                {
+                    ThresholdEventsView = value;
+                    OnPropertyChanged(nameof(ThresholdEventsView));
                 }
             }
         }
@@ -1985,6 +2023,19 @@ namespace scada_analyst
             }
         }
 
+        public ObservableCollection<Structure> ThrsEventData
+        {
+            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetsList); }
+            set
+            {
+                if (_assetsVw != value)
+                {
+                    _assetsVw = value;
+                    OnPropertyChanged(nameof(analyser.AssetsList));
+                }
+            }
+        }
+
         #endregion
     }
 
@@ -2006,5 +2057,5 @@ namespace scada_analyst
 
     public class WrongFileTypeException : Exception { }
 
-    #endregion
+#endregion
 }

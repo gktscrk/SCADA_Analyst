@@ -29,16 +29,21 @@ namespace scada_analyst
         private List<EventData> _noPwEvents = new List<EventData>();
         private List<EventData> _hiPwEvents = new List<EventData>();
 
+        private List<EventData> _thresEvnts = new List<EventData>();
+
         private List<Structure> _assetList = new List<Structure>();
         private List<Distances> _intervals = new List<Distances>();
 
-        private List<ThresholdLimit> _thresholds = new List<ThresholdLimit>();
+        private List<ThresholdLimit> _thresholds;
 
         #endregion
 
         #region Constructor
 
-        public Analysis() { }
+        public Analysis()
+        {
+            _thresholds = CreateThresholdLimits();
+        }
 
         #endregion 
 
@@ -79,25 +84,283 @@ namespace scada_analyst
             // where the variables is above or below the levels we are interested in, let's say within a 10% 
             // range of the threshold itself. 
 
-            // need new classes for threshold limits
+            // need new classes for threshold limits which is implemented, when we come into this method the 
+            // threshold limits already exist and can be modified. Hence the calculations are what this calls
 
-            CreateThresholdLimits();
+            ExtractThresholdTimes(eventData);
+
         }
 
-        private void CreateThresholdLimits()
+        private List<ThresholdLimit> CreateThresholdLimits()
         {
-            _thresholds.Clear();
+            List<ThresholdLimit> _newLimits = new List<ThresholdLimit>();
 
-            _thresholds.Add(new ThresholdLimit("Gearbox oil", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Gearbox HS generator side", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Gearbox HS rotor side", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Gearbox IMS generator side", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Gearbox IMS rotor side", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Generator G-bearing", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Generator R-bearing", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Main bearing ",0,75));
-            _thresholds.Add(new ThresholdLimit("Main bearing HS", 0, 75));
-            _thresholds.Add(new ThresholdLimit("Main bearing GS", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "Oil", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS generator side", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS rotor side", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS generator side", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS rotor side", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "G-bearing", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "R-bearing", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "Bearing", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "HS", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "GS", 0, 75));
+
+            return _newLimits;
+        }
+
+        private void ExtractThresholdTimes(List<ScadaData.ScadaSample> eventData)
+        { 
+            _thresEvnts.Clear();
+
+            #region Gearbox
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "Oil");
+
+                if (eventData[i].Gearbox.Oils.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Gearbox.Oils.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_OIL));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "HS generator side");
+
+                if (eventData[i].Gearbox.Hs.Gens.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Gearbox.Hs.Gens.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_HS_GENS));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "HS rotor side");
+
+                if (eventData[i].Gearbox.Hs.Rots.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Gearbox.Hs.Rots.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_HS_ROTS));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "IMS generator side");
+
+                if (eventData[i].Gearbox.Ims.Gens.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Gearbox.Ims.Gens.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_IM_GENS));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "IMS rotor side");
+
+                if (eventData[i].Gearbox.Ims.Rots.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Gearbox.Ims.Rots.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_IM_ROTS));
+                }
+            }
+
+            #endregion
+
+            #region Generator
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName == "G-bearing");
+
+                if (eventData[i].Genny.bearingG.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Genny.bearingG.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GNNY_G));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName == "R-bearing");
+
+                if (eventData[i].Genny.bearingR.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr) { i = j - 1; break; }
+
+                        if (eventData[j].Genny.bearingG.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GNNY_R));
+                }
+            }
+
+            #endregion
+
+            #region Main Bearing
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName == "Bearing");
+
+                if (eventData[i].MainBear.Standards.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].MainBear.Standards.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_BEAR));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName == "HS");
+
+                if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr) { i = j - 1; break; }
+
+                        if (eventData[j].MainBear.Hs.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_BEAR_HS));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName == "GS");
+
+                if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr) { i = j - 1; break; }
+
+                        if (eventData[j].MainBear.Hs.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_BEAR_GS));
+                }
+            }
+
+            #endregion
         }
 
         #endregion
@@ -524,15 +787,9 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                                 {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr)
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > PowerLim)
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > PowerLim) { j = k - 1; break; }
                                     else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
 
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
@@ -584,15 +841,9 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                                 {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr)
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k; break; }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < RatedPwr)
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < RatedPwr) { j = k; break; }
                                     else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
 
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
@@ -647,15 +898,9 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
                                 {
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > CutIn)
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > CutIn) { j = k - 1; break; }
                                     else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
 
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
@@ -735,15 +980,9 @@ namespace scada_analyst
 
                                 for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
                                 {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > new TimeSpan(0, 10, 0))
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > CutIn)
-                                    {
-                                        j = k; break;
-                                    }
+                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > CutIn) { j = k - 1; break; }
                                     else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
 
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
@@ -1247,14 +1486,23 @@ namespace scada_analyst
             private double _maxTemp;
             private double _minTemp;
             private string _varName;
+            private ThresholdType _type;
 
             #endregion
 
-            public ThresholdLimit(string variable, double minimum, double maximum)
+            public ThresholdLimit(ThresholdType type, string variable, double minimum, double maximum)
             {
                 _maxTemp = maximum;
                 _minTemp = minimum;
                 _varName = variable;
+                _type = type;
+            }
+
+            public enum ThresholdType
+            {
+                GEARBOX,
+                GENERATOR,
+                MAIN_BEAR
             }
 
             #region Properties
@@ -1262,6 +1510,8 @@ namespace scada_analyst
             public double MaxTemp { get { return _maxTemp; } set { _maxTemp = value; } }
             public double MinTemp { get { return _minTemp; } set { _minTemp = value; } }
             public string VarName { get { return _varName; } set { _varName = value; } }
+
+            public ThresholdType Type { get { return _type; } set { _type = value; } }
 
             #endregion
         }
@@ -1449,6 +1699,7 @@ namespace scada_analyst
         public List<EventData> NoPwEvents { get { return _noPwEvents; } set { _noPwEvents = value; } }
         public List<EventData> RtPwEvents { get { return _hiPwEvents; } set { _hiPwEvents = value; } }
         public List<EventData> AllPwrEvts { get { return _allPwrEvts; } set { _allPwrEvts = value; } }
+        public List<EventData> ThresEvnts { get { return _thresEvnts; } set { _thresEvnts = value; } }
 
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
         public List<Structure> AssetsList { get { return _assetList; } set { _assetList = value; } }
