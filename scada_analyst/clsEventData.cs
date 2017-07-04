@@ -11,10 +11,10 @@ namespace scada_analyst
     {
         #region Variables
 
-        private double extrmSpd = 0;
-        private double extrmPwr = 0;
-        private string displayDayTime = "";
-        private string displayAssoctn = "";
+        private double _averagePwr = 0;
+        private double _meanNclTmp = 0;
+        private double _extrmPwr = 0;
+        private double _extrmSpd = 0;
 
         private TimeSpan sampleLen = new TimeSpan(0, 9, 59);
 
@@ -53,15 +53,15 @@ namespace scada_analyst
             {
                 if (input == WeatherType.LO_SPD)
                 {
-                    if (i == 0) { extrmSpd = data[i].WSpdR.Mean; }
+                    if (i == 0) { _extrmSpd = data[i].WSpdR.Mean; }
 
-                    if (data[i].WSpdR.Mean < extrmSpd) { extrmSpd = data[i].WSpdR.Mean; }
+                    if (data[i].WSpdR.Mean < _extrmSpd) { _extrmSpd = data[i].WSpdR.Mean; }
                 }
                 else if (input == WeatherType.HI_SPD)
                 {
-                    if (i == 0) { extrmSpd = data[i].WSpdR.Mean; }
+                    if (i == 0) { _extrmSpd = data[i].WSpdR.Mean; }
 
-                    if (data[i].WSpdR.Mean > extrmSpd) { extrmSpd = data[i].WSpdR.Mean; }
+                    if (data[i].WSpdR.Mean > _extrmSpd) { _extrmSpd = data[i].WSpdR.Mean; }
                 }
 
                 EvTimes.Add(data[i].TimeStamp);
@@ -87,15 +87,15 @@ namespace scada_analyst
             {
                 if (input == WeatherType.LO_SPD)
                 {
-                    if (i == 0) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
+                    if (i == 0) { _extrmSpd = data[i].AnemoM.ActWinds.Mean; }
 
-                    if (data[i].AnemoM.ActWinds.Mean < extrmSpd) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
+                    if (data[i].AnemoM.ActWinds.Mean < _extrmSpd) { _extrmSpd = data[i].AnemoM.ActWinds.Mean; }
                 }
                 else if (input == WeatherType.HI_SPD)
                 {
-                    if (i == 0) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
+                    if (i == 0) { _extrmSpd = data[i].AnemoM.ActWinds.Mean; }
 
-                    if (data[i].AnemoM.ActWinds.Mean > extrmSpd) { extrmSpd = data[i].AnemoM.ActWinds.Mean; }
+                    if (data[i].AnemoM.ActWinds.Mean > _extrmSpd) { _extrmSpd = data[i].AnemoM.ActWinds.Mean; }
                 }
 
                 EvTimes.Add(data[i].TimeStamp);
@@ -119,15 +119,15 @@ namespace scada_analyst
             {
                 if (pwrProd == PwrProdType.NO_PWR)
                 {
-                    if (i == 0) { extrmPwr = data[i].Powers.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Powers.Mean; }
 
-                    if (data[i].Powers.Mean < extrmPwr) { extrmPwr = data[i].Powers.Mean; }
+                    if (data[i].Powers.Mean < _extrmPwr) { _extrmPwr = data[i].Powers.Mean; }
                 }
                 else if (pwrProd == PwrProdType.HI_PWR)
                 {
-                    if (i == 0) { extrmPwr = data[i].Powers.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Powers.Mean; }
 
-                    if (data[i].Powers.Mean > extrmPwr) { extrmPwr = data[i].Powers.Mean; }
+                    if (data[i].Powers.Mean > _extrmPwr) { _extrmPwr = data[i].Powers.Mean; }
                 }
 
                 EvTimes.Add(data[i].TimeStamp);
@@ -146,72 +146,78 @@ namespace scada_analyst
             anomaly = input;
             eSource = EventSource.TURBINE;
             Type = Types.UNKNOWN;
-
+            
             for (int i = 0; i < data.Count; i++)
             {
                 if (anomaly == AnomalyType.THRS_BEAR)
                 {
-                    if (i == 0) { extrmPwr = data[i].MainBear.Standards.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].MainBear.Standards.Mean; }
 
-                    if (data[i].MainBear.Standards.Mean > extrmPwr) { extrmPwr = data[i].MainBear.Standards.Mean; }
+                    if (data[i].MainBear.Standards.Mean > _extrmPwr) { _extrmPwr = data[i].MainBear.Standards.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_BEAR_GS)
                 {
-                    if (i == 0) { extrmPwr = data[i].MainBear.Gs.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].MainBear.Gs.Mean; }
 
-                    if (data[i].MainBear.Gs.Mean > extrmPwr) { extrmPwr = data[i].MainBear.Gs.Mean; }
+                    if (data[i].MainBear.Gs.Mean > _extrmPwr) { _extrmPwr = data[i].MainBear.Gs.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_BEAR_HS)
                 {
-                    if (i == 0) { extrmPwr = data[i].MainBear.Hs.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].MainBear.Hs.Mean; }
 
-                    if (data[i].MainBear.Hs.Mean > extrmPwr) { extrmPwr = data[i].MainBear.Hs.Mean; }
+                    if (data[i].MainBear.Hs.Mean > _extrmPwr) { _extrmPwr = data[i].MainBear.Hs.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GEAR_HS_GENS)
                 {
-                    if (i == 0) { extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
 
-                    if (data[i].Gearbox.Hs.Gens.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
+                    if (data[i].Gearbox.Hs.Gens.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GEAR_HS_ROTS)
                 {
-                    if (i == 0) { extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
 
-                    if (data[i].Gearbox.Hs.Rots.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
+                    if (data[i].Gearbox.Hs.Rots.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GEAR_IM_GENS)
                 {
-                    if (i == 0) { extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
 
-                    if (data[i].Gearbox.Ims.Gens.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
+                    if (data[i].Gearbox.Ims.Gens.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GEAR_IM_ROTS)
                 {
-                    if (i == 0) { extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
 
-                    if (data[i].Gearbox.Ims.Rots.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
+                    if (data[i].Gearbox.Ims.Rots.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GEAR_OIL)
                 {
-                    if (i == 0) { extrmPwr = data[i].Gearbox.Oils.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Gearbox.Oils.Mean; }
 
-                    if (data[i].Gearbox.Oils.Mean > extrmPwr) { extrmPwr = data[i].Gearbox.Oils.Mean; }
+                    if (data[i].Gearbox.Oils.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Oils.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GNNY_G)
                 {
-                    if (i == 0) { extrmPwr = data[i].Genny.bearingG.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Genny.bearingG.Mean; }
 
-                    if (data[i].Genny.bearingG.Mean > extrmPwr) { extrmPwr = data[i].Genny.bearingG.Mean; }
+                    if (data[i].Genny.bearingG.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.bearingG.Mean; }
                 }
                 else if (anomaly == AnomalyType.THRS_GNNY_R)
                 {
-                    if (i == 0) { extrmPwr = data[i].Genny.bearingR.Mean; }
+                    if (i == 0) { _extrmPwr = data[i].Genny.bearingR.Mean; }
 
-                    if (data[i].Genny.bearingR.Mean > extrmPwr) { extrmPwr = data[i].Genny.bearingR.Mean; }
+                    if (data[i].Genny.bearingR.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.bearingR.Mean; }
                 }
+
+                _averagePwr += data[i].Powers.Mean;
+                _meanNclTmp += data[i].Nacel.Mean;
 
                 EvTimes.Add(data[i].TimeStamp);
             }
+
+            _averagePwr = _averagePwr / data.Count;
+            _meanNclTmp = _meanNclTmp / data.Count;
 
             SetEventDuration();
         }
@@ -393,8 +399,10 @@ namespace scada_analyst
 
         #region Properties
 
-        public double ExtrmSpd { get { return extrmSpd; } set { extrmSpd = value; } }
-        public double ExtrmPow { get { return extrmPwr; } set { extrmPwr = value; } }
+        public double AveragePwr { get { return _averagePwr; } set { _averagePwr = value; } }
+        public double MeanNclTmp { get { return _meanNclTmp; } set { _meanNclTmp = value; } }
+        public double ExtrmSpd { get { return _extrmSpd; } set { _extrmSpd = value; } }
+        public double ExtrmPow { get { return _extrmPwr; } set { _extrmPwr = value; } }
 
         public string DisplayDayTime
         {
@@ -410,7 +418,6 @@ namespace scada_analyst
                 else if (DayTime == TimeOfEvent.AS_DUSK) { return "Astronomical dusk"; }
                 else { return "Unknown"; }
             }
-            set { displayDayTime = value; }
         }
 
         public string DisplayAssoctn
@@ -422,7 +429,6 @@ namespace scada_analyst
                 else if (AssocEv == EventAssoct.HI_SP) { return "High wind speeds"; }
                 else { return "Other"; }
             }
-            set { displayAssoctn = value; }
         }
 
         public string TriggerVar

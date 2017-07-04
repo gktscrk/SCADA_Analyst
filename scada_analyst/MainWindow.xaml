@@ -758,14 +758,14 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Association" Width="80" >
+                                        <GridViewColumn Header="Association" Width="120" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding DisplayAssoctn, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Time of Day" Width="120" >
+                                        <GridViewColumn Header="Time of Day" Width="125" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding DisplayDayTime, Mode=OneWay}" />
@@ -835,14 +835,14 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Association" Width="80" >
+                                        <GridViewColumn Header="Association" Width="120" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding DisplayAssoctn, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Time of Day" Width="120" >
+                                        <GridViewColumn Header="Time of Day" Width="125" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding DisplayDayTime, Mode=OneWay}" />
@@ -1355,7 +1355,7 @@
 
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
-                                        <GridViewColumn Header="Triggering Variable" Width="200">
+                                        <GridViewColumn Header="Triggering Variable" Width="140">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding TriggerVar, Mode=OneWay}" />
@@ -1376,10 +1376,24 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Temperature" Width="100" >
+                                        <GridViewColumn Header="Av. Power Prod." Width="100">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.#0}, Mode=OneWay}" />
+                                                    <TextBlock Text="{Binding AveragePwr, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Nacelle Temp" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding MeanNclTmp, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Max Var. Temp" Width="100" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
