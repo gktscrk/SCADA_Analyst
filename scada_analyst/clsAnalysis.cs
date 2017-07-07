@@ -1110,31 +1110,23 @@ namespace scada_analyst
             {
                 // and for every sample in every windfarm
                 for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
-                {
-                    // if the averages' file already does not contain this, we can add a new DateTime to it
-                    if (_fleetMeans.InclDtTm.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
+                {                
+                    if (!_fleetMeans.InclDtTm.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
                     {
-                        // if the list does contain that timestamp already, we need to increment the variable  
-                        // we are averaging by the new value
-
-                        // get index as the first thing
-                        int index = _fleetMeans.Data
-                            .IndexOf(_fleetMeans.Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
-                            .FirstOrDefault());
-
-                        // the index allows to determine where in the mean file the new value should be input
-                        ProcessAverageDataValues(scadaFile.WindFarm[i].DataSorted[j], index);
-                    }
-                    else
-                    {
-                        // if the new average list does not contain the information, we can just add it in
-                        _fleetMeans.Data.Add(scadaFile.WindFarm[i].DataSorted[j]);
+                        // if the averages' file already does not contain this, we can add a new DateTime to it
+                        _fleetMeans.Data.Add(new ScadaData.ScadaSample());
                         _fleetMeans.InclDtTm.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
 
-                        // .Maxm will be used as the incrementor, need to be careful in setting it up to avoid making it
-                        // count a NaN as the first one. Present conditional should work for this
-                        CreateAverageDataValues();
+                        _fleetMeans.Data[_fleetMeans.Data.Count - 1].TimeStamp = scadaFile.WindFarm[i].DataSorted[j].TimeStamp;
                     }
+
+                    // get index as the first thing
+                    // the index allows to determine where in the mean file the new value should be input
+                    int index = _fleetMeans.Data
+                        .IndexOf(_fleetMeans.Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
+                        .FirstOrDefault());
+
+                    ProcessAverageDataValues(scadaFile.WindFarm[i].DataSorted[j], index);
 
                     count++;
 
@@ -1147,31 +1139,6 @@ namespace scada_analyst
                     }
                 }
             }
-        }
-
-        private void CreateAverageDataValues()
-        {
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].AmbTemps.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].AmbTemps.Mean) ? 1 : 0;
-
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Oils.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Oils.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Gens.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Gens.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Rots.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Rots.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Gens.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Gens.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Rots.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Rots.Mean) ? 1 : 0;
-
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingR.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingR.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingG.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingG.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.Rpms.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.Rpms.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1u1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1u1.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1v1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1v1.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1w1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1w1.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2u1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2u1.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2v1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2v1.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2w1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2w1.Mean) ? 1 : 0;
-
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Hs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Hs.Mean) ? 1 : 0;
-            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Standards.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Standards.Mean) ? 1 : 0;
         }
 
         private void ProcessAverageDataValues(ScadaData.ScadaSample thisSample, int index)
