@@ -1158,6 +1158,20 @@ namespace scada_analyst
 
             public ScadaSample() { }
 
+            public ScadaSample(ScadaSample input)
+            {
+                this.TimeStamp = input.TimeStamp;
+                this.AssetID = input.AssetID;
+                this.StationID = input.StationID;
+                this.SampleID = input.SampleID;
+
+                this.AmbTemps = input.AmbTemps;
+
+                this.Gearbox = input.Gearbox;
+                this.Genny = input.Genny;
+                this.MainBear = input.MainBear;
+            }
+
             public ScadaSample(string[] data, ScadaHeader header)
             {
                 LoadData(data, header);

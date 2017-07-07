@@ -1079,8 +1079,8 @@ namespace scada_analyst
                 _fleetMeans.WindFarm.Add(new ScadaData.TurbineData());
 
                 FleetTotalValues(_scadaFile, progress);
-                OverallAverages(progress, 50);
-                FleetWiseDeviation(_scadaFile, progress, 55);
+                GetFleetAverages(progress, 50);
+                CalculateDeltas(_scadaFile, progress, 55);
 
                 _scadaFile = SortScada(_scadaFile);
             }
@@ -1106,6 +1106,7 @@ namespace scada_analyst
             // need code to iterate through every turbine to find the specific value 
             
             //this needs to happen for every windfarm we have
+            
             for (int i = 0; i < scadaFile.WindFarm.Count; i++)
             {
                 // and for every sample in every windfarm
@@ -1133,28 +1134,7 @@ namespace scada_analyst
 
                         // .Maxm will be used as the incrementor, need to be careful in setting it up to avoid making it
                         // count a NaN as the first one. Present conditional should work for this
-
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].AmbTemps.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].AmbTemps.Mean) ? 1 : 0;
-
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Oils.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Oils.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Gens.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Gens.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Rots.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Rots.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Gens.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Gens.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Rots.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Rots.Mean) ? 1 : 0;
-
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingR.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingR.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingG.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingG.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.Rpms.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.Rpms.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1u1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1u1.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1v1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1v1.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1w1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1w1.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2u1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2u1.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2v1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2v1.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2w1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2w1.Mean) ? 1 : 0;
-
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Hs.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Hs.Mean) ? 1 : 0;
-                        _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Standards.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Standards.Mean) ? 1 : 0;
+                        CreateAverageDataValues();
                     }
 
                     count++;
@@ -1168,6 +1148,31 @@ namespace scada_analyst
                     }
                 }
             }
+        }
+
+        private void CreateAverageDataValues()
+        {
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].AmbTemps.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].AmbTemps.Mean) ? 1 : 0;
+
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Oils.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Oils.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Gens.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Gens.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Rots.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Rots.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Gens.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Gens.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Rots.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Rots.Mean) ? 1 : 0;
+
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingR.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingR.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingG.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingG.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.Rpms.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.Rpms.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1u1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1u1.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1v1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1v1.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1w1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1w1.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2u1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2u1.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2v1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2v1.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2w1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2w1.Mean) ? 1 : 0;
+
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Hs.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Hs.Mean) ? 1 : 0;
+            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Standards.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Standards.Mean) ? 1 : 0;
         }
 
         private void ProcessAverageDataValues(ScadaData.ScadaSample thisSample, int index)
@@ -1267,7 +1272,7 @@ namespace scada_analyst
             return new Tuple<double, double>(oldValue, incrementor);
         }
 
-        private void OverallAverages(IProgress<int> progress, int start = 0)
+        private void GetFleetAverages(IProgress<int> progress, int start = 0)
         {
             int count = 0;
 
@@ -1313,7 +1318,7 @@ namespace scada_analyst
         /// average value was calculated.
         /// </summary>
         /// <param name="scadaFile"></param>
-        private void FleetWiseDeviation(ScadaData scadaFile, IProgress<int> progress, int start = 0)
+        private void CalculateDeltas(ScadaData scadaFile, IProgress<int> progress, int start = 0)
         {
             int count = 0;
 
