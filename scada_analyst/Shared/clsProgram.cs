@@ -14,6 +14,10 @@ namespace scada_analyst.Shared
 
             #region Verson 1.000 and after
 
+            ProgramVersion v1200 = new ProgramVersion(1200, new DateTime(2017, 07, 07));
+            v1200.AddChange("Added option to remove power events one by one.");
+            results.Add(v1200);
+
             ProgramVersion v1100 = new ProgramVersion(1100, new DateTime(2017, 07, 04));
             v1100.AddChange("Thresholding is now possible based on user-specified values.");
             results.Add(v1100);

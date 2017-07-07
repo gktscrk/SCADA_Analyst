@@ -209,6 +209,12 @@ namespace scada_analyst
 
                     if (data[i].Genny.bearingR.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.bearingR.Mean; }
                 }
+                else if (anomaly == AnomalyType.THRS_GNNY_RPM)
+                {
+                    if (i == 0) { _extrmPwr = data[i].Genny.Rpms.Mean; }
+
+                    if (data[i].Genny.Rpms.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.Rpms.Mean; }
+                }
 
                 _averagePwr += data[i].Powers.Mean;
                 _meanNclTmp += data[i].Nacel.Mean;
@@ -392,7 +398,8 @@ namespace scada_analyst
             THRS_GEAR_IM_GENS,
             THRS_GEAR_IM_ROTS,
             THRS_GNNY_G,
-            THRS_GNNY_R
+            THRS_GNNY_R,
+            THRS_GNNY_RPM
         }
 
         #endregion
@@ -446,6 +453,7 @@ namespace scada_analyst
                 else if (Anomaly == AnomalyType.THRS_GEAR_OIL) { return "Gearbox Oil"; }
                 else if (Anomaly == AnomalyType.THRS_GNNY_G) { return "Generator G-Bearing"; }
                 else if (Anomaly == AnomalyType.THRS_GNNY_R) { return "Generator R-Bearing"; }
+                else if (Anomaly == AnomalyType.THRS_GNNY_RPM) { return "Generator RPMs"; }
                 else { return "Unknown"; }
             }
         }

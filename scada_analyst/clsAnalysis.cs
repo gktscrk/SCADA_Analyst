@@ -95,16 +95,17 @@ namespace scada_analyst
         {
             List<ThresholdLimit> _newLimits = new List<ThresholdLimit>();
 
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "Oil", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS generator side", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS rotor side", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS generator side", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS rotor side", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "G-bearing", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "R-bearing", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "Bearing", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "HS", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "GS", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "Gearbox oil Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS generator side Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS rotor side Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS generator side Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS rotor side Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "Generator RPMs", 0, 1700));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "G-bearing Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "R-bearing Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "Bearing Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "HS Temp", 0, 75));
+            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "GS Temp", 0, 75));
 
             return _newLimits;
         }
@@ -117,7 +118,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "Oil");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("Oil"));
 
                 if (eventData[i].Gearbox.Oils.Mean > _thresholds[index].MaxTemp)
                 {
@@ -141,7 +142,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "HS generator side");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("HS generator side"));
 
                 if (eventData[i].Gearbox.Hs.Gens.Mean > _thresholds[index].MaxTemp)
                 {
@@ -165,7 +166,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "HS rotor side");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("HS rotor side"));
 
                 if (eventData[i].Gearbox.Hs.Rots.Mean > _thresholds[index].MaxTemp)
                 {
@@ -189,7 +190,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "IMS generator side");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("IMS generator side"));
 
                 if (eventData[i].Gearbox.Ims.Gens.Mean > _thresholds[index].MaxTemp)
                 {
@@ -213,7 +214,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName == "IMS rotor side");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("IMS rotor side"));
 
                 if (eventData[i].Gearbox.Ims.Rots.Mean > _thresholds[index].MaxTemp)
                 {
@@ -241,7 +242,31 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName == "G-bearing");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName.Contains("RPMs"));
+
+                if (eventData[i].Genny.Rpms.Mean > _thresholds[index].MaxTemp)
+                {
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr)
+                        { i = j - 1; break; }
+
+                        if (eventData[j].Genny.Rpms.Mean < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GNNY_RPM));
+                }
+            }
+
+            for (int i = 0; i < eventData.Count; i++)
+            {
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName.Contains("G-bearing"));
 
                 if (eventData[i].Genny.bearingG.Mean > _thresholds[index].MaxTemp)
                 {
@@ -265,7 +290,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName == "R-bearing");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName.Contains("R-bearing"));
 
                 if (eventData[i].Genny.bearingR.Mean > _thresholds[index].MaxTemp)
                 {
@@ -292,7 +317,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName == "Bearing");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName.Contains("Bearing"));
 
                 if (eventData[i].MainBear.Standards.Mean > _thresholds[index].MaxTemp)
                 {
@@ -316,7 +341,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName == "HS");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName.Contains("HS"));
 
                 if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxTemp)
                 {
@@ -339,7 +364,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName == "GS");
+                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName.Contains("GS"));
 
                 if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxTemp)
                 {

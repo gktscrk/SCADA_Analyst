@@ -1323,7 +1323,7 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Temperature" >
+                                        <GridViewColumn Header="Max Values" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <controls:NumericTextBox Text="{Binding MaxTemp, Mode=TwoWay}"

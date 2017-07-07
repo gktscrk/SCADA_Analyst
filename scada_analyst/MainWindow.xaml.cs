@@ -117,6 +117,8 @@ namespace scada_analyst
             CreateSummaryComboInfo();
             CreateSummaries();
 
+            LView_LoadedOverview.SelectedIndex = 0;
+
 #if !DEBUG
             Comb_DisplayEvDetails.IsEnabled = false;
             LBL_EquipmentChoice.IsEnabled = false;
@@ -1559,7 +1561,6 @@ namespace scada_analyst
             _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(analyser.RatedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
             LView_LoadedOverview.ItemsSource = _overview;
-            LView_LoadedOverview.SelectedIndex = 0;
         }
 
         void EventsSummary()
@@ -1696,16 +1697,13 @@ namespace scada_analyst
 
         void RemoveSingleAsset(int toRemove)
         {
-            if (AssetsView.Count != 0)
+            if (analyser.AssetsList.Count != 0)
             {
-                for (int i = AssetsView.Count - 1; i >= 0; i--)
+                for (int i = analyser.AssetsList.Count - 1; i >= 0; i--)
                 {
-                    if (AssetsView[i].UnitID == toRemove)
+                    if (analyser.AssetsList[i].UnitID == toRemove)
                     {
-                        //App.Current.Dispatcher.Invoke((Action)delegate // 
-                        //{
                         analyser.AssetsList.RemoveAt(i);
-                        //});
 
                         break;
                     }
@@ -1803,16 +1801,14 @@ namespace scada_analyst
                 explorEvent_MenuItem.Header = "Explore Event";
                 explorEvent_MenuItem.Click += ExploreEvent_MenuItem_Click;
                 menu.Items.Add(explorEvent_MenuItem);
+                MenuItem removeEvent_MenuItem = new MenuItem();
+                removeEvent_MenuItem.Header = "Remove Event";
+                removeEvent_MenuItem.Click += RemoveEvent_MenuItem_Click;
+                menu.Items.Add(removeEvent_MenuItem);
             }
 
-            if (LView_PowrNone.SelectedItems.Count == 1)
-            {
-                LView_PowrNone.ContextMenu = menu;
-            }
-            else if (LView_PowrRted.SelectedItems.Count == 1)
-            {
-                LView_PowrRted.ContextMenu = menu;
-            }
+            if (LView_PowrNone.SelectedItems.Count == 1) { LView_PowrNone.ContextMenu = menu; }
+            else if (LView_PowrRted.SelectedItems.Count == 1) { LView_PowrRted.ContextMenu = menu; }
         }
 
         private void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
@@ -1893,6 +1889,31 @@ namespace scada_analyst
 
             //ScrollView.Visibility = Visibility.Visible;
             //ScrollView.DataContext = sVM;
+        }
+
+        private void RemoveEvent_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
+            {
+                EventData _event;
+
+                if (LView_PowrNone.SelectedItems.Count == 1)
+                {
+                    _event = (EventData)LView_PowrNone.SelectedItem;
+
+                    // find index and removeat that index
+                    analyser.NoPwEvents.RemoveAt(analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start));
+                }
+                else
+                {
+                    _event = (EventData)LView_PowrRted.SelectedItem;
+
+                    // find index and removeat that index
+                    analyser.RtPwEvents.RemoveAt(analyser.RtPwEvents.FindIndex(x => x.Start == _event.Start));
+                }
+
+                RefreshEvents();
+            }
         }
 
         #endregion
