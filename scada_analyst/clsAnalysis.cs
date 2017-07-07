@@ -20,7 +20,7 @@ namespace scada_analyst
         // this is to allow changing the property of the timestep in the loaded scada data at some point
         private TimeSpan _scadaSeprtr = new TimeSpan(0, 10, 0);
 
-        private ScadaData _fleetMeans = new ScadaData();
+        private ScadaData.TurbineData _fleetMeans = new ScadaData.TurbineData();
         
         private List<EventData> _allWtrEvts = new List<EventData>();
         private List<EventData> _loSpEvents = new List<EventData>();
@@ -1075,8 +1075,7 @@ namespace scada_analyst
             {
                 // create new scadaData instance to contain the average variables and assign it 
                 // to the declared variable; create a new turbine data within that
-                _fleetMeans = new ScadaData();
-                _fleetMeans.WindFarm.Add(new ScadaData.TurbineData());
+                _fleetMeans = new ScadaData.TurbineData();
 
                 FleetTotalValues(_scadaFile, progress);
                 GetFleetAverages(progress, 50);
@@ -1113,14 +1112,14 @@ namespace scada_analyst
                 for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                 {
                     // if the averages' file already does not contain this, we can add a new DateTime to it
-                    if (_fleetMeans.WindFarm[0].InclDtTm.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
+                    if (_fleetMeans.InclDtTm.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
                     {
                         // if the list does contain that timestamp already, we need to increment the variable  
                         // we are averaging by the new value
 
                         // get index as the first thing
-                        int index = _fleetMeans.WindFarm[0].Data
-                            .IndexOf(_fleetMeans.WindFarm[0].Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
+                        int index = _fleetMeans.Data
+                            .IndexOf(_fleetMeans.Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
                             .FirstOrDefault());
 
                         // the index allows to determine where in the mean file the new value should be input
@@ -1129,8 +1128,8 @@ namespace scada_analyst
                     else
                     {
                         // if the new average list does not contain the information, we can just add it in
-                        _fleetMeans.WindFarm[0].Data.Add(scadaFile.WindFarm[i].DataSorted[j]);
-                        _fleetMeans.WindFarm[0].InclDtTm.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
+                        _fleetMeans.Data.Add(scadaFile.WindFarm[i].DataSorted[j]);
+                        _fleetMeans.InclDtTm.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
 
                         // .Maxm will be used as the incrementor, need to be careful in setting it up to avoid making it
                         // count a NaN as the first one. Present conditional should work for this
@@ -1152,27 +1151,27 @@ namespace scada_analyst
 
         private void CreateAverageDataValues()
         {
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].AmbTemps.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].AmbTemps.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].AmbTemps.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].AmbTemps.Mean) ? 1 : 0;
 
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Oils.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Oils.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Gens.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Gens.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Rots.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Hs.Rots.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Gens.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Gens.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Rots.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Gearbox.Ims.Rots.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Oils.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Oils.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Gens.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Gens.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Rots.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Hs.Rots.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Gens.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Gens.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Rots.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Gearbox.Ims.Rots.Mean) ? 1 : 0;
 
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingR.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingR.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingG.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.bearingG.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.Rpms.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.Rpms.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1u1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1u1.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1v1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1v1.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1w1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G1w1.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2u1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2u1.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2v1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2v1.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2w1.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].Genny.G2w1.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingR.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingR.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingG.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.bearingG.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.Rpms.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.Rpms.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1u1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1u1.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1v1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1v1.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1w1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G1w1.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2u1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2u1.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2v1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2v1.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2w1.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].Genny.G2w1.Mean) ? 1 : 0;
 
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Hs.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Hs.Mean) ? 1 : 0;
-            _fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Standards.Maxm = !double.IsNaN(_fleetMeans.WindFarm[0].Data[_fleetMeans.WindFarm[0].Data.Count - 1].MainBear.Standards.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Gs.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Hs.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Hs.Mean) ? 1 : 0;
+            _fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Standards.Maxm = !double.IsNaN(_fleetMeans.Data[_fleetMeans.Data.Count - 1].MainBear.Standards.Mean) ? 1 : 0;
         }
 
         private void ProcessAverageDataValues(ScadaData.ScadaSample thisSample, int index)
@@ -1180,75 +1179,75 @@ namespace scada_analyst
             // this tuple should return the required values for every input option
             #region Ambient Temperatures
 
-            Tuple<double, double> a01 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].AmbTemps.Mean, _fleetMeans.WindFarm[0].Data[index].AmbTemps.Maxm, thisSample.AmbTemps.Mean);
-            _fleetMeans.WindFarm[0].Data[index].AmbTemps.Mean = a01.Item1;
-            _fleetMeans.WindFarm[0].Data[index].AmbTemps.Maxm = a01.Item2;
+            Tuple<double, double> a01 = IncrementAverage(_fleetMeans.Data[index].AmbTemps.Mean, _fleetMeans.Data[index].AmbTemps.Maxm, thisSample.AmbTemps.Mean);
+            _fleetMeans.Data[index].AmbTemps.Mean = a01.Item1;
+            _fleetMeans.Data[index].AmbTemps.Maxm = a01.Item2;
 
             #endregion
 
             #region Gearbox
 
-            Tuple<double, double> c00 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Gearbox.Oils.Mean, _fleetMeans.WindFarm[0].Data[index].Gearbox.Oils.Maxm, thisSample.Gearbox.Oils.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Oils.Mean = c00.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Oils.Maxm = c00.Item2;
-            Tuple<double, double> c01 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Gens.Mean, _fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Gens.Maxm, thisSample.Gearbox.Hs.Gens.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Gens.Mean = c01.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Gens.Maxm = c01.Item2;
-            Tuple<double, double> c02 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Rots.Mean, _fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Rots.Maxm, thisSample.Gearbox.Hs.Rots.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Rots.Mean = c02.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Hs.Rots.Maxm = c02.Item2;
-            Tuple<double, double> c03 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Gens.Mean, _fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Gens.Maxm, thisSample.Gearbox.Ims.Gens.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Gens.Mean = c03.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Gens.Maxm = c03.Item2;
-            Tuple<double, double> c04 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Rots.Mean, _fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Rots.Maxm, thisSample.Gearbox.Ims.Rots.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Rots.Mean = c04.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Gearbox.Ims.Rots.Maxm = c04.Item2;
+            Tuple<double, double> c00 = IncrementAverage(_fleetMeans.Data[index].Gearbox.Oils.Mean, _fleetMeans.Data[index].Gearbox.Oils.Maxm, thisSample.Gearbox.Oils.Mean);
+            _fleetMeans.Data[index].Gearbox.Oils.Mean = c00.Item1;
+            _fleetMeans.Data[index].Gearbox.Oils.Maxm = c00.Item2;
+            Tuple<double, double> c01 = IncrementAverage(_fleetMeans.Data[index].Gearbox.Hs.Gens.Mean, _fleetMeans.Data[index].Gearbox.Hs.Gens.Maxm, thisSample.Gearbox.Hs.Gens.Mean);
+            _fleetMeans.Data[index].Gearbox.Hs.Gens.Mean = c01.Item1;
+            _fleetMeans.Data[index].Gearbox.Hs.Gens.Maxm = c01.Item2;
+            Tuple<double, double> c02 = IncrementAverage(_fleetMeans.Data[index].Gearbox.Hs.Rots.Mean, _fleetMeans.Data[index].Gearbox.Hs.Rots.Maxm, thisSample.Gearbox.Hs.Rots.Mean);
+            _fleetMeans.Data[index].Gearbox.Hs.Rots.Mean = c02.Item1;
+            _fleetMeans.Data[index].Gearbox.Hs.Rots.Maxm = c02.Item2;
+            Tuple<double, double> c03 = IncrementAverage(_fleetMeans.Data[index].Gearbox.Ims.Gens.Mean, _fleetMeans.Data[index].Gearbox.Ims.Gens.Maxm, thisSample.Gearbox.Ims.Gens.Mean);
+            _fleetMeans.Data[index].Gearbox.Ims.Gens.Mean = c03.Item1;
+            _fleetMeans.Data[index].Gearbox.Ims.Gens.Maxm = c03.Item2;
+            Tuple<double, double> c04 = IncrementAverage(_fleetMeans.Data[index].Gearbox.Ims.Rots.Mean, _fleetMeans.Data[index].Gearbox.Ims.Rots.Maxm, thisSample.Gearbox.Ims.Rots.Mean);
+            _fleetMeans.Data[index].Gearbox.Ims.Rots.Mean = c04.Item1;
+            _fleetMeans.Data[index].Gearbox.Ims.Rots.Maxm = c04.Item2;
 
             #endregion
 
             #region Generator
 
-            Tuple<double, double> b00 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.bearingR.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.bearingR.Maxm, thisSample.Genny.bearingR.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.bearingR.Mean = b00.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.bearingR.Maxm = b00.Item2;
-            Tuple<double, double> b01 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.bearingG.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.bearingG.Maxm, thisSample.Genny.bearingG.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.bearingG.Mean = b01.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.bearingG.Maxm = b01.Item2;
-            Tuple<double, double> b02 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.G1u1.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.G1u1.Maxm, thisSample.Genny.G1u1.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.G1u1.Mean = b02.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.G1u1.Maxm = b02.Item2;
-            Tuple<double, double> b03 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.G1v1.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.G1v1.Maxm, thisSample.Genny.G1v1.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.G1v1.Mean = b03.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.G1v1.Maxm = b03.Item2;
-            Tuple<double, double> b04 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.G1w1.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.G1w1.Maxm, thisSample.Genny.G1w1.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.G1w1.Mean = b04.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.G1w1.Maxm = b04.Item2;
-            Tuple<double, double> b05 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.G2u1.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.G2u1.Maxm, thisSample.Genny.G2u1.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.G2u1.Mean = b05.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.G2u1.Maxm = b05.Item2;
-            Tuple<double, double> b06 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.G2v1.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.G2v1.Maxm, thisSample.Genny.G2v1.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.G2v1.Mean = b06.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.G2v1.Maxm = b06.Item2;
-            Tuple<double, double> b07 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.G2w1.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.G2w1.Maxm, thisSample.Genny.G2w1.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.G2w1.Mean = b07.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.G2w1.Maxm = b07.Item2;
-            Tuple<double, double> b08 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].Genny.Rpms.Mean, _fleetMeans.WindFarm[0].Data[index].Genny.Rpms.Maxm, thisSample.Genny.Rpms.Mean);
-            _fleetMeans.WindFarm[0].Data[index].Genny.Rpms.Mean = b08.Item1;
-            _fleetMeans.WindFarm[0].Data[index].Genny.Rpms.Maxm = b08.Item2;
+            Tuple<double, double> b00 = IncrementAverage(_fleetMeans.Data[index].Genny.bearingR.Mean, _fleetMeans.Data[index].Genny.bearingR.Maxm, thisSample.Genny.bearingR.Mean);
+            _fleetMeans.Data[index].Genny.bearingR.Mean = b00.Item1;
+            _fleetMeans.Data[index].Genny.bearingR.Maxm = b00.Item2;
+            Tuple<double, double> b01 = IncrementAverage(_fleetMeans.Data[index].Genny.bearingG.Mean, _fleetMeans.Data[index].Genny.bearingG.Maxm, thisSample.Genny.bearingG.Mean);
+            _fleetMeans.Data[index].Genny.bearingG.Mean = b01.Item1;
+            _fleetMeans.Data[index].Genny.bearingG.Maxm = b01.Item2;
+            Tuple<double, double> b02 = IncrementAverage(_fleetMeans.Data[index].Genny.G1u1.Mean, _fleetMeans.Data[index].Genny.G1u1.Maxm, thisSample.Genny.G1u1.Mean);
+            _fleetMeans.Data[index].Genny.G1u1.Mean = b02.Item1;
+            _fleetMeans.Data[index].Genny.G1u1.Maxm = b02.Item2;
+            Tuple<double, double> b03 = IncrementAverage(_fleetMeans.Data[index].Genny.G1v1.Mean, _fleetMeans.Data[index].Genny.G1v1.Maxm, thisSample.Genny.G1v1.Mean);
+            _fleetMeans.Data[index].Genny.G1v1.Mean = b03.Item1;
+            _fleetMeans.Data[index].Genny.G1v1.Maxm = b03.Item2;
+            Tuple<double, double> b04 = IncrementAverage(_fleetMeans.Data[index].Genny.G1w1.Mean, _fleetMeans.Data[index].Genny.G1w1.Maxm, thisSample.Genny.G1w1.Mean);
+            _fleetMeans.Data[index].Genny.G1w1.Mean = b04.Item1;
+            _fleetMeans.Data[index].Genny.G1w1.Maxm = b04.Item2;
+            Tuple<double, double> b05 = IncrementAverage(_fleetMeans.Data[index].Genny.G2u1.Mean, _fleetMeans.Data[index].Genny.G2u1.Maxm, thisSample.Genny.G2u1.Mean);
+            _fleetMeans.Data[index].Genny.G2u1.Mean = b05.Item1;
+            _fleetMeans.Data[index].Genny.G2u1.Maxm = b05.Item2;
+            Tuple<double, double> b06 = IncrementAverage(_fleetMeans.Data[index].Genny.G2v1.Mean, _fleetMeans.Data[index].Genny.G2v1.Maxm, thisSample.Genny.G2v1.Mean);
+            _fleetMeans.Data[index].Genny.G2v1.Mean = b06.Item1;
+            _fleetMeans.Data[index].Genny.G2v1.Maxm = b06.Item2;
+            Tuple<double, double> b07 = IncrementAverage(_fleetMeans.Data[index].Genny.G2w1.Mean, _fleetMeans.Data[index].Genny.G2w1.Maxm, thisSample.Genny.G2w1.Mean);
+            _fleetMeans.Data[index].Genny.G2w1.Mean = b07.Item1;
+            _fleetMeans.Data[index].Genny.G2w1.Maxm = b07.Item2;
+            Tuple<double, double> b08 = IncrementAverage(_fleetMeans.Data[index].Genny.Rpms.Mean, _fleetMeans.Data[index].Genny.Rpms.Maxm, thisSample.Genny.Rpms.Mean);
+            _fleetMeans.Data[index].Genny.Rpms.Mean = b08.Item1;
+            _fleetMeans.Data[index].Genny.Rpms.Maxm = b08.Item2;
 
             #endregion
 
             #region Main Bearing
 
-            Tuple<double, double> a02 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].MainBear.Gs.Mean, _fleetMeans.WindFarm[0].Data[index].MainBear.Gs.Maxm, thisSample.MainBear.Gs.Mean);
-            _fleetMeans.WindFarm[0].Data[index].MainBear.Gs.Mean = a02.Item1;
-            _fleetMeans.WindFarm[0].Data[index].MainBear.Gs.Maxm = a02.Item2;
-            Tuple<double, double> a03 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].MainBear.Hs.Mean, _fleetMeans.WindFarm[0].Data[index].MainBear.Hs.Maxm, thisSample.MainBear.Hs.Mean);
-            _fleetMeans.WindFarm[0].Data[index].MainBear.Hs.Mean = a03.Item1;
-            _fleetMeans.WindFarm[0].Data[index].MainBear.Hs.Maxm = a03.Item2;
-            Tuple<double, double> a04 = IncrementAverage(_fleetMeans.WindFarm[0].Data[index].MainBear.Standards.Mean, _fleetMeans.WindFarm[0].Data[index].MainBear.Standards.Maxm, thisSample.MainBear.Standards.Mean);
-            _fleetMeans.WindFarm[0].Data[index].MainBear.Standards.Mean = a04.Item1;
-            _fleetMeans.WindFarm[0].Data[index].MainBear.Standards.Maxm = a04.Item2;
+            Tuple<double, double> a02 = IncrementAverage(_fleetMeans.Data[index].MainBear.Gs.Mean, _fleetMeans.Data[index].MainBear.Gs.Maxm, thisSample.MainBear.Gs.Mean);
+            _fleetMeans.Data[index].MainBear.Gs.Mean = a02.Item1;
+            _fleetMeans.Data[index].MainBear.Gs.Maxm = a02.Item2;
+            Tuple<double, double> a03 = IncrementAverage(_fleetMeans.Data[index].MainBear.Hs.Mean, _fleetMeans.Data[index].MainBear.Hs.Maxm, thisSample.MainBear.Hs.Mean);
+            _fleetMeans.Data[index].MainBear.Hs.Mean = a03.Item1;
+            _fleetMeans.Data[index].MainBear.Hs.Maxm = a03.Item2;
+            Tuple<double, double> a04 = IncrementAverage(_fleetMeans.Data[index].MainBear.Standards.Mean, _fleetMeans.Data[index].MainBear.Standards.Maxm, thisSample.MainBear.Standards.Mean);
+            _fleetMeans.Data[index].MainBear.Standards.Mean = a04.Item1;
+            _fleetMeans.Data[index].MainBear.Standards.Maxm = a04.Item2;
 
             #endregion
         }
@@ -1277,29 +1276,29 @@ namespace scada_analyst
             int count = 0;
 
             // lastly the incrementor needs to be used to get the average for all of the timestamps
-            for (int i = 0; i < _fleetMeans.WindFarm[0].Data.Count; i++)
+            for (int i = 0; i < _fleetMeans.Data.Count; i++)
             {
-                _fleetMeans.WindFarm[0].Data[i].AmbTemps.Mean = _fleetMeans.WindFarm[0].Data[i].AmbTemps.Mean / _fleetMeans.WindFarm[0].Data[i].AmbTemps.Maxm;
+                _fleetMeans.Data[i].AmbTemps.Mean = _fleetMeans.Data[i].AmbTemps.Mean / _fleetMeans.Data[i].AmbTemps.Maxm;
 
-                _fleetMeans.WindFarm[0].Data[i].Gearbox.Oils.Mean = _fleetMeans.WindFarm[0].Data[i].Gearbox.Oils.Mean / _fleetMeans.WindFarm[0].Data[i].Gearbox.Oils.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Gearbox.Hs.Gens.Mean = _fleetMeans.WindFarm[0].Data[i].Gearbox.Hs.Gens.Mean / _fleetMeans.WindFarm[0].Data[i].Gearbox.Hs.Gens.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Gearbox.Hs.Rots.Mean = _fleetMeans.WindFarm[0].Data[i].Gearbox.Hs.Rots.Mean / _fleetMeans.WindFarm[0].Data[i].Gearbox.Hs.Rots.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Gearbox.Ims.Gens.Mean = _fleetMeans.WindFarm[0].Data[i].Gearbox.Ims.Gens.Mean / _fleetMeans.WindFarm[0].Data[i].Gearbox.Ims.Gens.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Gearbox.Ims.Rots.Mean = _fleetMeans.WindFarm[0].Data[i].Gearbox.Ims.Rots.Mean / _fleetMeans.WindFarm[0].Data[i].Gearbox.Ims.Rots.Maxm;
+                _fleetMeans.Data[i].Gearbox.Oils.Mean = _fleetMeans.Data[i].Gearbox.Oils.Mean / _fleetMeans.Data[i].Gearbox.Oils.Maxm;
+                _fleetMeans.Data[i].Gearbox.Hs.Gens.Mean = _fleetMeans.Data[i].Gearbox.Hs.Gens.Mean / _fleetMeans.Data[i].Gearbox.Hs.Gens.Maxm;
+                _fleetMeans.Data[i].Gearbox.Hs.Rots.Mean = _fleetMeans.Data[i].Gearbox.Hs.Rots.Mean / _fleetMeans.Data[i].Gearbox.Hs.Rots.Maxm;
+                _fleetMeans.Data[i].Gearbox.Ims.Gens.Mean = _fleetMeans.Data[i].Gearbox.Ims.Gens.Mean / _fleetMeans.Data[i].Gearbox.Ims.Gens.Maxm;
+                _fleetMeans.Data[i].Gearbox.Ims.Rots.Mean = _fleetMeans.Data[i].Gearbox.Ims.Rots.Mean / _fleetMeans.Data[i].Gearbox.Ims.Rots.Maxm;
 
-                _fleetMeans.WindFarm[0].Data[i].Genny.bearingG.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.bearingG.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.bearingG.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.bearingR.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.bearingR.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.bearingR.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.Rpms.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.Rpms.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.Rpms.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.G1u1.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.G1u1.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.G1u1.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.G1v1.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.G1v1.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.G1v1.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.G1w1.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.G1w1.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.G1w1.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.G2u1.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.G2u1.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.G2u1.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.G2v1.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.G2v1.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.G2v1.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].Genny.G2w1.Mean = _fleetMeans.WindFarm[0].Data[i].Genny.G2w1.Mean / _fleetMeans.WindFarm[0].Data[i].Genny.G2w1.Maxm;
+                _fleetMeans.Data[i].Genny.bearingG.Mean = _fleetMeans.Data[i].Genny.bearingG.Mean / _fleetMeans.Data[i].Genny.bearingG.Maxm;
+                _fleetMeans.Data[i].Genny.bearingR.Mean = _fleetMeans.Data[i].Genny.bearingR.Mean / _fleetMeans.Data[i].Genny.bearingR.Maxm;
+                _fleetMeans.Data[i].Genny.Rpms.Mean = _fleetMeans.Data[i].Genny.Rpms.Mean / _fleetMeans.Data[i].Genny.Rpms.Maxm;
+                _fleetMeans.Data[i].Genny.G1u1.Mean = _fleetMeans.Data[i].Genny.G1u1.Mean / _fleetMeans.Data[i].Genny.G1u1.Maxm;
+                _fleetMeans.Data[i].Genny.G1v1.Mean = _fleetMeans.Data[i].Genny.G1v1.Mean / _fleetMeans.Data[i].Genny.G1v1.Maxm;
+                _fleetMeans.Data[i].Genny.G1w1.Mean = _fleetMeans.Data[i].Genny.G1w1.Mean / _fleetMeans.Data[i].Genny.G1w1.Maxm;
+                _fleetMeans.Data[i].Genny.G2u1.Mean = _fleetMeans.Data[i].Genny.G2u1.Mean / _fleetMeans.Data[i].Genny.G2u1.Maxm;
+                _fleetMeans.Data[i].Genny.G2v1.Mean = _fleetMeans.Data[i].Genny.G2v1.Mean / _fleetMeans.Data[i].Genny.G2v1.Maxm;
+                _fleetMeans.Data[i].Genny.G2w1.Mean = _fleetMeans.Data[i].Genny.G2w1.Mean / _fleetMeans.Data[i].Genny.G2w1.Maxm;
 
-                _fleetMeans.WindFarm[0].Data[i].MainBear.Gs.Mean = _fleetMeans.WindFarm[0].Data[i].MainBear.Gs.Mean / _fleetMeans.WindFarm[0].Data[i].MainBear.Gs.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].MainBear.Hs.Mean = _fleetMeans.WindFarm[0].Data[i].MainBear.Hs.Mean / _fleetMeans.WindFarm[0].Data[i].MainBear.Hs.Maxm;
-                _fleetMeans.WindFarm[0].Data[i].MainBear.Standards.Mean = _fleetMeans.WindFarm[0].Data[i].MainBear.Standards.Mean / _fleetMeans.WindFarm[0].Data[i].MainBear.Standards.Maxm;
+                _fleetMeans.Data[i].MainBear.Gs.Mean = _fleetMeans.Data[i].MainBear.Gs.Mean / _fleetMeans.Data[i].MainBear.Gs.Maxm;
+                _fleetMeans.Data[i].MainBear.Hs.Mean = _fleetMeans.Data[i].MainBear.Hs.Mean / _fleetMeans.Data[i].MainBear.Hs.Maxm;
+                _fleetMeans.Data[i].MainBear.Standards.Mean = _fleetMeans.Data[i].MainBear.Standards.Mean / _fleetMeans.Data[i].MainBear.Standards.Maxm;
 
                 count++;
 
@@ -1307,7 +1306,7 @@ namespace scada_analyst
                 {
                     if (progress != null)
                     {
-                        progress.Report((int)(start + 0.05 * i / _fleetMeans.WindFarm[0].Data.Count * 100.0));
+                        progress.Report((int)(start + 0.05 * i / _fleetMeans.Data.Count * 100.0));
                     }
                 }
             }
@@ -1330,12 +1329,12 @@ namespace scada_analyst
                 for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                 {
                     // get index as the first thing
-                    int index = _fleetMeans.WindFarm[0].Data
-                        .IndexOf(_fleetMeans.WindFarm[0].Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
+                    int index = _fleetMeans.Data
+                        .IndexOf(_fleetMeans.Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
                         .FirstOrDefault());
 
                     ScadaData.ScadaSample thisSample = scadaFile.WindFarm[i].DataSorted[j];
-                    ScadaData.ScadaSample flytSample = _fleetMeans.WindFarm[0].Data[index];
+                    ScadaData.ScadaSample flytSample = _fleetMeans.Data[index];
 
                     // doing the calculation this way round means that a negative difference is equal to a spec value
                     // which is lower than the fleet average, and a positive difference is above the fleet average
@@ -1730,7 +1729,7 @@ namespace scada_analyst
         public TimeSpan WorkHoursMorning { get { return _workHrsMorning; } set { _workHrsMorning = value; } }
         public TimeSpan WorkHoursEvening { get { return _workHrsEvening; } set { _workHrsEvening = value; } }
 
-        public ScadaData FleetMeans { get { return _fleetMeans; } set { _fleetMeans = value; } }
+        public ScadaData.TurbineData FleetMeans { get { return _fleetMeans; } set { _fleetMeans = value; } }
 
         public List<EventData> AllWtrEvts { get { return _allWtrEvts; } set { _allWtrEvts = value; } }
         public List<EventData> LoSpEvents { get { return _loSpEvents; } set { _loSpEvents = value; } }
