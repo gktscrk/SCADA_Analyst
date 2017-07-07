@@ -69,7 +69,7 @@
                 <MenuItem Header="_Remove Matching Events" Click="RemoveMatchedEventsAsync" />
                 <MenuItem Header="_Remove Events by Time of Day" Click="RemoveProcessedDaytimesAsync" />
                 <Separator />
-                <MenuItem Header="_Reset Power Events" Click="ResetNoPwrProdEvents" />
+                <MenuItem Header="_Reset Power Events" Click="ResetPowerProdEvents" />
                 <MenuItem Header="_Clear Events" Click="ClearEvents" />
                 <Separator />
                 <MenuItem Header="_Analysis Settings" Click="SetAnalysisSettings" />

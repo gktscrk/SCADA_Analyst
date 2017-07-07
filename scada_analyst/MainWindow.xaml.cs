@@ -1290,25 +1290,11 @@ namespace scada_analyst
         }
 
         /// <summary>
-        /// Resets power production null or negative to the original state
+        /// Resets power production events to their original state
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ResetNoPwrProdEvents(object sender, RoutedEventArgs e)
-        {
-            analyser.DuratFilter = new TimeSpan(0, 10, 0);
-
-            analyser.ResetEventList();
-            PopulateOverview();
-            RefreshEvents();
-        }
-
-        /// <summary>
-        /// Resets power production high -- at "rated" -- to the original state
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ResetRtdPwrProdEvents(object sender, RoutedEventArgs e)
+        private void ResetPowerProdEvents(object sender, RoutedEventArgs e)
         {
             analyser.DuratFilter = new TimeSpan(0, 10, 0);
 
