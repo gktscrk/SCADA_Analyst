@@ -10,7 +10,7 @@ namespace scada_analyst
     {
         #region Variables
 
-        private static double _cutIn = 4, _cutOut = 25, _powerLim = 0, _ratedPwr = 2300; // ratedPwr always in kW !!!
+        private double _cutIn = 4, _cutOut = 25, _powerLim = 0, _ratedPwr = 2300; // ratedPwr always in kW !!!
 
         private TimeSpan _workHrsMorning = new TimeSpan(7, 0, 0);
         private TimeSpan _workHrsEvening = new TimeSpan(20, 0, 0);
@@ -30,11 +30,13 @@ namespace scada_analyst
         private List<EventData> _hiPwEvents = new List<EventData>();
 
         private List<EventData> _thresEvnts = new List<EventData>();
+        private List<EventData> _rChngEvnts = new List<EventData>();
 
         private List<Structure> _assetList = new List<Structure>();
         private List<Distances> _intervals = new List<Distances>();
 
-        private List<ThresholdLimit> _thresholds;
+        private List<AnalyticLimit> _thresholds;
+        private List<AnalyticLimit> _rateChange;
 
         #endregion
 
@@ -72,6 +74,56 @@ namespace scada_analyst
         #region Algorithmic Analysis
         // these events here should be the real workhorse, trying to find connections between data, etc
 
+        #region Rate of Change
+        
+        public void RatesOfChance(List<ScadaData.ScadaSample> eventData)
+        {
+            // this method is the public introduction to the rate of change analysis display result
+
+            ExtractRateChangeTimes(eventData);
+        }
+
+        private List<AnalyticLimit> CreateRateChangeLimits()
+        {
+            List<AnalyticLimit> _newLimits = new List<AnalyticLimit>();
+
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox oil Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS generator side Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS rotor side Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS generator side Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS rotor side Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 200));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-bearing Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-bearing Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 10));
+
+            return _newLimits;
+        }
+
+        private void ExtractRateChangeTimes(List<ScadaData.ScadaSample> eventData)
+        {
+            _rChngEvnts.Clear();
+
+            #region Gearbox
+
+            
+            #endregion
+
+            #region Generator
+
+            #endregion
+
+            #region Main Bearing
+
+            #endregion
+        }
+
+        #endregion 
+
+        #region Thresholding
+
         /// <summary>
         /// This method is the general introduction into checking what threshold values exist in the data as
         /// well as highlighting when the data values are too close to the extremities of the allowed range.
@@ -90,37 +142,99 @@ namespace scada_analyst
             // threshold limits already exist and can be modified. Hence the calculations are what this calls
 
             ExtractThresholdTimes(eventData);
-
         }
 
-        private List<ThresholdLimit> CreateThresholdLimits()
+        private List<AnalyticLimit> CreateThresholdLimits()
         {
-            List<ThresholdLimit> _newLimits = new List<ThresholdLimit>();
+            List<AnalyticLimit> _newLimits = new List<AnalyticLimit>();
 
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "Gearbox oil Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS generator side Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "HS rotor side Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS generator side Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GEARBOX, "IMS rotor side Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "Generator RPMs", 0, 1700));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "G-bearing Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.GENERATOR, "R-bearing Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "Bearing Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "HS Temp", 0, 75));
-            _newLimits.Add(new ThresholdLimit(ThresholdLimit.ThresholdType.MAIN_BEAR, "GS Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox oil Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS generator side Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS rotor side Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS generator side Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS rotor side Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 1600));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-bearing Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-bearing Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 50));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 50));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 50));
 
             return _newLimits;
         }
 
         private void ExtractThresholdTimes(List<ScadaData.ScadaSample> eventData)
-        { 
+        {
             _thresEvnts.Clear();
+
+            //try
+            //{
+            //    if (eventData.Count > 0)
+            //    {
+            //        #region Gearbox
+
+            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Oils.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("oil")),
+            //            EventData.AnomalyType.THRS_GEAR_OIL);
+
+            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Hs.Gens.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs generator side")),
+            //            EventData.AnomalyType.THRS_GEAR_HS_GENS);
+
+            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Hs.Rots.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs rotor side")),
+            //            EventData.AnomalyType.THRS_GEAR_HS_ROTS);
+
+            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Ims.Gens.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims generator side")),
+            //            EventData.AnomalyType.THRS_GEAR_IM_GENS);
+
+            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Ims.Rots.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims rotor side")),
+            //            EventData.AnomalyType.THRS_GEAR_IM_ROTS);
+
+            //        #endregion
+
+            //        #region Generator
+
+            //        GetThresholdEvents(eventData, eventData[0].Genny.bearingG.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("g-bearing")),
+            //            EventData.AnomalyType.THRS_GNNY_G);
+
+            //        GetThresholdEvents(eventData, eventData[0].Genny.bearingR.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("r-bearing")),
+            //            EventData.AnomalyType.THRS_GNNY_R);
+
+            //        GetThresholdEvents(eventData, eventData[0].Genny.Rpms.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm")),
+            //            EventData.AnomalyType.THRS_GNNY_RPM);
+
+            //        #endregion
+
+            //        #region Main Bearing
+
+            //        GetThresholdEvents(eventData, eventData[0].MainBear.Standards.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("bearing")),
+            //            EventData.AnomalyType.THRS_BEAR);
+
+            //        GetThresholdEvents(eventData, eventData[0].MainBear.Gs.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("gs")),
+            //            EventData.AnomalyType.THRS_BEAR_GS);
+
+            //        GetThresholdEvents(eventData, eventData[0].MainBear.Hs.Mean,
+            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("hs")),
+            //            EventData.AnomalyType.THRS_BEAR_HS);
+
+            //        #endregion
+            //    }
+            //}
+            //catch { }
 
             #region Gearbox
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("Oil"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("oil"));
 
                 if (eventData[i].Gearbox.Oils.Mean > _thresholds[index].MaxTemp)
                 {
@@ -144,7 +258,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("HS generator side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs generator side"));
 
                 if (eventData[i].Gearbox.Hs.Gens.Mean > _thresholds[index].MaxTemp)
                 {
@@ -168,7 +282,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("HS rotor side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs rotor side"));
 
                 if (eventData[i].Gearbox.Hs.Rots.Mean > _thresholds[index].MaxTemp)
                 {
@@ -192,7 +306,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("IMS generator side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims generator side"));
 
                 if (eventData[i].Gearbox.Ims.Gens.Mean > _thresholds[index].MaxTemp)
                 {
@@ -216,7 +330,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GEARBOX && x.VarName.Contains("IMS rotor side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims rotor side"));
 
                 if (eventData[i].Gearbox.Ims.Rots.Mean > _thresholds[index].MaxTemp)
                 {
@@ -244,7 +358,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName.Contains("RPMs"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm"));
 
                 if (eventData[i].Genny.Rpms.Mean > _thresholds[index].MaxTemp)
                 {
@@ -268,7 +382,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName.Contains("G-bearing"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("g-bearing"));
 
                 if (eventData[i].Genny.bearingG.Mean > _thresholds[index].MaxTemp)
                 {
@@ -292,7 +406,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.GENERATOR && x.VarName.Contains("R-bearing"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("r-bearing"));
 
                 if (eventData[i].Genny.bearingR.Mean > _thresholds[index].MaxTemp)
                 {
@@ -319,7 +433,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName.Contains("Bearing"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("bearing"));
 
                 if (eventData[i].MainBear.Standards.Mean > _thresholds[index].MaxTemp)
                 {
@@ -343,7 +457,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName.Contains("HS"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("hs"));
 
                 if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxTemp)
                 {
@@ -366,7 +480,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == ThresholdLimit.ThresholdType.MAIN_BEAR && x.VarName.Contains("GS"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("gs"));
 
                 if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxTemp)
                 {
@@ -389,6 +503,38 @@ namespace scada_analyst
 
             #endregion
         }
+
+        private void GetThresholdEvents(List<ScadaData.ScadaSample> eventData, int input, double variable, int index, EventData.AnomalyType type)
+        {
+            // try to build one comprehensive method
+
+            for (int i = input; i < eventData.Count; i++)
+            {
+                // for every variable: all doubles: this method proceeds to check whether
+                // the user-defined threshold value has been exceeded or not
+                if (variable > _thresholds[index].MaxTemp)
+                {
+                    // if it has, we create a new event to add the data into there
+                    List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                    thisEvent.Add(eventData[i]);
+
+                    for (int j = i + 1; j < eventData.Count; j++)
+                    {
+                        if (eventData[j].DeltaTime > ScadaSeprtr) { i = j - 1; break; }
+
+                        if (variable < _thresholds[index].MaxTemp) { i = j - 1; break; }
+                        else if (j == eventData.Count - 1) { i = j; }
+
+                        thisEvent.Add(eventData[j]);
+                    }
+
+                    // after the event is over, we can add this to the threshold events complete list
+                    _thresEvnts.Add(new EventData(thisEvent, type));
+                }
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -1484,18 +1630,18 @@ namespace scada_analyst
 
         #region Support Classes
 
-        public class ThresholdLimit : ObservableObject
+        public class AnalyticLimit : ObservableObject
         {
             #region Variables
 
             private double _maxTemp;
             private double _minTemp;
             private string _varName;
-            private ThresholdType _type;
+            private Equipment _type;
 
             #endregion
 
-            public ThresholdLimit(ThresholdType type, string variable, double minimum, double maximum)
+            public AnalyticLimit(Equipment type, string variable, double minimum, double maximum)
             {
                 _maxTemp = maximum;
                 _minTemp = minimum;
@@ -1503,7 +1649,7 @@ namespace scada_analyst
                 _type = type;
             }
 
-            public enum ThresholdType
+            public enum Equipment
             {
                 GEARBOX,
                 GENERATOR,
@@ -1516,7 +1662,7 @@ namespace scada_analyst
             public double MinTemp { get { return _minTemp; } set { _minTemp = value; } }
             public string VarName { get { return _varName; } set { _varName = value; } }
 
-            public ThresholdType Type { get { return _type; } set { _type = value; } }
+            public Equipment Type { get { return _type; } set { _type = value; } }
 
             #endregion
         }
@@ -1707,8 +1853,8 @@ namespace scada_analyst
         public List<EventData> ThresEvnts { get { return _thresEvnts; } set { _thresEvnts = value; } }
 
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
-        public List<Structure> AssetsList { get { return _assetList; } set { _assetList = value; } }
-        public List<ThresholdLimit> Thresholds { get { return _thresholds; } set { _thresholds = value; } }
+        public List<Structure> AssetList { get { return _assetList; } set { _assetList = value; } }
+        public List<AnalyticLimit> Thresholds { get { return _thresholds; } set { _thresholds = value; } }
 
         public List<StructureSmry> Summary()
         {

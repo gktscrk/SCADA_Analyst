@@ -245,12 +245,12 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ClearMeteoData(object sender, RoutedEventArgs e)
         {
-            for (int i = analyser.AssetsList.Count - 1; i >= 0; i--)
+            for (int i = analyser.AssetList.Count - 1; i >= 0; i--)
             {
-                if (analyser.AssetsList[i].Type == BaseStructure.Types.METMAST)
+                if (analyser.AssetList[i].Type == BaseStructure.Types.METMAST)
                 {
-                    loadedAsset.Remove(analyser.AssetsList[i].UnitID);
-                    analyser.AssetsList.RemoveAt(i);
+                    loadedAsset.Remove(analyser.AssetList[i].UnitID);
+                    analyser.AssetList.RemoveAt(i);
                 }
             }
 
@@ -269,12 +269,12 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ClearScadaData(object sender, RoutedEventArgs e)
         {
-            for (int i = analyser.AssetsList.Count - 1; i >= 0; i--)
+            for (int i = analyser.AssetList.Count - 1; i >= 0; i--)
             {
-                if (analyser.AssetsList[i].Type == BaseStructure.Types.TURBINE)
+                if (analyser.AssetList[i].Type == BaseStructure.Types.TURBINE)
                 {
-                    loadedAsset.Remove(analyser.AssetsList[i].UnitID);
-                    analyser.AssetsList.RemoveAt(i);
+                    loadedAsset.Remove(analyser.AssetList[i].UnitID);
+                    analyser.AssetList.RemoveAt(i);
                 }
             }
 
@@ -797,7 +797,7 @@ namespace scada_analyst
                     throw new CancelLoadingException();
                 }
 
-                await Task.Run(() => analyser.GetDistances(analyser.AssetsList));
+                await Task.Run(() => analyser.GetDistances(analyser.AssetList));
             }
             catch (CancelLoadingException) { }
             catch (OperationCanceledException) { }
@@ -1503,7 +1503,7 @@ namespace scada_analyst
         {
             Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
 
-            Analysis.ThresholdLimit thL = (Analysis.ThresholdLimit)tB.Tag;
+            Analysis.AnalyticLimit thL = (Analysis.AnalyticLimit)tB.Tag;
             thL.MaxTemp = tB.NumericValue;
             
             Calculator_Click(this, new RoutedEventArgs());
@@ -1572,16 +1572,16 @@ namespace scada_analyst
                 {
                     if (!loadedAsset.Contains(meteoFile.MetMasts[i].UnitID))
                     {
-                        analyser.AssetsList.Add((Structure)meteoFile.MetMasts[i]);
+                        analyser.AssetList.Add((Structure)meteoFile.MetMasts[i]);
 
                         loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
                     }
                     else
                     {
-                        int index = analyser.AssetsList.IndexOf
-                            (analyser.AssetsList.Where(x => x.UnitID == meteoFile.MetMasts[i].UnitID).FirstOrDefault());
+                        int index = analyser.AssetList.IndexOf
+                            (analyser.AssetList.Where(x => x.UnitID == meteoFile.MetMasts[i].UnitID).FirstOrDefault());
 
-                        analyser.AssetsList[index].CheckDataSeriesTimes(meteoFile.MetMasts[i]);
+                        analyser.AssetList[index].CheckDataSeriesTimes(meteoFile.MetMasts[i]);
                     }
                 }
             }
@@ -1592,16 +1592,16 @@ namespace scada_analyst
                 {
                     if (!loadedAsset.Contains(scadaFile.WindFarm[i].UnitID))
                     {
-                        analyser.AssetsList.Add((Structure)scadaFile.WindFarm[i]);
+                        analyser.AssetList.Add((Structure)scadaFile.WindFarm[i]);
 
                         loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
                     }
                     else
                     {
-                        int index = analyser.AssetsList.IndexOf
-                            (analyser.AssetsList.Where(x => x.UnitID == scadaFile.WindFarm[i].UnitID).FirstOrDefault());
+                        int index = analyser.AssetList.IndexOf
+                            (analyser.AssetList.Where(x => x.UnitID == scadaFile.WindFarm[i].UnitID).FirstOrDefault());
 
-                        analyser.AssetsList[index].CheckDataSeriesTimes(scadaFile.WindFarm[i]);
+                        analyser.AssetList[index].CheckDataSeriesTimes(scadaFile.WindFarm[i]);
                     }
                 }
             }
@@ -1683,13 +1683,13 @@ namespace scada_analyst
 
         void RemoveSingleAsset(int toRemove)
         {
-            if (analyser.AssetsList.Count != 0)
+            if (analyser.AssetList.Count != 0)
             {
-                for (int i = analyser.AssetsList.Count - 1; i >= 0; i--)
+                for (int i = analyser.AssetList.Count - 1; i >= 0; i--)
                 {
-                    if (analyser.AssetsList[i].UnitID == toRemove)
+                    if (analyser.AssetList[i].UnitID == toRemove)
                     {
-                        analyser.AssetsList.RemoveAt(i);
+                        analyser.AssetList.RemoveAt(i);
 
                         break;
                     }
@@ -1955,9 +1955,9 @@ namespace scada_analyst
             }
         }
 
-        public ObservableCollection<Analysis.ThresholdLimit> ThresholdVw
+        public ObservableCollection<Analysis.AnalyticLimit> ThresholdVw
         {
-            get { return new ObservableCollection<Analysis.ThresholdLimit>(analyser.Thresholds); }
+            get { return new ObservableCollection<Analysis.AnalyticLimit>(analyser.Thresholds); }
             set
             {
                 if (ThresholdVw != value)
@@ -2019,26 +2019,26 @@ namespace scada_analyst
 
         public ObservableCollection<Structure> AssetsView
         {
-            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetsList); }
+            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetList); }
             set
             {
                 if (_assetsVw != value)
                 {
                     _assetsVw = value;
-                    OnPropertyChanged(nameof(analyser.AssetsList));
+                    OnPropertyChanged(nameof(analyser.AssetList));
                 }
             }
         }
 
         public ObservableCollection<Structure> ThrsEventData
         {
-            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetsList); }
+            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetList); }
             set
             {
                 if (_assetsVw != value)
                 {
                     _assetsVw = value;
-                    OnPropertyChanged(nameof(analyser.AssetsList));
+                    OnPropertyChanged(nameof(analyser.AssetList));
                 }
             }
         }

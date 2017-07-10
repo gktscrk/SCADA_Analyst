@@ -14,6 +14,10 @@ namespace scada_analyst.Shared
 
             #region Verson 1.000 and after
 
+            ProgramVersion v1201 = new ProgramVersion(1201, new DateTime(2017, 07, 08));
+            v1201.AddChange("Fixed averages calculating to take into account the first asset as well.");
+            results.Add(v1201);
+
             ProgramVersion v1200 = new ProgramVersion(1200, new DateTime(2017, 07, 07));
             v1200.AddChange("Added option to remove power events one by one.");
             results.Add(v1200);
