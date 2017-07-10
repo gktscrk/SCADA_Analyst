@@ -1333,7 +1333,7 @@
                                         <GridViewColumn Header="Max Values" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <controls:NumericTextBox Text="{Binding MaxTemp, Mode=TwoWay}"
+                                                    <controls:NumericTextBox Text="{Binding MaxVars, Mode=TwoWay}"
                                                                              Tag="{Binding BindsDirectlyToSource=True}"
                                                                              Width="100" LostFocus="Threshold_LoseFocus"
                                                                              TextChanged="Threshold_TextChanged"
@@ -1397,10 +1397,132 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Var. Temp" Width="100" >
+                                        <GridViewColumn Header="Max Value" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Rate of Change" Name="Tab_ROC">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="2*" />
+                            </Grid.RowDefinitions>
+
+                            <ListView Grid.Column="0" Grid.Row="0" Margin="5"
+                                      Name="LView_ROCLimits" ItemsSource="{Binding RocVw}"   
+                                      VerticalAlignment="Top"           
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                                        <GridViewColumn Header="Variable Name" Width="200" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding VarName, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Max Values" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <controls:NumericTextBox Text="{Binding MaxVars, Mode=TwoWay}"
+                                                                             Tag="{Binding BindsDirectlyToSource=True}"
+                                                                             Width="100" LostFocus="ROC_LoseFocus"
+                                                                             TextChanged="ROC_TextChanged"
+                                                                             TextAlignment="Center"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <ListView Grid.Column="0" Grid.Row="1" Margin="5"
+                                      Name="LView_ROCValues"  
+                                      VerticalAlignment="Top"           
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                                        <GridViewColumn Header="Triggering Variable" Width="140">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding TriggerVar, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Start Time" Width="120">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Duration" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Durat, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Av. Power Prod." Width="100">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding AveragePwr, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Nacelle Temp" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding MeanNclTmp, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Max Value" Width="80" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Max Change" Width="80" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding MaxValChng, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>

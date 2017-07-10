@@ -14,6 +14,11 @@ namespace scada_analyst.Shared
 
             #region Verson 1.000 and after
 
+            ProgramVersion v1300 = new ProgramVersion(1300, new DateTime(2017, 07, 10));
+            v1300.AddChange("Added option for displaying rate of change of variables above an user-defined limit.");
+            v1300.AddChange("User can now certify certain events as 'faults' by right-clicking on them in the 'No Power Production' event list.");
+            results.Add(v1300);
+
             ProgramVersion v1201 = new ProgramVersion(1201, new DateTime(2017, 07, 08));
             v1201.AddChange("Fixed averages calculating to take into account the first asset as well.");
             results.Add(v1201);

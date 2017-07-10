@@ -15,8 +15,9 @@ namespace scada_analyst
 
         private double _averagePwr = 0;
         private double _meanNclTmp = 0;
-        private double _extrmPwr = 0;
+        private double _extrmVal = 0;
         private double _extrmSpd = 0;
+        private double _maxValChng = 0;
 
         private TimeSpan sampleLen = new TimeSpan(0, 9, 59);
 
@@ -121,15 +122,15 @@ namespace scada_analyst
             {
                 if (pwrProd == PwrProdType.NO_PWR)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Powers.Mean; }
+                    if (i == 0) { _extrmVal = data[i].Powers.Mean; }
 
-                    if (data[i].Powers.Mean < _extrmPwr) { _extrmPwr = data[i].Powers.Mean; }
+                    if (data[i].Powers.Mean < _extrmVal) { _extrmVal = data[i].Powers.Mean; }
                 }
                 else if (pwrProd == PwrProdType.HI_PWR)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Powers.Mean; }
+                    if (i == 0) { _extrmVal = data[i].Powers.Mean; }
 
-                    if (data[i].Powers.Mean > _extrmPwr) { _extrmPwr = data[i].Powers.Mean; }
+                    if (data[i].Powers.Mean > _extrmVal) { _extrmVal = data[i].Powers.Mean; }
                 }
 
                 EvTimes.Add(data[i].TimeStamp);
@@ -149,73 +150,95 @@ namespace scada_analyst
             eSource = EventSource.TURBINE;
             Type = Types.UNKNOWN;
             
-            for (int i = 0; i < data.Count; i++)
+            for (int i = 1; i < data.Count; i++)
             {
-                if (anomaly == AnomalyType.THRS_BEAR)
+                if (anomaly == AnomalyType.THRS_BEAR || anomaly == AnomalyType.ROC_BEAR)
                 {
-                    if (i == 0) { _extrmPwr = data[i].MainBear.Standards.Mean; }
+                    if (i == 1) { _extrmVal = data[0].MainBear.Main.Mean; }
 
-                    if (data[i].MainBear.Standards.Mean > _extrmPwr) { _extrmPwr = data[i].MainBear.Standards.Mean; }
+                    _maxValChng = Math.Abs(data[i].MainBear.Main.Mean - data[i - 1].MainBear.Main.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].MainBear.Main.Mean - data[i - 1].MainBear.Main.Mean) : _maxValChng;
+                    if (data[i].MainBear.Main.Mean > _extrmVal) { _extrmVal = data[i].MainBear.Main.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_BEAR_GS)
+                else if (anomaly == AnomalyType.THRS_BEAR_GS || anomaly == AnomalyType.ROC_BEAR_GS)
                 {
-                    if (i == 0) { _extrmPwr = data[i].MainBear.Gs.Mean; }
+                    if (i == 1) { _extrmVal = data[0].MainBear.Gs.Mean; }
 
-                    if (data[i].MainBear.Gs.Mean > _extrmPwr) { _extrmPwr = data[i].MainBear.Gs.Mean; }
+                    _maxValChng = Math.Abs(data[i].MainBear.Gs.Mean - data[i - 1].MainBear.Gs.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].MainBear.Gs.Mean - data[i - 1].MainBear.Gs.Mean) : _maxValChng;
+                    if (data[i].MainBear.Gs.Mean > _extrmVal) { _extrmVal = data[i].MainBear.Gs.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_BEAR_HS)
+                else if (anomaly == AnomalyType.THRS_BEAR_HS || anomaly == AnomalyType.ROC_BEAR_HS)
                 {
-                    if (i == 0) { _extrmPwr = data[i].MainBear.Hs.Mean; }
+                    if (i == 1) { _extrmVal = data[0].MainBear.Hs.Mean; }
 
-                    if (data[i].MainBear.Hs.Mean > _extrmPwr) { _extrmPwr = data[i].MainBear.Hs.Mean; }
+                    _maxValChng = Math.Abs(data[i].MainBear.Hs.Mean - data[i - 1].MainBear.Hs.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].MainBear.Hs.Mean - data[i - 1].MainBear.Hs.Mean) : _maxValChng;
+                    if (data[i].MainBear.Hs.Mean > _extrmVal) { _extrmVal = data[i].MainBear.Hs.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GEAR_HS_GENS)
+                else if (anomaly == AnomalyType.THRS_GEAR_HS_GENS || anomaly == AnomalyType.ROC_GEAR_HS_GENS)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Gearbox.Hs.Gens.Mean; }
 
-                    if (data[i].Gearbox.Hs.Gens.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Hs.Gens.Mean; }
+                    _maxValChng = Math.Abs(data[i].Gearbox.Hs.Gens.Mean - data[i - 1].Gearbox.Hs.Gens.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Gearbox.Hs.Gens.Mean - data[i - 1].Gearbox.Hs.Gens.Mean) : _maxValChng;
+                    if (data[i].Gearbox.Hs.Gens.Mean > _extrmVal) { _extrmVal = data[i].Gearbox.Hs.Gens.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GEAR_HS_ROTS)
+                else if (anomaly == AnomalyType.THRS_GEAR_HS_ROTS || anomaly == AnomalyType.ROC_GEAR_HS_ROTS)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Gearbox.Hs.Rots.Mean; }
 
-                    if (data[i].Gearbox.Hs.Rots.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Hs.Rots.Mean; }
+                    _maxValChng = Math.Abs(data[i].Gearbox.Hs.Rots.Mean - data[i - 1].Gearbox.Hs.Rots.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Gearbox.Hs.Rots.Mean - data[i - 1].Gearbox.Hs.Rots.Mean) : _maxValChng;
+                    if (data[i].Gearbox.Hs.Rots.Mean > _extrmVal) { _extrmVal = data[i].Gearbox.Hs.Rots.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GEAR_IM_GENS)
+                else if (anomaly == AnomalyType.THRS_GEAR_IM_GENS || anomaly == AnomalyType.ROC_GEAR_IM_GENS)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Gearbox.Ims.Gens.Mean; }
 
-                    if (data[i].Gearbox.Ims.Gens.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Ims.Gens.Mean; }
+                    _maxValChng = Math.Abs(data[i].Gearbox.Ims.Gens.Mean - data[i - 1].Gearbox.Ims.Gens.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Gearbox.Ims.Gens.Mean - data[i - 1].Gearbox.Ims.Gens.Mean) : _maxValChng;
+                    if (data[i].Gearbox.Ims.Gens.Mean > _extrmVal) { _extrmVal = data[i].Gearbox.Ims.Gens.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GEAR_IM_ROTS)
+                else if (anomaly == AnomalyType.THRS_GEAR_IM_ROTS || anomaly == AnomalyType.ROC_GEAR_IM_ROTS)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Gearbox.Ims.Rots.Mean; }
 
-                    if (data[i].Gearbox.Ims.Rots.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Ims.Rots.Mean; }
+                    _maxValChng = Math.Abs(data[i].Gearbox.Ims.Rots.Mean - data[i - 1].Gearbox.Ims.Rots.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Gearbox.Ims.Rots.Mean - data[i - 1].Gearbox.Ims.Rots.Mean) : _maxValChng;
+                    if (data[i].Gearbox.Ims.Rots.Mean > _extrmVal) { _extrmVal = data[i].Gearbox.Ims.Rots.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GEAR_OIL)
+                else if (anomaly == AnomalyType.THRS_GEAR_OIL || anomaly == AnomalyType.ROC_GEAR_OIL)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Gearbox.Oils.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Gearbox.Oils.Mean; }
 
-                    if (data[i].Gearbox.Oils.Mean > _extrmPwr) { _extrmPwr = data[i].Gearbox.Oils.Mean; }
+                    _maxValChng = Math.Abs(data[i].Gearbox.Oils.Mean - data[i - 1].Gearbox.Oils.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Gearbox.Oils.Mean - data[i - 1].Gearbox.Oils.Mean) : _maxValChng;
+                    if (data[i].Gearbox.Oils.Mean > _extrmVal) { _extrmVal = data[i].Gearbox.Oils.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GNNY_G)
+                else if (anomaly == AnomalyType.THRS_GNNY_G || anomaly == AnomalyType.ROC_GNNY_G)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Genny.bearingG.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Genny.BearingG.Mean; }
 
-                    if (data[i].Genny.bearingG.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.bearingG.Mean; }
+                    _maxValChng = Math.Abs(data[i].Genny.BearingG.Mean - data[i - 1].Genny.BearingG.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Genny.BearingG.Mean - data[i - 1].Genny.BearingG.Mean) : _maxValChng;
+                    if (data[i].Genny.BearingG.Mean > _extrmVal) { _extrmVal = data[i].Genny.BearingG.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GNNY_R)
+                else if (anomaly == AnomalyType.THRS_GNNY_R || anomaly == AnomalyType.ROC_GNNY_R)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Genny.bearingR.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Genny.BearingR.Mean; }
 
-                    if (data[i].Genny.bearingR.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.bearingR.Mean; }
+                    _maxValChng = Math.Abs(data[i].Genny.BearingR.Mean - data[i - 1].Genny.BearingR.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Genny.BearingR.Mean - data[i - 1].Genny.BearingR.Mean) : _maxValChng;
+                    if (data[i].Genny.BearingR.Mean > _extrmVal) { _extrmVal = data[i].Genny.BearingR.Mean; }
                 }
-                else if (anomaly == AnomalyType.THRS_GNNY_RPM)
+                else if (anomaly == AnomalyType.THRS_GNNY_RPM || anomaly == AnomalyType.ROC_GNNY_RPM)
                 {
-                    if (i == 0) { _extrmPwr = data[i].Genny.Rpms.Mean; }
+                    if (i == 1) { _extrmVal = data[0].Genny.Rpms.Mean; }
 
-                    if (data[i].Genny.Rpms.Mean > _extrmPwr) { _extrmPwr = data[i].Genny.Rpms.Mean; }
+                    _maxValChng = Math.Abs(data[i].Genny.Rpms.Mean - data[i - 1].Genny.Rpms.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Genny.Rpms.Mean - data[i - 1].Genny.Rpms.Mean) : _maxValChng;
+                    if (data[i].Genny.Rpms.Mean > _extrmVal) { _extrmVal = data[i].Genny.Rpms.Mean; }
                 }
 
                 _averagePwr += data[i].Powers.Mean;
@@ -401,7 +424,18 @@ namespace scada_analyst
             THRS_GEAR_IM_ROTS,
             THRS_GNNY_G,
             THRS_GNNY_R,
-            THRS_GNNY_RPM
+            THRS_GNNY_RPM,
+            ROC_BEAR,
+            ROC_BEAR_GS,
+            ROC_BEAR_HS,
+            ROC_GEAR_OIL,
+            ROC_GEAR_HS_GENS,
+            ROC_GEAR_HS_ROTS,
+            ROC_GEAR_IM_GENS,
+            ROC_GEAR_IM_ROTS,
+            ROC_GNNY_G,
+            ROC_GNNY_R,
+            ROC_GNNY_RPM,
         }
 
         #endregion
@@ -411,9 +445,10 @@ namespace scada_analyst
         public bool IsFault { get { return _isFault; } set { _isFault = value; } }
 
         public double AveragePwr { get { return _averagePwr; } set { _averagePwr = value; } }
-        public double MeanNclTmp { get { return _meanNclTmp; } set { _meanNclTmp = value; } }
         public double ExtrmSpd { get { return _extrmSpd; } set { _extrmSpd = value; } }
-        public double ExtrmPow { get { return _extrmPwr; } set { _extrmPwr = value; } }
+        public double ExtrmPow { get { return _extrmVal; } set { _extrmVal = value; } }
+        public double MaxValChng { get { return _maxValChng; } set { _maxValChng = value; } }
+        public double MeanNclTmp { get { return _meanNclTmp; } set { _meanNclTmp = value; } }
 
         public string DisplayDayTime
         {
@@ -463,6 +498,17 @@ namespace scada_analyst
                 else if (Anomaly == AnomalyType.THRS_GNNY_G) { return "Generator G-Bearing"; }
                 else if (Anomaly == AnomalyType.THRS_GNNY_R) { return "Generator R-Bearing"; }
                 else if (Anomaly == AnomalyType.THRS_GNNY_RPM) { return "Generator RPMs"; }
+                else if (Anomaly == AnomalyType.ROC_BEAR) { return "Main bearing"; }
+                else if (Anomaly == AnomalyType.ROC_BEAR_GS) { return "Main bearing GS"; }
+                else if (Anomaly == AnomalyType.ROC_BEAR_HS) { return "Main bearing HS"; }
+                else if (Anomaly == AnomalyType.ROC_GEAR_HS_GENS) { return "Gearbox HS Gen. Side"; }
+                else if (Anomaly == AnomalyType.ROC_GEAR_HS_ROTS) { return "Gearbox HS Rot. Side"; }
+                else if (Anomaly == AnomalyType.ROC_GEAR_IM_GENS) { return "Gearbox IMS Gen. Side"; }
+                else if (Anomaly == AnomalyType.ROC_GEAR_IM_ROTS) { return "Gearbox IMS Rot. Side"; }
+                else if (Anomaly == AnomalyType.ROC_GEAR_OIL) { return "Gearbox Oil"; }
+                else if (Anomaly == AnomalyType.ROC_GNNY_G) { return "Generator G-Bearing"; }
+                else if (Anomaly == AnomalyType.ROC_GNNY_R) { return "Generator R-Bearing"; }
+                else if (Anomaly == AnomalyType.ROC_GNNY_RPM) { return "Generator RPMs"; }
                 else { return "Unknown"; }
             }
         }

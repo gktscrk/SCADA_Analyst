@@ -318,14 +318,14 @@ namespace scada_analyst
                                 if (exportGenMean) { hB.Append("wtc_GenRpm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Mean, 1) + ","); }
                                 if (exportGenStdv) { hB.Append("wtc_GenRpm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Stdv, 1) + ","); }
 
-                                if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Maxm, 1) + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Minm, 1) + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Mean, 1) + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_GenBeGTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Stdv, 1) + ","); }
-                                if (exportGenMaxm) { hB.Append("wtc_GenBeRTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingR.Maxm, 1) + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_GenBeRTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingR.Minm, 1) + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingR.Mean, 1) + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_GenBeRTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingR.Stdv, 1) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Maxm, 1) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Minm, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Mean, 1) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_GenBeGTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Stdv, 1) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_GenBeRTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingR.Maxm, 1) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_GenBeRTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingR.Minm, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingR.Mean, 1) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_GenBeRTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingR.Stdv, 1) + ","); }
 
                                 if (exportGenMaxm) { hB.Append("wtc_Gen1U1Tm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1u1.Maxm, 1) + ","); }
                                 if (exportGenMinm) { hB.Append("wtc_Gen1U1Tm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1u1.Minm, 1) + ","); }
@@ -353,8 +353,8 @@ namespace scada_analyst
                                 if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Stdv, 1) + ","); }
 
                                 if (exportGenMean) { hB.Append("wtc_GenRpm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Dlta, 1) + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingG.Dlta, 1) + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.bearingR.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeGTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenBeRTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingR.Dlta, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_Gen1U1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1u1.Dlta, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_Gen1V1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1v1.Dlta, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_Gen1W1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1w1.Dlta, 1) + ","); }
@@ -364,10 +364,10 @@ namespace scada_analyst
                                 #endregion
 
                                 #region Main Bearing
-                                if (exportMBrMaxm) { hB.Append("wtc_MainBTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Maxm, 1) + ","); }
-                                if (exportMBrMinm) { hB.Append("wtc_MainBTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Minm, 1) + ","); }
-                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Mean, 1) + ","); }
-                                if (exportMBrStdv) { hB.Append("wtc_MainBTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Stdv, 1) + ","); }
+                                if (exportMBrMaxm) { hB.Append("wtc_MainBTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Main.Maxm, 1) + ","); }
+                                if (exportMBrMinm) { hB.Append("wtc_MainBTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Main.Minm, 1) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Main.Mean, 1) + ","); }
+                                if (exportMBrStdv) { hB.Append("wtc_MainBTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Main.Stdv, 1) + ","); }
 
                                 if (exportMBrMaxm) { hB.Append("wtc_MBearGTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Gs.Maxm, 1) + ","); }
                                 if (exportMBrMinm) { hB.Append("wtc_MBearGTm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Gs.Minm, 1) + ","); }
@@ -378,7 +378,7 @@ namespace scada_analyst
                                 if (exportMBrMean) { hB.Append("wtc_MBearHTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Mean, 1) + ","); }
                                 if (exportMBrStdv) { hB.Append("wtc_MBearHTm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Stdv, 1) + ","); }
 
-                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Standards.Dlta, 1) + ","); }
+                                if (exportMBrMean) { hB.Append("wtc_MainBTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Main.Dlta, 1) + ","); }
                                 if (exportMBrMean) { hB.Append("wtc_MBearGTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Gs.Dlta, 1) + ","); }
                                 if (exportMBrMean) { hB.Append("wtc_MBearHTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.MainBear.Hs.Dlta, 1) + ","); }
                                 #endregion
@@ -543,20 +543,20 @@ namespace scada_analyst
                 Powers.Reactives.Maxm = noVal;
                 Powers.Reactives.Minm = noVal;
 
-                Currents.phR.Mean = noVal;
-                Currents.phR.Stdv = noVal;
-                Currents.phR.Maxm = noVal;
-                Currents.phR.Minm = noVal;
+                Currents.PhR.Mean = noVal;
+                Currents.PhR.Stdv = noVal;
+                Currents.PhR.Maxm = noVal;
+                Currents.PhR.Minm = noVal;
 
-                Currents.phS.Mean = noVal;
-                Currents.phS.Stdv = noVal;
-                Currents.phS.Maxm = noVal;
-                Currents.phS.Minm = noVal;
+                Currents.PhS.Mean = noVal;
+                Currents.PhS.Stdv = noVal;
+                Currents.PhS.Maxm = noVal;
+                Currents.PhS.Minm = noVal;
 
-                Currents.phT.Mean = noVal;
-                Currents.phT.Stdv = noVal;
-                Currents.phT.Maxm = noVal;
-                Currents.phT.Minm = noVal;
+                Currents.PhT.Mean = noVal;
+                Currents.PhT.Stdv = noVal;
+                Currents.PhT.Maxm = noVal;
+                Currents.PhT.Minm = noVal;
 
                 Voltages.phR.Mean = noVal;
                 Voltages.phR.Stdv = noVal;
@@ -644,21 +644,21 @@ namespace scada_analyst
                 Gearbox.Oils.Minm = noVal;
                 Gearbox.Oils.Dlta = noVal;
 
-                Genny.bearingG.Mean = noVal;
-                Genny.bearingG.Stdv = noVal;
-                Genny.bearingG.Maxm = noVal;
-                Genny.bearingG.Minm = noVal;
-                Genny.bearingR.Mean = noVal;
-                Genny.bearingR.Stdv = noVal;
-                Genny.bearingR.Maxm = noVal;
-                Genny.bearingR.Minm = noVal;
-                Genny.bearingG.Dlta = noVal;
-                Genny.bearingR.Dlta = noVal;
+                Genny.BearingG.Mean = noVal;
+                Genny.BearingG.Stdv = noVal;
+                Genny.BearingG.Maxm = noVal;
+                Genny.BearingG.Minm = noVal;
+                Genny.BearingR.Mean = noVal;
+                Genny.BearingR.Stdv = noVal;
+                Genny.BearingR.Maxm = noVal;
+                Genny.BearingR.Minm = noVal;
+                Genny.BearingG.Dlta = noVal;
+                Genny.BearingR.Dlta = noVal;
 
-                MainBear.Standards.Mean = noVal;
-                MainBear.Standards.Stdv = noVal;
-                MainBear.Standards.Maxm = noVal;
-                MainBear.Standards.Minm = noVal;
+                MainBear.Main.Mean = noVal;
+                MainBear.Main.Stdv = noVal;
+                MainBear.Main.Maxm = noVal;
+                MainBear.Main.Minm = noVal;
                 MainBear.Gs.Mean = noVal;
                 MainBear.Gs.Stdv = noVal;
                 MainBear.Gs.Maxm = noVal;
@@ -668,7 +668,7 @@ namespace scada_analyst
                 MainBear.Hs.Maxm = noVal;
                 MainBear.Hs.Minm = noVal;
 
-                MainBear.Standards.Dlta = noVal;
+                MainBear.Main.Dlta = noVal;
                 MainBear.Gs.Dlta = noVal;
                 MainBear.Hs.Dlta = noVal;
 
@@ -764,24 +764,24 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "ampphr")
                             {
-                                if (parts[2] == "mean") { Currents.phR.Mean = i; }
-                                else if (parts[2] == "stddev") { Currents.phR.Stdv = i; }
-                                else if (parts[2] == "max") { Currents.phR.Maxm = i; }
-                                else if (parts[2] == "min") { Currents.phR.Minm = i; }
+                                if (parts[2] == "mean") { Currents.PhR.Mean = i; }
+                                else if (parts[2] == "stddev") { Currents.PhR.Stdv = i; }
+                                else if (parts[2] == "max") { Currents.PhR.Maxm = i; }
+                                else if (parts[2] == "min") { Currents.PhR.Minm = i; }
                             }
                             else if (parts[1] == "ampphs")
                             {
-                                if (parts[2] == "mean") { Currents.phS.Mean = i; }
-                                else if (parts[2] == "stddev") { Currents.phS.Stdv = i; }
-                                else if (parts[2] == "max") { Currents.phS.Maxm = i; }
-                                else if (parts[2] == "min") { Currents.phS.Minm = i; }
+                                if (parts[2] == "mean") { Currents.PhS.Mean = i; }
+                                else if (parts[2] == "stddev") { Currents.PhS.Stdv = i; }
+                                else if (parts[2] == "max") { Currents.PhS.Maxm = i; }
+                                else if (parts[2] == "min") { Currents.PhS.Minm = i; }
                             }
                             else if (parts[1] == "amppht")
                             {
-                                if (parts[2] == "mean") { Currents.phT.Mean = i; }
-                                else if (parts[2] == "stddev") { Currents.phT.Stdv = i; }
-                                else if (parts[2] == "max") { Currents.phT.Maxm = i; }
-                                else if (parts[2] == "min") { Currents.phT.Minm = i; }
+                                if (parts[2] == "mean") { Currents.PhT.Mean = i; }
+                                else if (parts[2] == "stddev") { Currents.PhT.Stdv = i; }
+                                else if (parts[2] == "max") { Currents.PhT.Maxm = i; }
+                                else if (parts[2] == "min") { Currents.PhT.Minm = i; }
                             }
                             else if (parts[1] == "cosphi")
                             {
@@ -894,19 +894,19 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "genbegtm")
                             {
-                                if (parts[2] == "mean") { Genny.bearingG.Mean = i; }
-                                else if (parts[2] == "stddev") { Genny.bearingG.Stdv = i; }
-                                else if (parts[2] == "max") { Genny.bearingG.Maxm = i; }
-                                else if (parts[2] == "min") { Genny.bearingG.Minm = i; }
-                                else if (parts[2] == "delta") { Genny.bearingG.Dlta = i; }
+                                if (parts[2] == "mean") { Genny.BearingG.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.BearingG.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.BearingG.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.BearingG.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.BearingG.Dlta = i; }
                             }
                             else if (parts[1] == "genbertm")
                             {
-                                if (parts[2] == "mean") { Genny.bearingR.Mean = i; }
-                                else if (parts[2] == "stddev") { Genny.bearingR.Stdv = i; }
-                                else if (parts[2] == "max") { Genny.bearingR.Maxm = i; }
-                                else if (parts[2] == "min") { Genny.bearingR.Minm = i; }
-                                else if (parts[2] == "delta") { Genny.bearingR.Dlta = i; }
+                                if (parts[2] == "mean") { Genny.BearingR.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.BearingR.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.BearingR.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.BearingR.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.BearingR.Dlta = i; }
                             }
                             else if (parts[1] == "geoiltmp")
                             {
@@ -1006,11 +1006,11 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "mainbtmp")
                             {
-                                if (parts[2] == "mean") { MainBear.Standards.Mean = i; }
-                                else if (parts[2] == "stddev") { MainBear.Standards.Stdv = i; }
-                                else if (parts[2] == "max") { MainBear.Standards.Maxm = i; }
-                                else if (parts[2] == "min") { MainBear.Standards.Minm = i; }
-                                else if (parts[2] == "delta") { MainBear.Standards.Dlta = i; }
+                                if (parts[2] == "mean") { MainBear.Main.Mean = i; }
+                                else if (parts[2] == "stddev") { MainBear.Main.Stdv = i; }
+                                else if (parts[2] == "max") { MainBear.Main.Maxm = i; }
+                                else if (parts[2] == "min") { MainBear.Main.Minm = i; }
+                                else if (parts[2] == "delta") { MainBear.Main.Dlta = i; }
                             }
                             else if (parts[1] == "mbeargtm")
                             {
@@ -1231,20 +1231,20 @@ namespace scada_analyst
                 _powrInfo.Reactives.Minm = GetVals(_powrInfo.Reactives.Minm, data, header.Powers.Reactives.Minm);
                 _powrInfo.Reactives.EndVal = GetVals(_powrInfo.Reactives.EndVal, data, header.Powers.Reactives.EndValCol);
 
-                _current.phR.Mean = GetVals(_current.phR.Mean, data, header.Currents.phR.Mean);
-                _current.phR.Stdv = GetVals(_current.phR.Stdv, data, header.Currents.phR.Stdv);
-                _current.phR.Maxm = GetVals(_current.phR.Maxm, data, header.Currents.phR.Maxm);
-                _current.phR.Minm = GetVals(_current.phR.Minm, data, header.Currents.phR.Minm);
+                _current.PhR.Mean = GetVals(_current.PhR.Mean, data, header.Currents.PhR.Mean);
+                _current.PhR.Stdv = GetVals(_current.PhR.Stdv, data, header.Currents.PhR.Stdv);
+                _current.PhR.Maxm = GetVals(_current.PhR.Maxm, data, header.Currents.PhR.Maxm);
+                _current.PhR.Minm = GetVals(_current.PhR.Minm, data, header.Currents.PhR.Minm);
 
-                _current.phS.Mean = GetVals(_current.phS.Mean, data, header.Currents.phS.Mean);
-                _current.phS.Stdv = GetVals(_current.phS.Stdv, data, header.Currents.phS.Stdv);
-                _current.phS.Maxm = GetVals(_current.phS.Maxm, data, header.Currents.phS.Maxm);
-                _current.phS.Minm = GetVals(_current.phS.Minm, data, header.Currents.phS.Minm);
+                _current.PhS.Mean = GetVals(_current.PhS.Mean, data, header.Currents.PhS.Mean);
+                _current.PhS.Stdv = GetVals(_current.PhS.Stdv, data, header.Currents.PhS.Stdv);
+                _current.PhS.Maxm = GetVals(_current.PhS.Maxm, data, header.Currents.PhS.Maxm);
+                _current.PhS.Minm = GetVals(_current.PhS.Minm, data, header.Currents.PhS.Minm);
 
-                _current.phT.Mean = GetVals(_current.phT.Mean, data, header.Currents.phT.Mean);
-                _current.phT.Stdv = GetVals(_current.phT.Stdv, data, header.Currents.phT.Stdv);
-                _current.phT.Maxm = GetVals(_current.phT.Maxm, data, header.Currents.phT.Maxm);
-                _current.phT.Minm = GetVals(_current.phT.Minm, data, header.Currents.phT.Minm);
+                _current.PhT.Mean = GetVals(_current.PhT.Mean, data, header.Currents.PhT.Mean);
+                _current.PhT.Stdv = GetVals(_current.PhT.Stdv, data, header.Currents.PhT.Stdv);
+                _current.PhT.Maxm = GetVals(_current.PhT.Maxm, data, header.Currents.PhT.Maxm);
+                _current.PhT.Minm = GetVals(_current.PhT.Minm, data, header.Currents.PhT.Minm);
 
                 _voltage.phR.Mean = GetVals(_voltage.phR.Mean, data, header.Voltages.phR.Mean);
                 _voltage.phR.Stdv = GetVals(_voltage.phR.Stdv, data, header.Voltages.phR.Stdv);
@@ -1336,22 +1336,22 @@ namespace scada_analyst
                 _genny.G2v1.Dlta = GetVals(_genny.G2v1.Dlta, data, header.Genny.G2v1.Dlta);
                 _genny.G2w1.Dlta = GetVals(_genny.G2w1.Dlta, data, header.Genny.G2w1.Dlta);
 
-                _genny.bearingG.Mean = GetVals(_genny.bearingG.Mean, data, header.Genny.bearingG.Mean);
-                _genny.bearingG.Stdv = GetVals(_genny.bearingG.Stdv, data, header.Genny.bearingG.Stdv);
-                _genny.bearingG.Maxm = GetVals(_genny.bearingG.Maxm, data, header.Genny.bearingG.Maxm);
-                _genny.bearingG.Minm = GetVals(_genny.bearingG.Minm, data, header.Genny.bearingG.Minm);
-                _genny.bearingR.Mean = GetVals(_genny.bearingR.Mean, data, header.Genny.bearingR.Mean);
-                _genny.bearingR.Stdv = GetVals(_genny.bearingR.Stdv, data, header.Genny.bearingR.Stdv);
-                _genny.bearingR.Maxm = GetVals(_genny.bearingR.Maxm, data, header.Genny.bearingR.Maxm);
-                _genny.bearingR.Minm = GetVals(_genny.bearingR.Minm, data, header.Genny.bearingR.Minm);
+                _genny.BearingG.Mean = GetVals(_genny.BearingG.Mean, data, header.Genny.BearingG.Mean);
+                _genny.BearingG.Stdv = GetVals(_genny.BearingG.Stdv, data, header.Genny.BearingG.Stdv);
+                _genny.BearingG.Maxm = GetVals(_genny.BearingG.Maxm, data, header.Genny.BearingG.Maxm);
+                _genny.BearingG.Minm = GetVals(_genny.BearingG.Minm, data, header.Genny.BearingG.Minm);
+                _genny.BearingR.Mean = GetVals(_genny.BearingR.Mean, data, header.Genny.BearingR.Mean);
+                _genny.BearingR.Stdv = GetVals(_genny.BearingR.Stdv, data, header.Genny.BearingR.Stdv);
+                _genny.BearingR.Maxm = GetVals(_genny.BearingR.Maxm, data, header.Genny.BearingR.Maxm);
+                _genny.BearingR.Minm = GetVals(_genny.BearingR.Minm, data, header.Genny.BearingR.Minm);
 
-                _genny.bearingG.Dlta = GetVals(_genny.bearingG.Dlta, data, header.Genny.bearingG.Dlta);
-                _genny.bearingR.Dlta = GetVals(_genny.bearingR.Dlta, data, header.Genny.bearingR.Dlta);
+                _genny.BearingG.Dlta = GetVals(_genny.BearingG.Dlta, data, header.Genny.BearingG.Dlta);
+                _genny.BearingR.Dlta = GetVals(_genny.BearingR.Dlta, data, header.Genny.BearingR.Dlta);
 
-                _mainBear.Standards.Mean = GetVals(_mainBear.Standards.Mean, data, header.MainBear.Standards.Mean);
-                _mainBear.Standards.Stdv = GetVals(_mainBear.Standards.Stdv, data, header.MainBear.Standards.Stdv);
-                _mainBear.Standards.Maxm = GetVals(_mainBear.Standards.Maxm, data, header.MainBear.Standards.Maxm);
-                _mainBear.Standards.Minm = GetVals(_mainBear.Standards.Minm, data, header.MainBear.Standards.Minm);
+                _mainBear.Main.Mean = GetVals(_mainBear.Main.Mean, data, header.MainBear.Main.Mean);
+                _mainBear.Main.Stdv = GetVals(_mainBear.Main.Stdv, data, header.MainBear.Main.Stdv);
+                _mainBear.Main.Maxm = GetVals(_mainBear.Main.Maxm, data, header.MainBear.Main.Maxm);
+                _mainBear.Main.Minm = GetVals(_mainBear.Main.Minm, data, header.MainBear.Main.Minm);
 
                 _mainBear.Gs.Mean = GetVals(_mainBear.Gs.Mean, data, header.MainBear.Gs.Mean);
                 _mainBear.Gs.Stdv = GetVals(_mainBear.Gs.Stdv, data, header.MainBear.Gs.Stdv);
@@ -1362,7 +1362,7 @@ namespace scada_analyst
                 _mainBear.Hs.Maxm = GetVals(_mainBear.Hs.Maxm, data, header.MainBear.Hs.Maxm);
                 _mainBear.Hs.Minm = GetVals(_mainBear.Hs.Minm, data, header.MainBear.Hs.Minm);
 
-                _mainBear.Standards.Dlta = GetVals(_mainBear.Standards.Dlta, data, header.MainBear.Standards.Dlta);
+                _mainBear.Main.Dlta = GetVals(_mainBear.Main.Dlta, data, header.MainBear.Main.Dlta);
                 _mainBear.Gs.Dlta = GetVals(_mainBear.Gs.Dlta, data, header.MainBear.Gs.Dlta);
                 _mainBear.Hs.Dlta = GetVals(_mainBear.Hs.Dlta, data, header.MainBear.Hs.Dlta);
 
@@ -1527,25 +1527,25 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected PhR phr = new PhR();
-                protected PhS phs = new PhS();
-                protected PhT pht = new PhT();
+                protected Phr _phr = new Phr();
+                protected Phs _phs = new Phs();
+                protected Pht _pht = new Pht();
 
                 #endregion
 
                 #region Support Classes
 
-                public class PhR : Stats { }
-                public class PhS : Stats { }
-                public class PhT : Stats { }
+                public class Phr : Stats { }
+                public class Phs : Stats { }
+                public class Pht : Stats { }
 
                 #endregion
 
                 #region Properties
 
-                public PhR phR { get { return phr; } set { phr = value; } }
-                public PhS phS { get { return phs; } set { phs = value; } }
-                public PhT phT { get { return pht; } set { pht = value; } }
+                public Phr PhR { get { return _phr; } set { _phr = value; } }
+                public Phs PhS { get { return _phs; } set { _phs = value; } }
+                public Pht PhT { get { return _pht; } set { _pht = value; } }
 
                 #endregion
             }
@@ -1633,8 +1633,8 @@ namespace scada_analyst
                 protected G2U1 g2u1 = new G2U1();
                 protected G2V1 g2v1 = new G2V1();
                 protected G2W1 g2w1 = new G2W1();
-                protected BearingG bearingg = new BearingG();
-                protected BearingR bearingr = new BearingR();
+                protected BearingsG _bearingG = new BearingsG();
+                protected BearingsR _bearingR = new BearingsR();
                 protected Rpm rpms = new Rpm();
 
                 #endregion
@@ -1651,8 +1651,8 @@ namespace scada_analyst
                 public class G2V1 : Temperature { }
                 public class G2W1 : Temperature { }
 
-                public class BearingG : Temperature { }
-                public class BearingR : Temperature { }
+                public class BearingsG : Temperature { }
+                public class BearingsR : Temperature { }
 
                 #endregion
 
@@ -1664,8 +1664,8 @@ namespace scada_analyst
                 public G2U1 G2u1 { get { return g2u1; } set { g2u1 = value; } }
                 public G2V1 G2v1 { get { return g2v1; } set { g2v1 = value; } }
                 public G2W1 G2w1 { get { return g2w1; } set { g2w1 = value; } }
-                public BearingG bearingG { get { return bearingg; } set { bearingg = value; } }
-                public BearingR bearingR { get { return bearingr; } set { bearingr = value; } }
+                public BearingsG BearingG { get { return _bearingG; } set { _bearingG = value; } }
+                public BearingsR BearingR { get { return _bearingR; } set { _bearingR = value; } }
                 public Rpm Rpms { get { return rpms; } set { rpms = value; } }
 
                 #endregion
@@ -1794,26 +1794,26 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected Standard standard = new Standard();
-                protected G g = new G();
-                protected H h = new H();
+                protected Mains _main = new Mains();
+                protected Gss _g = new Gss();
+                protected Hss _h = new Hss();
 
                 #endregion
 
                 #region Support Classes
 
-                public class Standard : Temperature { }
+                public class Mains : Temperature { }
 
-                public class G : Temperature { }
-                public class H : Temperature { }
+                public class Gss : Temperature { }
+                public class Hss : Temperature { }
 
                 #endregion
 
                 #region Properties
                  
-                public Standard Standards { get { return standard; } set { standard = value; } }
-                public G Gs { get { return g; } set { g = value; } }
-                public H Hs { get { return h; } set { h = value; } }
+                public Mains Main { get { return _main; } set { _main = value; } }
+                public Gss Gs { get { return _g; } set { _g = value; } }
+                public Hss Hs { get { return _h; } set { _h = value; } }
 
                 #endregion
             }

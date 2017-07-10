@@ -421,15 +421,15 @@ namespace scada_analyst
                     else if (input == _eventDetailsSelection[2])
                     {
                         priGraph.Title = "G-Bearing";
-                        var1 = Math.Round(_weekEventData[i].Genny.bearingG.Mean, 1);
+                        var1 = Math.Round(_weekEventData[i].Genny.BearingG.Mean, 1);
 
                         secGraph.Title = "R-Bearing";
-                        var2 = Math.Round(_weekEventData[i].Genny.bearingR.Mean, 1);
+                        var2 = Math.Round(_weekEventData[i].Genny.BearingR.Mean, 1);
                     }
                     else if (input == _eventDetailsSelection[3])
                     {
                         priGraph.Title = "Main Bearing";
-                        var1 = Math.Round(_weekEventData[i].MainBear.Standards.Mean, 1);
+                        var1 = Math.Round(_weekEventData[i].MainBear.Main.Mean, 1);
 
                         priGraph.Title = "HS Bearing";
                         var2 = Math.Round(_weekEventData[i].MainBear.Hs.Mean, 1);
@@ -1496,20 +1496,20 @@ namespace scada_analyst
 
         private void Threshold_LoseFocus(object sender, RoutedEventArgs e)
         {
-            Calculator_Click(this, new RoutedEventArgs());
+            CalculateThresholds(this, new RoutedEventArgs());
         }
 
         private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
         {
             Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
 
-            Analysis.AnalyticLimit thL = (Analysis.AnalyticLimit)tB.Tag;
-            thL.MaxTemp = tB.NumericValue;
+            Analysis.AnalyticLimit thresLim = (Analysis.AnalyticLimit)tB.Tag;
+            thresLim.MaxVars = tB.NumericValue;
             
-            Calculator_Click(this, new RoutedEventArgs());
+            CalculateThresholds(this, new RoutedEventArgs());
         }
 
-        private void Calculator_Click(object sender, RoutedEventArgs e)
+        private void CalculateThresholds(object sender, RoutedEventArgs e)
         {
             LView_ThresholdValues.ItemsSource = null;
 
@@ -1517,6 +1517,31 @@ namespace scada_analyst
 
             LView_ThresholdValues.ItemsSource = ThresholdEventsView;
             LView_ThresholdValues.Items.Refresh();
+        }
+
+        private void ROC_LoseFocus(object sender, RoutedEventArgs e)
+        {
+            CalculateRatesOfChange(this, new RoutedEventArgs());
+        }
+
+        private void ROC_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
+
+            Analysis.AnalyticLimit rocLim = (Analysis.AnalyticLimit)tB.Tag;
+            rocLim.MaxVars = tB.NumericValue;
+
+            CalculateRatesOfChange(this, new RoutedEventArgs());
+        }
+
+        private void CalculateRatesOfChange(object sender, RoutedEventArgs e)
+        {
+            LView_ROCValues.ItemsSource = null;
+
+            if (_histEventData != null) { analyser.RatesOfChange(_histEventData.ToList()); }
+
+            LView_ROCValues.ItemsSource = RateChangeEventsView;
+            LView_ROCValues.Items.Refresh();
         }
 
         void CancelProgress_Click(object sender, RoutedEventArgs e)
@@ -2024,6 +2049,19 @@ namespace scada_analyst
             }
         }
 
+        public ObservableCollection<Analysis.AnalyticLimit> RocVw
+        {
+            get { return new ObservableCollection<Analysis.AnalyticLimit>(analyser.RateChange); }
+            set
+            {
+                if (ThresholdVw != value)
+                {
+                    ThresholdVw = value;
+                    OnPropertyChanged(nameof(ThresholdVw));
+                }
+            }
+        }
+
         public ObservableCollection<Analysis.AnalyticLimit> ThresholdVw
         {
             get { return new ObservableCollection<Analysis.AnalyticLimit>(analyser.Thresholds); }
@@ -2033,6 +2071,19 @@ namespace scada_analyst
                 {
                     ThresholdVw = value;
                     OnPropertyChanged(nameof(ThresholdVw));
+                }
+            }
+        }
+
+        public ObservableCollection<EventData> RateChangeEventsView
+        {
+            get { return new ObservableCollection<EventData>(analyser.RChngEvnts); }
+            set
+            {
+                if (RateChangeEventsView != value)
+                {
+                    RateChangeEventsView = value;
+                    OnPropertyChanged(nameof(RateChangeEventsView));
                 }
             }
         }
