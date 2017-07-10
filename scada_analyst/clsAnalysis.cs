@@ -782,17 +782,20 @@ namespace scada_analyst
             #endregion
         }
 
-        private void GetThresholdEvents(List<ScadaData.ScadaSample> eventData, int input, double variable, int index, EventData.AnomalyType type)
+        private void GetThresholdEvents(List<ScadaData.ScadaSample> eventData, int input, double variable, int index, 
+            EventData.AnomalyType type)
         {
             // try to build one comprehensive method
 
-            for (int i = input; i < eventData.Count; i++)
+            // for every variable: all doubles: this method proceeds to check whether
+            // the user-defined threshold value has been exceeded or not
+            // if it has, we create a new event to add the data into there
+            // after the event is over, we can add this to the threshold events complete list
+
+            for (int i = 0; i < eventData.Count; i++)
             {
-                // for every variable: all doubles: this method proceeds to check whether
-                // the user-defined threshold value has been exceeded or not
-                if (variable > _thresholds[index].MaxVars)
+                if (eventData[i].Gearbox.Ims.Rots.Mean > _thresholds[index].MaxVars)
                 {
-                    // if it has, we create a new event to add the data into there
                     List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                     thisEvent.Add(eventData[i]);
 
@@ -800,14 +803,13 @@ namespace scada_analyst
                     {
                         if (eventData[j].DeltaTime > ScadaSeprtr) { i = j - 1; break; }
 
-                        if (variable < _thresholds[index].MaxVars) { i = j - 1; break; }
+                        if (eventData[j].Gearbox.Ims.Rots.Mean < _thresholds[index].MaxVars) { i = j - 1; break; }
                         else if (j == eventData.Count - 1) { i = j; }
 
                         thisEvent.Add(eventData[j]);
                     }
 
-                    // after the event is over, we can add this to the threshold events complete list
-                    _thresEvnts.Add(new EventData(thisEvent, type));
+                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_IM_ROTS));
                 }
             }
         }
