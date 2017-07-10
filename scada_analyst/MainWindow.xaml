@@ -758,6 +758,13 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
+                                        <GridViewColumn Header="Fault" Width="60" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding FaultString, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
                                         <GridViewColumn Header="Association" Width="120" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>

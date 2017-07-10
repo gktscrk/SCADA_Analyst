@@ -11,6 +11,8 @@ namespace scada_analyst
     {
         #region Variables
 
+        private bool _isFault = false;
+
         private double _averagePwr = 0;
         private double _meanNclTmp = 0;
         private double _extrmPwr = 0;
@@ -406,6 +408,8 @@ namespace scada_analyst
 
         #region Properties
 
+        public bool IsFault { get { return _isFault; } set { _isFault = value; } }
+
         public double AveragePwr { get { return _averagePwr; } set { _averagePwr = value; } }
         public double MeanNclTmp { get { return _meanNclTmp; } set { _meanNclTmp = value; } }
         public double ExtrmSpd { get { return _extrmSpd; } set { _extrmSpd = value; } }
@@ -436,6 +440,11 @@ namespace scada_analyst
                 else if (AssocEv == EventAssoct.HI_SP) { return "High wind speeds"; }
                 else { return "Other"; }
             }
+        }
+
+        public string FaultString
+        {
+            get { if (IsFault) { return "Yes"; } else { return "No"; } }
         }
 
         public string TriggerVar

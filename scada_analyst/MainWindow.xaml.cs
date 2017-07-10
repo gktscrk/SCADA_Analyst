@@ -1778,11 +1778,10 @@ namespace scada_analyst
         private void SetContextMenuPowerEvents()
         {
             ContextMenu menu = null;
+            menu = new ContextMenu();
 
             if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
             {
-                menu = new ContextMenu();
-
                 MenuItem explorEvent_MenuItem = new MenuItem();
                 explorEvent_MenuItem.Header = "Explore Event";
                 explorEvent_MenuItem.Click += ExploreEvent_MenuItem_Click;
@@ -1793,7 +1792,30 @@ namespace scada_analyst
                 menu.Items.Add(removeEvent_MenuItem);
             }
 
-            if (LView_PowrNone.SelectedItems.Count == 1) { LView_PowrNone.ContextMenu = menu; }
+            if (LView_PowrNone.SelectedItems.Count == 1)
+            {
+                MenuItem makeFault_MenuItem = new MenuItem();
+                makeFault_MenuItem.Header = "Change Event to Fault";
+                makeFault_MenuItem.Click += MakeFault_MenuItem_Click;
+                menu.Items.Add(makeFault_MenuItem);
+                MenuItem makeNormal_MenuItem = new MenuItem();
+                makeNormal_MenuItem.Header = "Change Event to Not Fault";
+                makeNormal_MenuItem.Click += MakeNormal_MenuItem_Click;
+                menu.Items.Add(makeNormal_MenuItem);
+            }
+            else if (LView_PowrNone.SelectedItems.Count > 1)
+            {
+                MenuItem makeFault_MenuItem = new MenuItem();
+                makeFault_MenuItem.Header = "Change Events to Faults";
+                makeFault_MenuItem.Click += MakeFault_MenuItem_Click;
+                menu.Items.Add(makeFault_MenuItem);
+                MenuItem makeNormal_MenuItem = new MenuItem();
+                makeNormal_MenuItem.Header = "Change Events to Not Faults";
+                makeNormal_MenuItem.Click += MakeNormal_MenuItem_Click;
+                menu.Items.Add(makeNormal_MenuItem);
+            }
+
+            if (LView_PowrNone.SelectedItems.Count >= 1) { LView_PowrNone.ContextMenu = menu; }
             else if (LView_PowrRted.SelectedItems.Count == 1) { LView_PowrRted.ContextMenu = menu; }
         }
 
@@ -1875,6 +1897,53 @@ namespace scada_analyst
 
             //ScrollView.Visibility = Visibility.Visible;
             //ScrollView.DataContext = sVM;
+        }
+
+        private void MakeFault_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (LView_PowrNone.SelectedItems.Count == 1)
+            {
+                EventData _event = (EventData)LView_PowrNone.SelectedItem;
+
+                // find index and removeat that index
+                analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = true;
+            }
+            else
+            {
+                foreach (object selectedItem in LView_PowrNone.SelectedItems)
+                {
+                    EventData _event = (EventData)selectedItem;
+
+                    // find index and removeat that index
+                    analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = true;
+                }
+            }
+
+            RefreshEvents();
+        }
+
+        private void MakeNormal_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (LView_PowrNone.SelectedItems.Count == 1)
+            {
+                EventData _event = (EventData)LView_PowrNone.SelectedItem;
+
+                // find index and removeat that index
+                analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = false;
+            }
+            else
+            {
+                foreach (object selectedItem in LView_PowrNone.SelectedItems)
+                {
+                    EventData _event = (EventData)selectedItem;
+
+                    // find index and removeat that index
+                    analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = false;
+
+                }
+            }
+
+            RefreshEvents();
         }
 
         private void RemoveEvent_MenuItem_Click(object sender, RoutedEventArgs e)

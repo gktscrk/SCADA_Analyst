@@ -113,9 +113,11 @@ namespace scada_analyst
 
             #region Generator
 
+
             #endregion
 
             #region Main Bearing
+
 
             #endregion
         }
