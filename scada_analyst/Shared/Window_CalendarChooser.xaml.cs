@@ -12,6 +12,8 @@ namespace scada_analyst.Shared
     /// </summary>
     public partial class Window_CalendarChooser : MetroWindow
     {
+        #region Constuctor 
+
         public Window_CalendarChooser(MetroWindow owner, string windowTitle, DateTime inputDate)
         {
             InitializeComponent();
@@ -23,7 +25,9 @@ namespace scada_analyst.Shared
             Calendar.SelectedDate = inputDate;
             Calendar.DisplayDate = inputDate;
         }
-        
+
+        #endregion
+
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;

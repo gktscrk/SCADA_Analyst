@@ -160,7 +160,8 @@ namespace scada_analyst
                 }
                 catch
                 {
-                    throw new Exception("Problem with loading was caused by Line " + count + 1 + ".");
+                    count++;
+                    throw new Exception("Problem with loading was caused by Line " + count + ".");
                 }
                 finally
                 {
@@ -483,8 +484,7 @@ namespace scada_analyst
                 Type = Types.TURBINE;
 
                 data.Add(new ScadaSample(splits, header, _dateFormat));
-
-                InclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat));
+                InclDtTm.Add(data[data.Count - 1].TimeStamp);
                 
                 if (UnitID == -1 && data.Count > 0)
                 {
@@ -1399,7 +1399,7 @@ namespace scada_analyst
 
                 if (header.CurTimeCol != -1 && !nullValues.Contains(data[header.CurTimeCol]))
                 {
-                    _curTime = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }));
+                    _curTime = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }), _dateFormat);
                 }
 
                 _anemoM.ActWinds.Mean = GetVals(_anemoM.ActWinds.Mean, data, header.AnemoM.ActWinds.Mean);

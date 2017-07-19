@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 
 using MahApps.Metro.Controls;
 
@@ -10,6 +9,8 @@ namespace scada_analyst.Controls
     /// </summary>
     public partial class Window_NumberTwo : MetroWindow
     {
+        #region Constructor
+
         public Window_NumberTwo(MetroWindow owner, string windowTitle, string inputA, string inputB, bool allowDecs = false,
             bool allowNegatives = false, double input1 = 0, double input2 = 0)
         {
@@ -37,7 +38,9 @@ namespace scada_analyst.Controls
                 Number2.AllowNegative = true;
             }
         }
-        
+
+        #endregion 
+
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;

@@ -37,7 +37,7 @@ namespace scada_analyst
     {
         #region Variables
 
-        private bool geoLoaded = false, meteoLoaded = false, scadaLoaded = false;
+        private bool _geoLoaded = false, _meteoLoaded = false, _scadaLoaded = false;
         private bool positionsAddedToData = false, eventsAreProcessed = false, eventsMatchedAcrossTypes = false;
 
         private static bool mnt_Night = false;
@@ -62,7 +62,7 @@ namespace scada_analyst
         private string[] _labels;
 
         private List<int> loadedAsset = new List<int>();
-        private List<string> loadedFiles = new List<string>();
+        private List<string> _loadedFiles = new List<string>();
         private List<string> _eventDetailsSelection = new List<string>();
         private List<string> _eventSummarySelection = new List<string>();
 
@@ -72,10 +72,10 @@ namespace scada_analyst
         private DateTime _dataExportStart = new DateTime();
         private DateTime _dataExportEndTm = new DateTime();
 
-        private Analysis analyser = new Analysis();
-        private GeoData geoFile;
-        private MeteoData meteoFile = new MeteoData();
-        private ScadaData scadaFile = new ScadaData();
+        private Analysis _analyser = new Analysis();
+        private GeoData _geoFile;
+        private MeteoData _meteoFile = new MeteoData();
+        private ScadaData _scadaFile = new ScadaData();
         
         private List<DirectoryItem> _overview = new List<DirectoryItem>();
 
@@ -148,6 +148,16 @@ namespace scada_analyst
         }
 
         /// <summary>
+        /// Method to display all loaded files' filenames
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void LoadedFilesClick(object sender, RoutedEventArgs e)
+        {
+            new Window_LoadedFiles(this, LoadedFiles).ShowDialog();
+        }
+
+        /// <summary>
         /// Quit
         /// </summary>
         /// <param name = "sender" ></ param >
@@ -169,11 +179,11 @@ namespace scada_analyst
         private void EditDurationFilter(object sender, RoutedEventArgs e)
         {
             Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
-                            "Hours", "Minutes", false, false, analyser.DuratFilter.TotalHours, analyser.DuratFilter.Minutes);
+                            "Hours", "Minutes", false, false, _analyser.DuratFilter.TotalHours, _analyser.DuratFilter.Minutes);
 
             if (getTimeDur.ShowDialog().Value)
             {
-                analyser.DuratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
+                _analyser.DuratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
             }
         }
 
@@ -196,6 +206,7 @@ namespace scada_analyst
 
             _dataExportStart = new DateTime();
             _dataExportEndTm = new DateTime();
+            _loadedFiles.Clear();
         }
 
         /// <summary>
@@ -238,10 +249,9 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ClearGeoData(object sender, RoutedEventArgs e)
         {
-            loadedFiles.Clear();
-            geoFile = null; geoLoaded = false; positionsAddedToData = false;
+            _geoFile = null; _geoLoaded = false; positionsAddedToData = false;
 
-            analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
+            _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             CreateSummaries();
         }
 
@@ -252,19 +262,19 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ClearMeteoData(object sender, RoutedEventArgs e)
         {
-            for (int i = analyser.AssetList.Count - 1; i >= 0; i--)
+            for (int i = _analyser.AssetList.Count - 1; i >= 0; i--)
             {
-                if (analyser.AssetList[i].Type == BaseStructure.Types.METMAST)
+                if (_analyser.AssetList[i].Type == BaseStructure.Types.METMAST)
                 {
-                    loadedAsset.Remove(analyser.AssetList[i].UnitID);
-                    analyser.AssetList.RemoveAt(i);
+                    loadedAsset.Remove(_analyser.AssetList[i].UnitID);
+                    _analyser.AssetList.RemoveAt(i);
                 }
             }
 
-            loadedFiles.Clear();
-            meteoFile = new MeteoData(); meteoLoaded = false;
+            _loadedFiles.Clear();
+            _meteoFile = new MeteoData(); _meteoLoaded = false;
 
-            analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
+            _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             CreateSummaries();
             PopulateOverview();
         }
@@ -276,19 +286,19 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ClearScadaData(object sender, RoutedEventArgs e)
         {
-            for (int i = analyser.AssetList.Count - 1; i >= 0; i--)
+            for (int i = _analyser.AssetList.Count - 1; i >= 0; i--)
             {
-                if (analyser.AssetList[i].Type == BaseStructure.Types.TURBINE)
+                if (_analyser.AssetList[i].Type == BaseStructure.Types.TURBINE)
                 {
-                    loadedAsset.Remove(analyser.AssetList[i].UnitID);
-                    analyser.AssetList.RemoveAt(i);
+                    loadedAsset.Remove(_analyser.AssetList[i].UnitID);
+                    _analyser.AssetList.RemoveAt(i);
                 }
             }
 
-            loadedFiles.Clear();
-            scadaFile = new ScadaData(); scadaLoaded = false;
+            _loadedFiles.Clear();
+            _scadaFile = new ScadaData(); _scadaLoaded = false;
 
-            analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
+            _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             CreateSummaries();
             PopulateOverview();
         }
@@ -548,7 +558,7 @@ namespace scada_analyst
 
                     throw new CancelLoadingException();
                 }
-                else if (geoFile == null || !positionsAddedToData)
+                else if (_geoFile == null || !positionsAddedToData)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
@@ -560,7 +570,7 @@ namespace scada_analyst
 
                 ProgressBarVisible();
 
-                await Task.Run(() => analyser.AddDaytimesToEvents(progress));
+                await Task.Run(() => _analyser.AddDaytimesToEvents(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -581,14 +591,14 @@ namespace scada_analyst
         {
             try
             {
-                if (geoFile == null || geoFile.GeoInfo.Count == 0)
+                if (_geoFile == null || _geoFile.GeoInfo.Count == 0)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "No geographic data is loaded.");
 
                     throw new CancelLoadingException();
                 }
-                else if (meteoFile.MetMasts.Count == 0 && scadaFile.WindFarm.Count == 0)
+                else if (_meteoFile.MetMasts.Count == 0 && _scadaFile.WindFarm.Count == 0)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "No meteorologic or SCADA data is loaded.");
@@ -596,7 +606,7 @@ namespace scada_analyst
                     throw new CancelLoadingException();
                 }
 
-                positionsAddedToData = analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
+                positionsAddedToData = _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             }
             catch (CancelLoadingException) { }
             catch (Exception ex)
@@ -622,7 +632,7 @@ namespace scada_analyst
 
             try
             {
-                if (meteoFile.MetMasts.Count != 0)
+                if (_meteoFile.MetMasts.Count != 0)
                 {
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     // set a default file name
@@ -650,7 +660,7 @@ namespace scada_analyst
                             }
                         }
 
-                        await Task.Run(() => meteoFile.ExportFiles(progress, saveFileDialog.FileName, _dataExportStart, _dataExportEndTm));
+                        await Task.Run(() => _meteoFile.ExportFiles(progress, saveFileDialog.FileName, _dataExportStart, _dataExportEndTm));
 
                         ProgressBarInvisible();
                     }
@@ -684,7 +694,7 @@ namespace scada_analyst
 
             try
             {
-                if (scadaFile.WindFarm.Count != 0)
+                if (_scadaFile.WindFarm.Count != 0)
                 {
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     // set a default file name
@@ -712,7 +722,7 @@ namespace scada_analyst
                             }
                         }
 
-                        await Task.Run(() => scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                        await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
                             exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
                             exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
                             exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
@@ -765,7 +775,7 @@ namespace scada_analyst
                 ProgressBarVisible();
                 ClearEvents(sender, e);
 
-                await Task.Run(() => analyser.FindEvents(scadaFile, meteoFile, progress));
+                await Task.Run(() => _analyser.FindEvents(_scadaFile, _meteoFile, progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -798,7 +808,7 @@ namespace scada_analyst
 
             try
             {
-                if (geoFile == null || !positionsAddedToData)
+                if (_geoFile == null || !positionsAddedToData)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "Geographic details have not been loaded, or the data has not been associated with the loaded structures.");
@@ -813,7 +823,7 @@ namespace scada_analyst
                     throw new CancelLoadingException();
                 }
 
-                await Task.Run(() => analyser.GetDistances(analyser.AssetList));
+                await Task.Run(() => _analyser.GetDistances(_analyser.AssetList));
             }
             catch (CancelLoadingException) { }
             catch (OperationCanceledException) { }
@@ -834,11 +844,10 @@ namespace scada_analyst
             {
                 for (int i = 0; i < filenames.Length; i++)
                 {
-                    if (!loadedFiles.Contains(filenames[i]))
+                    if (!_loadedFiles.Contains(filenames[i]))
                     {
-                        geoFile = new GeoData(filenames[i], progress);
-
-                        loadedFiles.Add(filenames[i]);
+                        _geoFile = new GeoData(filenames[i], progress);
+                        _loadedFiles.Add(filenames[i]);
                     }
                 }
             }
@@ -864,7 +873,7 @@ namespace scada_analyst
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Filter = "Location files (*.csv)|*.csv|All files (*.*)|*.*";
-                openFileDialog.Multiselect = true;
+                openFileDialog.Multiselect = false;
 
                 if (openFileDialog.ShowDialog().Value)
                 {
@@ -874,7 +883,7 @@ namespace scada_analyst
 
                     ProgressBarInvisible();
 
-                    geoLoaded = true;
+                    _geoLoaded = true;
                 }
             }
             catch (OperationCanceledException) { }
@@ -899,28 +908,30 @@ namespace scada_analyst
         /// <param name="filenames"></param>
         /// <param name="isLoaded"></param>
         /// <param name="progress"></param>
-        private void LoadMeteoData(MeteoData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
+        private async Task LoadMeteoData(MeteoData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
         {
             try
             {
                 MeteoData analysis = new MeteoData(existingData);
 
-                if (!isLoaded)
+                await Task.Run(() =>
                 {
-                    analysis = new MeteoData(filenames, progress);
-                }
-                else
-                {
-                    analysis.AppendFiles(filenames, progress);
-                }
+                    if (!isLoaded)
+                    {
+                        analysis = new MeteoData(filenames, _dateFormat, progress);
+                    }
+                    else
+                    {
+                        analysis.AppendFiles(filenames, _dateFormat, progress);
+                    }
 
-                meteoFile = analysis;
-                meteoLoaded = true;
+                    _loadedFiles.AddRange(filenames);
+                });
+
+                _meteoFile = analysis;
+                _meteoLoaded = true;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
         /// <summary>
@@ -948,7 +959,7 @@ namespace scada_analyst
                 {
                     ProgressBarVisible();
 
-                    await Task.Run(() => LoadMeteoData(meteoFile, openFileDialog.FileNames, meteoLoaded,
+                    await Task.Run(() => LoadMeteoData(_meteoFile, openFileDialog.FileNames, _meteoLoaded,
                         progress));
 
                     ProgressBarInvisible();
@@ -996,10 +1007,12 @@ namespace scada_analyst
                     {
                         analysis.AppendFiles(filenames, _dateFormat, progress);
                     }
+
+                    _loadedFiles.AddRange(filenames);
                 });
 
-                scadaFile = analysis;
-                scadaLoaded = true;
+                _scadaFile = analysis;
+                _scadaLoaded = true;
             }
             catch { throw; }
         }
@@ -1030,7 +1043,7 @@ namespace scada_analyst
                     ProgressBarVisible();
 
                     await Task.Run(() =>
-                        LoadScadaData(scadaFile, openFileDialog.FileNames, scadaLoaded, progress), token);
+                        LoadScadaData(_scadaFile, openFileDialog.FileNames, _scadaLoaded, progress), token);
 
                     ProgressBarInvisible();
                     PopulateOverview();
@@ -1095,7 +1108,7 @@ namespace scada_analyst
                 LView_PowrNone.ItemsSource = null;
                 LView_PowrRted.ItemsSource = null;
 
-                await Task.Run(() => analyser.AssociateEvents(progress));
+                await Task.Run(() => _analyser.AssociateEvents(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -1137,7 +1150,7 @@ namespace scada_analyst
 
                 ProgressBarVisible();
 
-                await Task.Run(() => scadaFile = analyser.FleetStats(scadaFile, progress));
+                await Task.Run(() => _scadaFile = _analyser.FleetStats(_scadaFile, progress));
 
                 ProgressBarInvisible();
             }
@@ -1165,7 +1178,7 @@ namespace scada_analyst
 
             try
             {
-                if (analyser.DuratFilter.TotalSeconds == 0)
+                if (_analyser.DuratFilter.TotalSeconds == 0)
                 {
                     await this.ShowMessageAsync("Warning!",
                         "The duration filter is set to 0 seconds. Please change the length of this filter.");
@@ -1182,7 +1195,7 @@ namespace scada_analyst
 
                 ProgressBarVisible();
 
-                await Task.Run(() => analyser.RemoveByDuration(progress));
+                await Task.Run(() => _analyser.RemoveByDuration(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -1238,7 +1251,7 @@ namespace scada_analyst
                 LView_PowrNone.ItemsSource = null;
                 LView_PowrRted.ItemsSource = null;
 
-                await Task.Run(() => analyser.RemoveMatchedEvents(progress));
+                await Task.Run(() => _analyser.RemoveMatchedEvents(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -1289,7 +1302,7 @@ namespace scada_analyst
 
                 ProgressBarVisible();
 
-                await Task.Run(() => analyser.RemoveProcessedDaytimes(progress));
+                await Task.Run(() => _analyser.RemoveProcessedDaytimes(progress));
 
                 ProgressBarInvisible();
                 RefreshEvents();
@@ -1308,9 +1321,9 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void ResetPowerProdEvents(object sender, RoutedEventArgs e)
         {
-            analyser.DuratFilter = new TimeSpan(0, 10, 0);
+            _analyser.DuratFilter = new TimeSpan(0, 10, 0);
 
-            analyser.ResetEventList();
+            _analyser.ResetEventList();
             PopulateOverview();
             RefreshEvents();
         }
@@ -1337,14 +1350,14 @@ namespace scada_analyst
             // new code below with the proper analysis settings window, etc
             // more options for expanding the code if necessary (which it no doubt will be)
 
-            Window_AnalysisSettings anaSets = new Window_AnalysisSettings(this, analyser,
+            Window_AnalysisSettings anaSets = new Window_AnalysisSettings(this, _analyser,
                 mnt_Night, mnt_AstDw, mnt_NauDw, mnt_CivDw, mnt_Daytm, mnt_CivDs, mnt_NauDs, mnt_AstDs);
 
             if (anaSets.ShowDialog().Value)
             {
-                analyser.CutIn = anaSets.SpdIns;
-                analyser.CutOut = anaSets.SpdOut;
-                analyser.RatedPwr = anaSets.RtdPwr;
+                _analyser.CutIn = anaSets.SpdIns;
+                _analyser.CutOut = anaSets.SpdOut;
+                _analyser.RatedPwr = anaSets.RtdPwr;
 
                 mnt_Night = anaSets.Mnt_Night;
                 mnt_AstDw = anaSets.Mnt_AstDw;
@@ -1355,8 +1368,8 @@ namespace scada_analyst
                 mnt_NauDs = anaSets.Mnt_NauDs;
                 mnt_AstDs = anaSets.Mnt_AstDs;
 
-                analyser.WorkHoursMorning = anaSets.WorkHoursMorning;
-                analyser.WorkHoursEvening = anaSets.WorkHoursEvening;
+                _analyser.WorkHoursMorning = anaSets.WorkHoursMorning;
+                _analyser.WorkHoursEvening = anaSets.WorkHoursEvening;
 
                 RtdPowView.Clear();
                 CreateSummaries();
@@ -1474,7 +1487,7 @@ namespace scada_analyst
         {
             LView_ThresholdValues.ItemsSource = null;
 
-            if (_histEventData != null) { analyser.Thresholding(_histEventData.ToList()); }
+            if (_histEventData != null) { _analyser.Thresholding(_histEventData.ToList()); }
 
             LView_ThresholdValues.ItemsSource = ThresholdEventsView;
             LView_ThresholdValues.Items.Refresh();
@@ -1503,7 +1516,7 @@ namespace scada_analyst
         {
             LView_ROCValues.ItemsSource = null;
 
-            if (_histEventData != null) { analyser.RatesOfChange(_histEventData.ToList()); }
+            if (_histEventData != null) { _analyser.RatesOfChange(_histEventData.ToList()); }
 
             LView_ROCValues.ItemsSource = RateChangeEventsView;
             LView_ROCValues.Items.Refresh();
@@ -1574,9 +1587,9 @@ namespace scada_analyst
                 // this also needs to check the event is from the same asset to be certain we are editing the correct one
                 int triggeringAsset = _event.FromAsset;
 
-                int index = analyser.NoPwEvents.FindIndex(x => x.FromAsset == triggeringAsset && x.Start == _event.Start);
+                int index = _analyser.NoPwEvents.FindIndex(x => x.FromAsset == triggeringAsset && x.Start == _event.Start);
 
-                analyser.NoPwEvents[index].IsFault = result;
+                _analyser.NoPwEvents[index].IsFault = result;
             }
         }
 
@@ -1601,11 +1614,11 @@ namespace scada_analyst
             LView_LoadedOverview.ItemsSource = null;
 
             _overview.Clear();
-            _overview.Add(new DirectoryItem("Events Summary", AllWtrView.Count + AllPowView.Count));
+            _overview.Add(new DirectoryItem("Events Summary", LoSpdViews.Count + HiSpdViews.Count + NoPowViews.Count + RtdPowView.Count));
             _overview.Add(new DirectoryItem("Wind Speeds: Low", LoSpdViews.Count));
             _overview.Add(new DirectoryItem("Wind Speeds: High", HiSpdViews.Count));
             _overview.Add(new DirectoryItem("Power Prod: None", NoPowViews.Count));
-            _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(analyser.RatedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
+            _overview.Add(new DirectoryItem("Power Prod: " + Common.GetStringDecimals(_analyser.RatedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
 
             LView_LoadedOverview.ItemsSource = _overview;
         }
@@ -1617,7 +1630,7 @@ namespace scada_analyst
             LView_EventsSumWndLows.ItemsSource = null;
             LView_EventsSumWndHigh.ItemsSource = null;
 
-            ObservableCollection<Analysis.StructureSmry> sumEvents = new ObservableCollection<Analysis.StructureSmry>(analyser.Summary());
+            ObservableCollection<Analysis.StructureSmry> sumEvents = new ObservableCollection<Analysis.StructureSmry>(_analyser.Summary());
 
             LView_EventsSumPwrNone.ItemsSource = sumEvents;
             LView_EventsSumPwrHigh.ItemsSource = sumEvents;
@@ -1627,48 +1640,48 @@ namespace scada_analyst
 
         void PopulateOverview()
         {
-            if (meteoFile.MetMasts.Count != 0)
+            if (_meteoFile.MetMasts.Count != 0)
             {
-                for (int i = 0; i < meteoFile.MetMasts.Count; i++)
+                for (int i = 0; i < _meteoFile.MetMasts.Count; i++)
                 {
-                    if (!loadedAsset.Contains(meteoFile.MetMasts[i].UnitID))
+                    if (!loadedAsset.Contains(_meteoFile.MetMasts[i].UnitID))
                     {
-                        analyser.AssetList.Add((Structure)meteoFile.MetMasts[i]);
+                        _analyser.AssetList.Add((Structure)_meteoFile.MetMasts[i]);
 
-                        loadedAsset.Add(meteoFile.MetMasts[i].UnitID);
+                        loadedAsset.Add(_meteoFile.MetMasts[i].UnitID);
                     }
                     else
                     {
-                        int index = analyser.AssetList.IndexOf
-                            (analyser.AssetList.Where(x => x.UnitID == meteoFile.MetMasts[i].UnitID).FirstOrDefault());
+                        int index = _analyser.AssetList.IndexOf
+                            (_analyser.AssetList.Where(x => x.UnitID == _meteoFile.MetMasts[i].UnitID).FirstOrDefault());
 
-                        analyser.AssetList[index].CheckDataSeriesTimes(meteoFile.MetMasts[i]);
+                        _analyser.AssetList[index].CheckDataSeriesTimes(_meteoFile.MetMasts[i]);
                     }
                 }
             }
 
-            if (scadaFile.WindFarm.Count != 0)
+            if (_scadaFile.WindFarm.Count != 0)
             {
-                for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                for (int i = 0; i < _scadaFile.WindFarm.Count; i++)
                 {
-                    if (!loadedAsset.Contains(scadaFile.WindFarm[i].UnitID))
+                    if (!loadedAsset.Contains(_scadaFile.WindFarm[i].UnitID))
                     {
-                        analyser.AssetList.Add((Structure)scadaFile.WindFarm[i]);
+                        _analyser.AssetList.Add((Structure)_scadaFile.WindFarm[i]);
 
-                        loadedAsset.Add(scadaFile.WindFarm[i].UnitID);
+                        loadedAsset.Add(_scadaFile.WindFarm[i].UnitID);
                     }
                     else
                     {
-                        int index = analyser.AssetList.IndexOf
-                            (analyser.AssetList.Where(x => x.UnitID == scadaFile.WindFarm[i].UnitID).FirstOrDefault());
+                        int index = _analyser.AssetList.IndexOf
+                            (_analyser.AssetList.Where(x => x.UnitID == _scadaFile.WindFarm[i].UnitID).FirstOrDefault());
 
-                        analyser.AssetList[index].CheckDataSeriesTimes(scadaFile.WindFarm[i]);
+                        _analyser.AssetList[index].CheckDataSeriesTimes(_scadaFile.WindFarm[i]);
                     }
                 }
             }
 
             // sort the assetview-source before making it the itemssource
-            analyser.AssetList = analyser.AssetList.OrderBy(o => o.UnitID).ToList();
+            _analyser.AssetList = _analyser.AssetList.OrderBy(o => o.UnitID).ToList();
 
             // proceed with a correctly ordered list
             LView_Overview.ItemsSource = AssetsView;
@@ -1748,13 +1761,13 @@ namespace scada_analyst
 
         void RemoveSingleAsset(int toRemove)
         {
-            if (analyser.AssetList.Count != 0)
+            if (_analyser.AssetList.Count != 0)
             {
-                for (int i = analyser.AssetList.Count - 1; i >= 0; i--)
+                for (int i = _analyser.AssetList.Count - 1; i >= 0; i--)
                 {
-                    if (analyser.AssetList[i].UnitID == toRemove)
+                    if (_analyser.AssetList[i].UnitID == toRemove)
                     {
-                        analyser.AssetList.RemoveAt(i);
+                        _analyser.AssetList.RemoveAt(i);
 
                         break;
                     }
@@ -1815,15 +1828,15 @@ namespace scada_analyst
 
                 if (struc.Type == BaseStructure.Types.METMAST)
                 {
-                    int index = meteoFile.MetMasts.FindIndex(x => x.UnitID == struc.UnitID);
-                    meteoFile.MetMasts.RemoveAt(index);
-                    meteoFile.InclMetm.Remove(struc.UnitID);
+                    int index = _meteoFile.MetMasts.FindIndex(x => x.UnitID == struc.UnitID);
+                    _meteoFile.MetMasts.RemoveAt(index);
+                    _meteoFile.InclMetm.Remove(struc.UnitID);
                 }
                 else if (struc.Type == BaseStructure.Types.TURBINE)
                 {
-                    int index = scadaFile.WindFarm.FindIndex(x => x.UnitID == struc.UnitID);
-                    scadaFile.WindFarm.RemoveAt(index);
-                    scadaFile.InclTrbn.Remove(struc.UnitID);
+                    int index = _scadaFile.WindFarm.FindIndex(x => x.UnitID == struc.UnitID);
+                    _scadaFile.WindFarm.RemoveAt(index);
+                    _scadaFile.InclTrbn.Remove(struc.UnitID);
                 }
 
                 loadedAsset.Remove(struc.UnitID);
@@ -1859,6 +1872,10 @@ namespace scada_analyst
                 removeEvent_MenuItem.Header = "Remove Event";
                 removeEvent_MenuItem.Click += RemoveEvent_MenuItem_Click;
                 menu.Items.Add(removeEvent_MenuItem);
+                MenuItem removeAssetEvents_MenuItem = new MenuItem();
+                removeAssetEvents_MenuItem.Header = "Remove Events from This Asset";
+                removeAssetEvents_MenuItem.Click += RemoveAssetEvents_MenuItem_Click;
+                menu.Items.Add(removeAssetEvents_MenuItem);
                 MenuItem makeFault_MenuItem = new MenuItem();
                 makeFault_MenuItem.Header = "Change Event to Fault";
                 makeFault_MenuItem.Click += MakeFault_MenuItem_Click;
@@ -1909,26 +1926,26 @@ namespace scada_analyst
 
                     // get index of the asset and get index of the event time in the asset
                     // the index of the asset to be used below
-                    int assetIndex = scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
+                    int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == thisEv.FromAsset);
                     // the index of the timestamp a week before the event began or otherwise the first timestamp in the series - long conditional but should work
                     TimeSpan stepBack = new TimeSpan(0, -60 * 24 * 7, 0);
-                    int weekIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) != -1 ? scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) : 0;
+                    int weekIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) != -1 ? _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0].Add(stepBack)) : 0;
 
-                    int timeIndex = scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0]);
+                    int timeIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == thisEv.EvTimes[0]);
 
                     for (int i = 0; i < thisEv.EvTimes.Count; i++)
                     {
-                        thisEvScada.Add(scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+                        thisEvScada.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
                     }
 
                     for (int i = weekIndex; i < (timeIndex + thisEv.EvTimes.Count); i++)
                     {
-                        weekHistory.Add(scadaFile.WindFarm[assetIndex].DataSorted[i]);
+                        weekHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
                     }
 
                     for (int j = 0; j < (timeIndex + thisEv.EvTimes.Count); j++)
                     {
-                        dataHistory.Add(scadaFile.WindFarm[assetIndex].DataSorted[j]);
+                        dataHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
                     }
 
                     // assign the created dataset lists to their global variables
@@ -1991,11 +2008,30 @@ namespace scada_analyst
                     EventData _event = (EventData)selectedItem;
 
                     // find index and removeat that index but make certain it is the right asset we're removing from
-                    int index = analyser.NoPwEvents.FindIndex(x => x.FromAsset == _event.FromAsset && x.Start == _event.Start);
+                    int index = _analyser.NoPwEvents.FindIndex(x => x.FromAsset == _event.FromAsset && x.Start == _event.Start);
 
-                    analyser.NoPwEvents.RemoveAt(index);
+                    _analyser.NoPwEvents.RemoveAt(index);
                 }
 
+                RefreshEvents();
+            }
+        }
+
+        private void RemoveAssetEvents_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (LView_PowrNone.SelectedItems.Count == 1)
+            {
+                EventData _event = (EventData)LView_PowrNone.SelectedItem;
+
+                // create a reverse loop to go through and remove if asset IDs match
+                for (int i = _analyser.NoPwEvents.Count - 1; i >= 0; i--)
+                {
+                    if (_analyser.NoPwEvents[i].FromAsset == _event.FromAsset)
+                    {
+                        _analyser.NoPwEvents.RemoveAt(i);
+                    }
+                }
+                
                 RefreshEvents();
             }
         }
@@ -2008,16 +2044,16 @@ namespace scada_analyst
 
         #region Properties
 
-        public Analysis Analyser { get { return analyser; } set { analyser = value; } }
+        public Analysis Analyser { get { return _analyser; } set { _analyser = value; } }
         
-        public GeoData GeoFile { get { return geoFile; } set { geoFile = value; } }
-        public MeteoData MeteoFile { get { return meteoFile; } set { meteoFile = value; } }
-        public ScadaData ScadaFile { get { return scadaFile; } set { scadaFile = value; } }
+        public GeoData GeoFile { get { return _geoFile; } set { _geoFile = value; } }
+        public MeteoData MeteoFile { get { return _meteoFile; } set { _meteoFile = value; } }
+        public ScadaData ScadaFile { get { return _scadaFile; } set { _scadaFile = value; } }
 
-        public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
-        
-        public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
-        public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
+        public bool GeoLoaded { get { return _geoLoaded; } set { _geoLoaded = value; } }        
+        public bool MeteoLoaded { get { return _meteoLoaded; } set { _meteoLoaded = value; } }
+
+        public bool ScadaLoaded { get { return _scadaLoaded; } set { _scadaLoaded = value; } }
 
         public string[] Labels
         {
@@ -2056,7 +2092,7 @@ namespace scada_analyst
 
         public ObservableCollection<Analysis.AnalyticLimit> RocVw
         {
-            get { return new ObservableCollection<Analysis.AnalyticLimit>(analyser.RateChange); }
+            get { return new ObservableCollection<Analysis.AnalyticLimit>(_analyser.RateChange); }
             set
             {
                 if (ThresholdVw != value)
@@ -2069,7 +2105,7 @@ namespace scada_analyst
 
         public ObservableCollection<Analysis.AnalyticLimit> ThresholdVw
         {
-            get { return new ObservableCollection<Analysis.AnalyticLimit>(analyser.Thresholds); }
+            get { return new ObservableCollection<Analysis.AnalyticLimit>(_analyser.Thresholds); }
             set
             {
                 if (ThresholdVw != value)
@@ -2082,7 +2118,7 @@ namespace scada_analyst
 
         public ObservableCollection<EventData> RateChangeEventsView
         {
-            get { return new ObservableCollection<EventData>(analyser.RChngEvnts); }
+            get { return new ObservableCollection<EventData>(_analyser.RChngEvnts); }
             set
             {
                 if (RateChangeEventsView != value)
@@ -2095,7 +2131,7 @@ namespace scada_analyst
 
         public ObservableCollection<EventData> ThresholdEventsView
         {
-            get { return new ObservableCollection<EventData>(analyser.ThresEvnts); }
+            get { return new ObservableCollection<EventData>(_analyser.ThresEvnts); }
             set
             {
                 if (ThresholdEventsView != value)
@@ -2106,64 +2142,79 @@ namespace scada_analyst
             }
         }
 
+        public ObservableCollection<string> LoadedFiles
+        {
+            get
+            {
+                ObservableCollection<string> _list = new ObservableCollection<string>();
+
+                foreach(string filename in _loadedFiles)
+                {
+                    _list.Add(System.IO.Path.GetFileName(filename));
+                }
+
+                return new ObservableCollection<string>(_list);
+            }
+        }
+
         public ObservableCollection<EventData> AllWtrView
         {
-            get { return new ObservableCollection<EventData>(analyser.AllWtrEvts); }
-            set { analyser.AllWtrEvts = value.ToList(); }
+            get { return new ObservableCollection<EventData>(_analyser.AllWtrEvts); }
+            set { _analyser.AllWtrEvts = value.ToList(); }
         }
 
         public ObservableCollection<EventData> LoSpdViews
         {
-            get { return new ObservableCollection<EventData>(analyser.LoSpEvents); }
-            set { analyser.LoSpEvents = value.ToList(); }
+            get { return new ObservableCollection<EventData>(_analyser.LoSpEvents); }
+            set { _analyser.LoSpEvents = value.ToList(); }
         }
 
         public ObservableCollection<EventData> HiSpdViews
         {
-            get { return new ObservableCollection<EventData>(analyser.HiSpEvents); }
-            set { analyser.HiSpEvents = value.ToList(); }
+            get { return new ObservableCollection<EventData>(_analyser.HiSpEvents); }
+            set { _analyser.HiSpEvents = value.ToList(); }
         }
 
         public ObservableCollection<EventData> NoPowViews
         {
-            get { return new ObservableCollection<EventData>(analyser.NoPwEvents); }
-            set { analyser.NoPwEvents = value.ToList(); }
+            get { return new ObservableCollection<EventData>(_analyser.NoPwEvents); }
+            set { _analyser.NoPwEvents = value.ToList(); }
         }
 
         public ObservableCollection<EventData> AllPowView
         {
-            get { return new ObservableCollection<EventData>(analyser.AllPwrEvts); }
-            set { analyser.AllPwrEvts = value.ToList(); }
+            get { return new ObservableCollection<EventData>(_analyser.AllPwrEvts); }
+            set { _analyser.AllPwrEvts = value.ToList(); }
         }
 
         public ObservableCollection<EventData> RtdPowView
         {
-            get { return new ObservableCollection<EventData>(analyser.RtPwEvents); }
-            set { analyser.RtPwEvents = value.ToList(); }
+            get { return new ObservableCollection<EventData>(_analyser.RtPwEvents); }
+            set { _analyser.RtPwEvents = value.ToList(); }
         }
 
         public ObservableCollection<Structure> AssetsView
         {
-            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetList); }
+            get { return _assetsVw = new ObservableCollection<Structure>(_analyser.AssetList); }
             set
             {
                 if (_assetsVw != value)
                 {
                     _assetsVw = value;
-                    OnPropertyChanged(nameof(analyser.AssetList));
+                    OnPropertyChanged(nameof(_analyser.AssetList));
                 }
             }
         }
 
         public ObservableCollection<Structure> ThrsEventData
         {
-            get { return _assetsVw = new ObservableCollection<Structure>(analyser.AssetList); }
+            get { return _assetsVw = new ObservableCollection<Structure>(_analyser.AssetList); }
             set
             {
                 if (_assetsVw != value)
                 {
                     _assetsVw = value;
-                    OnPropertyChanged(nameof(analyser.AssetList));
+                    OnPropertyChanged(nameof(_analyser.AssetList));
                 }
             }
         }

@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-
+﻿using System.Windows;
 using MahApps.Metro.Controls;
 
 using scada_analyst.Shared;
@@ -23,6 +10,8 @@ namespace scada_analyst.Controls
     /// </summary>
     public partial class Window_DateOptions : MetroWindow
     {
+        #region Constructor
+
         public Window_DateOptions(MetroWindow owner, Common.DateFormat format)
         {
             InitializeComponent();
@@ -33,10 +22,14 @@ namespace scada_analyst.Controls
             else if (format == Common.DateFormat.YDM) { RBox_YDM.IsChecked = true; }
         }
 
+        #endregion 
+
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
         }
+
+        #region Properties
 
         public Common.DateFormat Format
         {
@@ -49,5 +42,7 @@ namespace scada_analyst.Controls
                 else { return Common.DateFormat.EMPTY; }
             }
         }
+
+        #endregion 
     }
 }

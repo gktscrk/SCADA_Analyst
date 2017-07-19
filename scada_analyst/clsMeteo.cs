@@ -43,27 +43,27 @@ namespace scada_analyst
             }
         }
 
-        public MeteoData(string[] filenames, IProgress<int> progress)
+        public MeteoData(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadAndSort(filenames, progress);
+            LoadAndSort(filenames, _dateFormat, progress);
         }
 
-        public void AppendFiles(string[] filenames, IProgress<int> progress)
+        public void AppendFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadAndSort(filenames, progress);
+            LoadAndSort(filenames, _dateFormat, progress);
         }
 
-        private void LoadMetFiles(string[] filenames, IProgress<int> progress)
+        private void LoadMetFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 this.FileName = filenames[i];
 
-                LoadMeteorology(progress, filenames.Length, i);
+                LoadMeteorology(_dateFormat, progress, filenames.Length, i);
             }
         }
 
-        private void LoadMeteorology(IProgress<int> progress, int numberOfFiles = 1, int i = 0)
+        private void LoadMeteorology(Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(FileName))
             {
@@ -95,8 +95,19 @@ namespace scada_analyst
 
                             string[] splits = Common.GetSplits(line, ',');
 
-                            int thisAsset = Common.CanConvert<int>(splits[metrHeader.AssetCol]) ?
-                                Convert.ToInt32(splits[metrHeader.AssetCol]) : throw new FileFormatException();
+                            int thisAsset;
+
+                            // if the file does not have an AssetID column, the Station Column should be used instead
+                            if (metrHeader.AssetCol != -1)
+                            {
+                                thisAsset = Common.CanConvert<int>(splits[metrHeader.AssetCol]) ?
+                                  Convert.ToInt32(splits[metrHeader.AssetCol]) : throw new FileFormatException();
+                            }
+                            else
+                            {
+                                thisAsset = Common.CanConvert<int>(splits[metrHeader.StatnCol]) ?
+                                  Convert.ToInt32(splits[metrHeader.StatnCol]) : throw new FileFormatException();
+                            }
 
                             // organise loading so it would check which ones have already
                             // been loaded; then work around the ones have have been
@@ -105,13 +116,12 @@ namespace scada_analyst
                             {
                                 int index = metMasts.FindIndex(x => x.UnitID == thisAsset);
 
-                                metMasts[index].AddData(splits, metrHeader);
+                                metMasts[index].AddData(splits, metrHeader, _dateFormat);
                             }
                             else
                             {
-                                metMasts.Add(new MetMastData(splits, metrHeader));
-
-                                inclMetm.Add(Convert.ToInt32(splits[metrHeader.AssetCol]));
+                                metMasts.Add(new MetMastData(splits, metrHeader, _dateFormat));
+                                inclMetm.Add(metMasts[metMasts.Count - 1].UnitID);
                             }
                         }
 
@@ -138,9 +148,9 @@ namespace scada_analyst
             }
         }
 
-        private void LoadAndSort(string[] filenames, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadMetFiles(filenames, progress);
+            LoadMetFiles(filenames, _dateFormat, progress);
 
             SortMeteorology();
             PopulateTimeDif();
@@ -281,33 +291,32 @@ namespace scada_analyst
 
             public MetMastData() { }
 
-            public MetMastData(string[] splits, MeteoHeader header)
+            public MetMastData(string[] splits, MeteoHeader header, Common.DateFormat _dateFormat)
             {
                 Type = Types.METMAST;
 
-                metData.Add(new MeteoSample(splits, header));
-
-                InclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' })));
+                metData.Add(new MeteoSample(splits, header, _dateFormat));
+                InclDtTm.Add(metData[metData.Count - 1].TimeStamp);
 
                 if (UnitID == -1 && metData.Count > 0)
                 {
-                    UnitID = metData[0].AssetID;
+                    UnitID = metData[0].AssetID != 0 ? metData[0].AssetID : metData[0].StationID;
                 }
             }
 
-            public void AddData(string[] splits, MeteoHeader header)
+            public void AddData(string[] splits, MeteoHeader header, Common.DateFormat _dateFormat)
             {
-                DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }));
+                DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat);
 
                 if (InclDtTm.Contains(thisTime))
                 {
                     int index = metData.FindIndex(x => x.TimeStamp == thisTime);
 
-                    metData[index].AddDataFields(splits, header);
+                    metData[index].AddDataFields(splits, header, _dateFormat);
                 }
                 else
                 {
-                    metData.Add(new MeteoSample(splits, header));
+                    metData.Add(new MeteoSample(splits, header, _dateFormat));
 
                     InclDtTm.Add(thisTime);
                 }
@@ -436,17 +445,17 @@ namespace scada_analyst
             
             public MeteoSample() { }
 
-            public MeteoSample(string[] data, MeteoHeader header)
+            public MeteoSample(string[] data, MeteoHeader header, Common.DateFormat _dateFormat)
             {
-                LoadData(data, header);
+                LoadData(data, header, _dateFormat);
             }
 
-            public void AddDataFields(string[] data, MeteoHeader header)
+            public void AddDataFields(string[] data, MeteoHeader header, Common.DateFormat _dateFormat)
             {
-                LoadData(data, header);
+                LoadData(data, header, _dateFormat);
             }
 
-            private void LoadData(string[] data, MeteoHeader header)
+            private void LoadData(string[] data, MeteoHeader header, Common.DateFormat _dateFormat)
             {
                 if (header.AssetCol != -1)
                 {
@@ -465,7 +474,7 @@ namespace scada_analyst
 
                 if (header.TimesCol != -1)
                 {
-                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }));
+                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }),_dateFormat);
                 }
 
                 humid.Mean = GetVals(humid.Mean, data, header.Humid.Mean);

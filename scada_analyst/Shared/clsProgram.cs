@@ -12,7 +12,14 @@ namespace scada_analyst.Shared
         {
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
-            #region Version 1.400 (Romax Visit)
+            #region Version 1.400 (Romax Visit and Results)
+
+            ProgramVersion v1500 = new ProgramVersion(1500, new DateTime(2017, 07, 19));
+            v1500.AddChange("Changed meteorology data loading to fit in with SCADA data.");
+            v1500.AddChange("Events summary now counts events properly.");
+            v1500.AddChange("Option to check what files have been loaded is added.");
+            v1500.AddChange("User can remove all events associated with a specific asset ID.");
+            results.Add(v1500);
 
             ProgramVersion v1408 = new ProgramVersion(1408, new DateTime(2017, 07, 19));
             v1408.AddChange("Fixed asset overview list as Station ID.");

@@ -34,6 +34,8 @@
               Name="Prime_Menu" >
             <MenuItem Header="_File" >
                 <MenuItem Header="_Change Input Data Date Format" Click="DateFormatClick" />
+                <MenuItem Header="_Check Loaded Files" Click="LoadedFilesClick" />
+                <Separator />
                 <MenuItem Header="_About" Click="AboutClick" />
                 <Separator />
                 <MenuItem Header="_Exit" Click="Exit" />
@@ -66,9 +68,9 @@
                 <MenuItem Header="_Match Power and Weather Event Times" Click="MatchEventsAsync" />
                 <MenuItem Header="_Compute Time of Day for Power Events" Click="AddDaytimesToEvents" />
                 <Separator />
-                <MenuItem Header="_Filter by Event Duration" Click="ProcessDurationFilterAsync" />
-                <MenuItem Header="_Remove Matching Events" Click="RemoveMatchedEventsAsync" />
-                <MenuItem Header="_Remove Events by Time of Day" Click="RemoveProcessedDaytimesAsync" />
+                <MenuItem Header="_Remove by Event Duration" Click="ProcessDurationFilterAsync" />
+                <MenuItem Header="_Remove by Matching with Wind Events" Click="RemoveMatchedEventsAsync" />
+                <MenuItem Header="_Remove by Time of Day" Click="RemoveProcessedDaytimesAsync" />
                 <Separator />
                 <MenuItem Header="_Reset Power Events" Click="ResetPowerProdEvents" />
                 <MenuItem Header="_Clear Events" Click="ClearEvents" />
