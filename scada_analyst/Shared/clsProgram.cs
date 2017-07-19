@@ -14,6 +14,12 @@ namespace scada_analyst.Shared
 
             #region Verson 1.000 and after
 
+            ProgramVersion v1400 = new ProgramVersion(1400, new DateTime(2017, 07, 19));
+            v1400.AddChange("Added option to view max power value at max threshold crossover.");
+            v1400.AddChange("Added option to view RPM change over the rate of change period.");
+            v1400.AddChange("Fixed change fault status option workings.");
+            results.Add(v1400);
+
             ProgramVersion v1300 = new ProgramVersion(1300, new DateTime(2017, 07, 10));
             v1300.AddChange("Added option for displaying rate of change of variables above an user-defined limit.");
             v1300.AddChange("User can now certify certain events as 'faults' by right-clicking on them in the 'No Power Production' event list.");

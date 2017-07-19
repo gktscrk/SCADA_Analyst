@@ -623,7 +623,7 @@
                                         <GridViewColumn Header="Min Speed" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.#0}, 
+                                                    <TextBlock Text="{Binding ExtrmSpeed, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
@@ -691,7 +691,7 @@
                                         <GridViewColumn Header="Max Speed" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmSpd, StringFormat={}{0:0.#0}, 
+                                                    <TextBlock Text="{Binding ExtrmSpeed, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
@@ -753,7 +753,7 @@
                                         <GridViewColumn Header="Min Power" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.#0}, 
+                                                    <TextBlock Text="{Binding ExtrmValue, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
@@ -837,7 +837,7 @@
                                         <GridViewColumn Header="Max Power" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.#0}, 
+                                                    <TextBlock Text="{Binding ExtrmValue, StringFormat={}{0:0.#0}, 
                                                 Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
@@ -1096,28 +1096,28 @@
                                         <GridViewColumn Header="G-Bearing" Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Genny.bearingG.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Genny.BearingG.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ G-Bearing" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Genny.bearingG.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Genny.BearingG.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="R-Bearing" Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Genny.bearingR.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Genny.BearingR.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ R-Bearing" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Genny.bearingR.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Genny.BearingR.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1250,14 +1250,14 @@
                                         <GridViewColumn Header="Bearing" Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding MainBear.Standards.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding MainBear.Main.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ Bearing" Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding MainBear.Standards.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding MainBear.Main.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1369,24 +1369,24 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Start Time" Width="120">
+                                        <GridViewColumn Header="Start Time" Width="110">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Duration" Width="80">
+                                        <GridViewColumn Header="Duration" Width="70">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Durat, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Av. Power Prod." Width="100">
+                                        <GridViewColumn Header="Av. Power Prod." Width="95">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding AveragePwr, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                    <TextBlock Text="{Binding AvergPower, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1397,10 +1397,17 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Value" Width="80" >
+                                        <GridViewColumn Header="Max Value" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                    <TextBlock Text="{Binding ExtrmValue, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Power @ Max" Width="80" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding ExtrmPower, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1445,12 +1452,12 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Values" >
+                                        <GridViewColumn Header="Max Change Rate" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <controls:NumericTextBox Text="{Binding MaxVars, Mode=TwoWay}"
                                                                              Tag="{Binding BindsDirectlyToSource=True}"
-                                                                             Width="100" LostFocus="ROC_LoseFocus"
+                                                                             Width="120" LostFocus="ROC_LoseFocus"
                                                                              TextChanged="ROC_TextChanged"
                                                                              TextAlignment="Center"/>
                                                 </DataTemplate>
@@ -1484,24 +1491,24 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Start Time" Width="120">
+                                        <GridViewColumn Header="Start Time" Width="110">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Start, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Duration" Width="80">
+                                        <GridViewColumn Header="Duration" Width="70">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Durat, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Av. Power Prod." Width="100">
+                                        <GridViewColumn Header="Av. Power Prod." Width="95">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding AveragePwr, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                    <TextBlock Text="{Binding AvergPower, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1512,17 +1519,24 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Value" Width="80" >
+                                        <GridViewColumn Header="Max Value" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding ExtrmPow, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                    <TextBlock Text="{Binding ExtrmValue, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
+                                            </GridViewColumn.CellTemplate>  
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Max Change" Width="80" >
+                                        <GridViewColumn Header="Max Δ" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding MaxValChng, StringFormat={}{0:0.0}, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="RPM Δ" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding RpmValChng, StringFormat={}{0:0.0}, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>

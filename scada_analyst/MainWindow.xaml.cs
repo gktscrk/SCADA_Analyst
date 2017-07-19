@@ -119,11 +119,10 @@ namespace scada_analyst
 
             LView_LoadedOverview.SelectedIndex = 0;
 
-#if !DEBUG
-            Comb_DisplayEvDetails.IsEnabled = false;
-            LBL_EquipmentChoice.IsEnabled = false;
-            CBox_DataSetChoice.IsEnabled = false;
-#endif
+            //LBL_EquipmentChoice.IsEnabled = false;
+            //Comb_DisplayEvDetails.IsEnabled = false;
+            //LBL_EquipmentChoice.IsEnabled = false;
+            //CBox_DataSetChoice.IsEnabled = false;
         }
 
         #endregion
@@ -1494,6 +1493,8 @@ namespace scada_analyst
             }
         }
 
+        #region Thresholds
+
         private void Threshold_LoseFocus(object sender, RoutedEventArgs e)
         {
             CalculateThresholds(this, new RoutedEventArgs());
@@ -1519,6 +1520,10 @@ namespace scada_analyst
             LView_ThresholdValues.Items.Refresh();
         }
 
+        #endregion
+
+        #region Rates of Changes
+
         private void ROC_LoseFocus(object sender, RoutedEventArgs e)
         {
             CalculateRatesOfChange(this, new RoutedEventArgs());
@@ -1542,6 +1547,24 @@ namespace scada_analyst
 
             LView_ROCValues.ItemsSource = RateChangeEventsView;
             LView_ROCValues.Items.Refresh();
+        }
+
+        #endregion
+
+        private void ChangeFaultStatus(bool result)
+        {
+            foreach (object selectedItem in LView_PowrNone.SelectedItems)
+            {
+                EventData _event = (EventData)selectedItem;
+
+                // find index and change the fault status at that index 
+                // this also needs to check the event is from the same asset to be certain we are editing the correct one
+                int triggeringAsset = _event.FromAsset;
+
+                int index = analyser.NoPwEvents.FindIndex(x => x.FromAsset == triggeringAsset && x.Start == _event.Start);
+
+                analyser.NoPwEvents[index].IsFault = result;
+            }
         }
 
         void CancelProgress_Click(object sender, RoutedEventArgs e)
@@ -1926,51 +1949,18 @@ namespace scada_analyst
 
         private void MakeFault_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (LView_PowrNone.SelectedItems.Count == 1)
-            {
-                EventData _event = (EventData)LView_PowrNone.SelectedItem;
-
-                // find index and removeat that index
-                analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = true;
-            }
-            else
-            {
-                foreach (object selectedItem in LView_PowrNone.SelectedItems)
-                {
-                    EventData _event = (EventData)selectedItem;
-
-                    // find index and removeat that index
-                    analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = true;
-                }
-            }
+            if (LView_PowrNone.SelectedItems.Count > 0) { ChangeFaultStatus(true); }
 
             RefreshEvents();
         }
 
         private void MakeNormal_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (LView_PowrNone.SelectedItems.Count == 1)
-            {
-                EventData _event = (EventData)LView_PowrNone.SelectedItem;
-
-                // find index and removeat that index
-                analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = false;
-            }
-            else
-            {
-                foreach (object selectedItem in LView_PowrNone.SelectedItems)
-                {
-                    EventData _event = (EventData)selectedItem;
-
-                    // find index and removeat that index
-                    analyser.NoPwEvents[analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start)].IsFault = false;
-
-                }
-            }
+            if (LView_PowrNone.SelectedItems.Count > 0) { ChangeFaultStatus(false); }
 
             RefreshEvents();
         }
-
+        
         private void RemoveEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
