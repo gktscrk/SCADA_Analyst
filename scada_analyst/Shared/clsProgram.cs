@@ -14,6 +14,14 @@ namespace scada_analyst.Shared
 
             #region Verson 1.000 and after
 
+            ProgramVersion v1402 = new ProgramVersion(1402, new DateTime(2017, 07, 19));
+            v1402.AddChange("Can pick date format for input files.");
+            results.Add(v1402);
+
+            ProgramVersion v1401 = new ProgramVersion(1401, new DateTime(2017, 07, 19));
+            v1401.AddChange("Can use Station ID to load data.");
+            results.Add(v1401);
+
             ProgramVersion v1400 = new ProgramVersion(1400, new DateTime(2017, 07, 19));
             v1400.AddChange("Added option to view max power value at max threshold crossover.");
             v1400.AddChange("Added option to view RPM change over the rate of change period.");

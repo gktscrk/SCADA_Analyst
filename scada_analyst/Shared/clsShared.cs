@@ -12,7 +12,7 @@ using System.Windows.Media;
 
 namespace scada_analyst.Shared
 {
-    static class Common
+    public static class Common
     {
         #region Variables
 
@@ -245,32 +245,91 @@ namespace scada_analyst.Shared
             return input;
         }
 
-        public static DateTime StringToDateTime(string[] dateinfo, bool correctYearOrder = true)
+        public static DateTime StringToDateTime(string dateInfo, bool correctYearOrder = true)
         {
-            DateTime result = new DateTime();
+            return StringToDateTime(GetSplits(dateInfo, ' '), correctYearOrder);
+        }
 
-            string[] tempDate = Common.GetSplits(dateinfo[0], new char[] { '-', '/' });
-            string[] tempTime = Common.GetSplits(dateinfo[1], new char[] { ':', '.' });
-
+        public static DateTime StringToDateTime(string[] dateInfo, bool correctYearOrder = true)
+        {
             if (correctYearOrder)
             {
-                result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]),
-                  Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]),
-                  Convert.ToInt16(tempTime[2]));
+                return StringToDateTime(dateInfo, DateFormat.DMY);
             }
             else
             {
-                result = new DateTime(Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempDate[1]),
-                  Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]),
-                  Convert.ToInt16(tempTime[2]));
+                return StringToDateTime(dateInfo, DateFormat.MDY);
+            }
+        }
+
+        public static DateTime StringToDateTime(string[] dateInfo, DateFormat dtf)
+        {
+            try
+            {
+                            DateTime result = new DateTime();
+
+            string[] tempDate = Common.GetSplits(dateInfo[0], new char[] { '-', '/' });
+            string[] tempTime = Common.GetSplits(dateInfo[1], new char[] { ':', '.' });
+
+            if (dtf == DateFormat.DMY)
+            {
+                if (tempTime.Length == 2)
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempDate[1]), Convert.ToInt16(tempDate[0]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), Convert.ToInt16(tempTime[2]));
+                }
+                else
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempDate[1]), Convert.ToInt16(tempDate[0]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), 0);
+                }
+            }
+            else if (dtf == DateFormat.MDY)
+            {
+                if (tempTime.Length == 2)
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]), Convert.ToInt16(tempDate[2]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), Convert.ToInt16(tempTime[2]));
+                }
+                else
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]), Convert.ToInt16(tempDate[2]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), 0);
+                }
+            }
+            else if (dtf == DateFormat.YDM)
+            {
+                if (tempTime.Length == 2)
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempDate[1]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), Convert.ToInt16(tempTime[2]));
+                }
+                else
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[2]), Convert.ToInt16(tempDate[1]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), 0);
+                }
+            }
+            else
+            {
+                if (tempTime.Length == 2)
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]), Convert.ToInt16(tempDate[2]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), Convert.ToInt16(tempTime[2]));
+                }
+                else
+                {
+                    result = new DateTime(Convert.ToInt16(tempDate[0]), Convert.ToInt16(tempDate[1]), Convert.ToInt16(tempDate[2]),
+                        Convert.ToInt16(tempTime[0]), Convert.ToInt16(tempTime[1]), 0);
+                }
             }
 
             return result;
-        }
-
-        public static DateTime StringToDateTime(string dateInfo, bool correctYeardOrder = true)
-        {
-            return StringToDateTime(GetSplits(dateInfo,' '), correctYeardOrder);
+            }
+            catch
+            {
+                throw new WrongDateTimeException();
+            }
         }
 
         public static DateTime StringToDateTime(string lengthSix, string lengthEight)
@@ -350,6 +409,15 @@ namespace scada_analyst.Shared
             var time = (hours << 11) | (minutes << 5) | (seconds >> 1);
 
             return (date << 16) | time;
+        }
+
+        public enum DateFormat
+        {
+            YMD,
+            YDM,
+            MDY,
+            DMY,
+            EMPTY
         }
     }
 

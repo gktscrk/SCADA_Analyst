@@ -44,36 +44,36 @@ namespace scada_analyst
             }
         }
 
-        public ScadaData(string[] filenames, IProgress<int> progress)
+        public ScadaData(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadNSort(filenames, progress);
+            LoadNSort(filenames, _dateFormat, progress);
         }
 
-        public void AppendFiles(string[] filenames, IProgress<int> progress)
+        public void AppendFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadNSort(filenames, progress);
+            LoadNSort(filenames, _dateFormat, progress);
         }
 
-        private void LoadFiles(string[] filenames, IProgress<int> progress)
+        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 this.FileName = filenames[i];
 
-                LoadScada(progress, filenames.Length, i);
+                LoadScada(_dateFormat, progress, filenames.Length, i);
             }
         }
 
-        private void LoadNSort(string[] filenames, IProgress<int> progress)
+        private void LoadNSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadFiles(filenames, progress);
+            LoadFiles(filenames, _dateFormat, progress);
 
             SortScada();
             PopulateTimeDif();
             GetBearings();
         }
 
-        private void LoadScada(IProgress<int> progress, int numberOfFiles = 1, int i = 0)
+        private void LoadScada(Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(FileName))
             {
@@ -86,6 +86,7 @@ namespace scada_analyst
                     {
                         if (readHeader == false)
                         {
+                            // header information will be used for all concurrent loading
                             string header = sR.ReadLine();
                             header = header.ToLower().Replace("\"", String.Empty);
                             readHeader = true;
@@ -103,8 +104,18 @@ namespace scada_analyst
 
                             string[] splits = Common.GetSplits(line, ',');
 
-                            int thisAsset = Common.CanConvert<int>(splits[fileHeader.AssetCol]) ?
-                                Convert.ToInt32(splits[fileHeader.AssetCol]) : throw new FileFormatException();
+                            int thisAsset;
+
+                            if (fileHeader.AssetCol != -1)
+                            {
+                                thisAsset = Common.CanConvert<int>(splits[fileHeader.AssetCol]) ?
+                                  Convert.ToInt32(splits[fileHeader.AssetCol]) : throw new FileFormatException();
+                            }
+                            else
+                            {
+                                thisAsset = Common.CanConvert<int>(splits[fileHeader.StatnCol]) ?
+                                  Convert.ToInt32(splits[fileHeader.StatnCol]) : throw new FileFormatException();
+                            }
 
                             // organise loading so it would check which ones have already
                             // been loaded; then work around the ones have have been
@@ -113,11 +124,11 @@ namespace scada_analyst
                             {
                                 int index = windFarm.FindIndex(x => x.UnitID == thisAsset);
 
-                                windFarm[index].AddData(splits, fileHeader);
+                                windFarm[index].AddData(splits, fileHeader, _dateFormat);
                             }
                             else
                             {
-                                windFarm.Add(new TurbineData(splits, fileHeader));
+                                windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
 
                                 inclTrbn.Add(Convert.ToInt32(splits[fileHeader.AssetCol]));
                             }
@@ -455,11 +466,11 @@ namespace scada_analyst
 
             public TurbineData() { }
 
-            public TurbineData(string[] splits, ScadaHeader header)
+            public TurbineData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat)
             {
                 Type = Types.TURBINE;
 
-                data.Add(new ScadaSample(splits, header));
+                data.Add(new ScadaSample(splits, header, _dateFormat));
 
                 InclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' })));
                 
@@ -469,7 +480,7 @@ namespace scada_analyst
                 }
             }
                         
-            public void AddData(string[] splits, ScadaHeader header)
+            public void AddData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat)
             {
                 DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }));
 
@@ -477,11 +488,11 @@ namespace scada_analyst
                 {
                     int index = data.FindIndex(x => x.TimeStamp == thisTime);
 
-                    data[index].AddDataFields(splits, header);
+                    data[index].AddDataFields(splits, header, _dateFormat);
                 }
                 else
                 {
-                    data.Add(new ScadaSample(splits, header));
+                    data.Add(new ScadaSample(splits, header, _dateFormat));
                     
                     InclDtTm.Add(thisTime);
                 }
@@ -1172,21 +1183,21 @@ namespace scada_analyst
                 this.MainBear = input.MainBear;
             }
 
-            public ScadaSample(string[] data, ScadaHeader header)
+            public ScadaSample(string[] data, ScadaHeader header, Common.DateFormat _dateFormat)
             {
-                LoadData(data, header);
+                LoadData(data, header, _dateFormat);
             }
 
-            public void AddDataFields(string[] data, ScadaHeader header)
+            public void AddDataFields(string[] data, ScadaHeader header, Common.DateFormat _dateFormat)
             {
-                LoadData(data, header);
+                LoadData(data, header, _dateFormat);
             }
 
-            private void LoadData(string[] data, ScadaHeader header)
+            private void LoadData(string[] data, ScadaHeader header, Common.DateFormat _dateFormat)
             {
                 if (header.TimesCol != -1)
                 {
-                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }));
+                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }), _dateFormat);
                 }
 
                 if (header.AssetCol != -1)

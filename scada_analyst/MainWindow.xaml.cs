@@ -68,6 +68,7 @@ namespace scada_analyst
 
         private CancellationTokenSource _cts;
 
+        private Common.DateFormat _dateFormat = Common.DateFormat.YMD;
         private DateTime _dataExportStart = new DateTime();
         private DateTime _dataExportEndTm = new DateTime();
 
@@ -137,6 +138,18 @@ namespace scada_analyst
         private void AboutClick(object sender, RoutedEventArgs e)
         {
             new Window_About(this).ShowDialog();
+        }
+
+        /// <summary>
+        /// Options for choosing input data date format; default is year-month-day
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OptionsClick(object sender, RoutedEventArgs e)
+        {
+            Window_DateOptions dO = new Window_DateOptions(this, _dateFormat);
+
+            if (dO.ShowDialog().Value) { _dateFormat = dO.Format; }
         }
 
         /// <summary>
@@ -978,21 +991,18 @@ namespace scada_analyst
                 {
                     if (!isLoaded)
                     {
-                        analysis = new ScadaData(filenames, progress);
+                        analysis = new ScadaData(filenames, _dateFormat, progress);
                     }
                     else
                     {
-                        analysis.AppendFiles(filenames, progress);
+                        analysis.AppendFiles(filenames, _dateFormat, progress);
                     }
                 });
 
                 scadaFile = analysis;
                 scadaLoaded = true;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
         /// <summary>
@@ -1029,15 +1039,20 @@ namespace scada_analyst
             }
             catch (LoadingCancelledException)
             {
-                MessageBox.Show("Loading cancelled by user.");
+                await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
             }
             catch (OperationCanceledException)
             {
-                MessageBox.Show("Loading cancelled by user.");
+                await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
+            }
+            catch (WrongDateTimeException)
+            {
+                await this.ShowMessageAsync("Warning!",
+                    "Try changing the loaded date-time format for the file(s) to load properly.");
             }
             catch (WrongFileTypeException)
             {
-                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");
+                await this.ShowMessageAsync("Warning!", "This file cannot be loaded since it is of an incompatible file type for this function.");
             }
             catch (Exception ex)
             {
@@ -2001,6 +2016,7 @@ namespace scada_analyst
         public ScadaData ScadaFile { get { return scadaFile; } set { scadaFile = value; } }
 
         public bool GeoLoaded { get { return geoLoaded; } set { geoLoaded = value; } }
+        
         public bool MeteoLoaded { get { return meteoLoaded; } set { meteoLoaded = value; } }
         public bool ScadaLoaded { get { return scadaLoaded; } set { scadaLoaded = value; } }
 
@@ -2171,6 +2187,8 @@ namespace scada_analyst
     public class UnsuitableTargetFileException : Exception { }
 
     public class WritingCancelledException : Exception { }
+
+    public class WrongDateTimeException : Exception { }
 
     public class WrongFileTypeException : Exception { }
 

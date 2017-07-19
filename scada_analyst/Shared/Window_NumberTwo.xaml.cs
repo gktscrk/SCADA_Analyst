@@ -3,9 +3,7 @@ using System.Windows;
 
 using MahApps.Metro.Controls;
 
-using scada_analyst.Controls;
-
-namespace scada_analyst.Shared
+namespace scada_analyst.Controls
 {
     /// <summary>
     /// Interaction logic for Window_NumberTwo.xaml
