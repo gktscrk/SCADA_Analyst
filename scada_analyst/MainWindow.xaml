@@ -33,7 +33,7 @@
         <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" IsMainMenu="True" 
               Name="Prime_Menu" >
             <MenuItem Header="_File" >
-                <MenuItem Header="_Options" Click="OptionsClick" />
+                <MenuItem Header="_Change Input Data Date Format" Click="DateFormatClick" />
                 <MenuItem Header="_About" Click="AboutClick" />
                 <Separator />
                 <MenuItem Header="_Exit" Click="Exit" />

@@ -128,7 +128,7 @@ namespace scada_analyst
 
         #endregion
 
-        #region About & Exit
+        #region File Menu Functions
 
         /// <summary>
         /// Brings up the About window
@@ -145,7 +145,7 @@ namespace scada_analyst
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OptionsClick(object sender, RoutedEventArgs e)
+        private void DateFormatClick(object sender, RoutedEventArgs e)
         {
             Window_DateOptions dO = new Window_DateOptions(this, _dateFormat);
 

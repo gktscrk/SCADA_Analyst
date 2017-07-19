@@ -472,7 +472,7 @@ namespace scada_analyst
 
                 data.Add(new ScadaSample(splits, header, _dateFormat));
 
-                InclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' })));
+                InclDtTm.Add(Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat));
                 
                 if (UnitID == -1 && data.Count > 0)
                 {
@@ -482,7 +482,7 @@ namespace scada_analyst
                         
             public void AddData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat)
             {
-                DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }));
+                DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat);
 
                 if (InclDtTm.Contains(thisTime))
                 {
