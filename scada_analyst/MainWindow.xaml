@@ -931,6 +931,83 @@
                             </lvc:CartesianChart>
 
                             <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5"
+                                      Name="LView_EventExplorer_Main"                       
+                                      VerticalAlignment="Top"                       
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
+                                        <GridViewColumn Header="Date and Time" Width="110" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding TimeStamp, StringFormat=\{0:dd/MM/yyyy HH:mm\}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Wind Speed" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding AnemoM.ActWinds.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Power Prod" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Powers.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Δ Power Prod" Width="80" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Powers.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Ambient" Width="60" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding AmbTemps.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Δ Ambient" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding AmbTemps.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Nacelle Temp" Width="80" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Nacel.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Δ Nacelle Temp" Width="90" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Nacel.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <ListView Grid.Column="0" Grid.Row="1" Margin="5,5,5,5"
                                       Name="LView_EventExplorer_Gearbox"                       
                                       VerticalAlignment="Top"                       
                                       ScrollViewer.CanContentScroll="True" >

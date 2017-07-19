@@ -118,12 +118,7 @@ namespace scada_analyst
             CreateSummaryComboInfo();
             CreateSummaries();
 
-            LView_LoadedOverview.SelectedIndex = 0;
-
-            //LBL_EquipmentChoice.IsEnabled = false;
-            //Comb_DisplayEvDetails.IsEnabled = false;
-            //LBL_EquipmentChoice.IsEnabled = false;
-            //CBox_DataSetChoice.IsEnabled = false;
+            LView_LoadedOverview.SelectedIndex = 0;            
         }
 
         #endregion
@@ -350,10 +345,10 @@ namespace scada_analyst
 
         private void CreateEventDetailsView()
         {
-            _eventDetailsSelection.Add(" ");
+            _eventDetailsSelection.Add("Main Overview");
             _eventDetailsSelection.Add("Gearbox");
             _eventDetailsSelection.Add("Generator");
-            _eventDetailsSelection.Add("Main bearing");
+            _eventDetailsSelection.Add("Main Bearing");
 
             Comb_DisplayEvDetails.ItemsSource = _eventDetailsSelection;
             Comb_DisplayEvDetails.SelectedIndex = 0;
@@ -392,12 +387,14 @@ namespace scada_analyst
 
             if (CBox_DataSetChoice.IsChecked.Value)
             {
+                LView_EventExplorer_Main.ItemsSource = _histEventData;
                 LView_EventExplorer_Gearbox.ItemsSource = _histEventData;
                 LView_EventExplorer_Generator.ItemsSource = _histEventData;
                 LView_EventExplorer_MainBear.ItemsSource = _histEventData;
             }
             else
             {
+                LView_EventExplorer_Main.ItemsSource = _thisEventData;
                 LView_EventExplorer_Gearbox.ItemsSource = _thisEventData;
                 LView_EventExplorer_Generator.ItemsSource = _thisEventData;
                 LView_EventExplorer_MainBear.ItemsSource = _thisEventData;
@@ -475,37 +472,39 @@ namespace scada_analyst
             {
                 LChart_Basic.Visibility = Visibility.Visible;
 
+                // this here chooses what to display in the events details view in order to 
+                // show the right information based on what is chosen in the combobox
                 if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[0])
                 {
+                    LView_EventExplorer_Main.Visibility = Visibility.Visible;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Collapsed;
-                    //analyser.CreateThresholdLimits(_eventDetailsSelection[0]);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[1])
                 {
+                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     ChartShowSeries(_eventDetailsSelection[1]);
-                    //analyser.CreateThresholdLimits(_eventDetailsSelection[1]);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[2])
                 {
+                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Visible;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     ChartShowSeries(_eventDetailsSelection[2]);
-                    //analyser.CreateThresholdLimits(_eventDetailsSelection[2]);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[3])
                 {
+                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
                     ChartShowSeries(_eventDetailsSelection[3]);
-                    //analyser.Thresholds = analyser.CreateThresholdLimits(_eventDetailsSelection[3]);
                 }
             }
         }
@@ -600,7 +599,10 @@ namespace scada_analyst
                 positionsAddedToData = analyser.AddStructureLocations(geoFile, meteoFile, scadaFile, scadaLoaded, meteoLoaded, geoLoaded);
             }
             catch (CancelLoadingException) { }
-            catch { throw new Exception(); }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -655,12 +657,13 @@ namespace scada_analyst
                 }
                 else
                 {
-                    MessageBox.Show(this, "No data of this type has been loaded yet. Please load data before trying to export.");
+                    await this.ShowMessageAsync("Warning!", 
+                        "No data of this type has been loaded yet. Please load data before trying to export.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -724,12 +727,13 @@ namespace scada_analyst
                 }
                 else
                 {
-                    MessageBox.Show(this, "No data of this type has been loaded yet. Please load data before trying to export.");
+                    await this.ShowMessageAsync("Warning!", 
+                        "No data of this type has been loaded yet. Please load data before trying to export.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -873,21 +877,18 @@ namespace scada_analyst
                     geoLoaded = true;
                 }
             }
+            catch (OperationCanceledException) { }
             catch (LoadingCancelledException)
             {
-                MessageBox.Show("Loading cancelled by user.");
-            }
-            catch (OperationCanceledException)
-            {
-
-            }
+                await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
+            }            
             catch (WrongFileTypeException)
             {
-                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");
+                await this.ShowMessageAsync("Warning!", "This file cannot be loaded since it is of an incompatible file type for this function.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -955,21 +956,19 @@ namespace scada_analyst
                     PopulateOverview();
                 }
             }
+            catch (OperationCanceledException) { }
             catch (LoadingCancelledException)
             {
-                MessageBox.Show("Loading cancelled by user.");
-            }
-            catch (OperationCanceledException)
-            {
-
+                await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
             }
             catch (WrongFileTypeException)
             {
-                MessageBox.Show("This file cannot be loaded since it is of an incompatible file type for this function.");
+                await this.ShowMessageAsync("Warning!", 
+                    "This file cannot be loaded since it is of an incompatible file type for this function.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -1037,11 +1036,8 @@ namespace scada_analyst
                     PopulateOverview();
                 }
             }
+            catch (OperationCanceledException) { }
             catch (LoadingCancelledException)
-            {
-                await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
-            }
-            catch (OperationCanceledException)
             {
                 await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
             }
@@ -1052,11 +1048,12 @@ namespace scada_analyst
             }
             catch (WrongFileTypeException)
             {
-                await this.ShowMessageAsync("Warning!", "This file cannot be loaded since it is of an incompatible file type for this function.");
+                await this.ShowMessageAsync("Warning!", 
+                    "This file cannot be loaded since it is of an incompatible file type for this function.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -1299,7 +1296,7 @@ namespace scada_analyst
             catch (CancelLoadingException) { }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetType().Name + ": " + ex.Message);
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
         }
 
@@ -1455,59 +1452,6 @@ namespace scada_analyst
 
         #region Background Methods
 
-        private void LView_LoadedOverview_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (LView_LoadedOverview.SelectedItems.Count == 1)
-            {
-                DirectoryItem thisItem = (DirectoryItem)LView_LoadedOverview.SelectedItem;
-
-                if (thisItem.StringData == Overview[0].StringData)
-                {
-                    Tab_EventsSummary.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Visibility = Visibility.Collapsed;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[1].StringData)
-                {
-                    Tab_LoWinds.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[1].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[2].StringData)
-                {
-                    Tab_HiWinds.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[2].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[3].StringData)
-                {
-                    Tab_NoPower.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[3].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Visible;
-                }
-                else if (thisItem.StringData == Overview[4].StringData)
-                {
-                    Tab_RtPower.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[4].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Visible;
-                }
-            }
-        }
-
         #region Thresholds
 
         private void Threshold_LoseFocus(object sender, RoutedEventArgs e)
@@ -1565,6 +1509,59 @@ namespace scada_analyst
         }
 
         #endregion
+
+        private void LView_LoadedOverview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LView_LoadedOverview.SelectedItems.Count == 1)
+            {
+                DirectoryItem thisItem = (DirectoryItem)LView_LoadedOverview.SelectedItem;
+
+                if (thisItem.StringData == Overview[0].StringData)
+                {
+                    Tab_EventsSummary.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Visibility = Visibility.Collapsed;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[1].StringData)
+                {
+                    Tab_LoWinds.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[1].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[2].StringData)
+                {
+                    Tab_HiWinds.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[2].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[3].StringData)
+                {
+                    Tab_NoPower.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[3].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
+                }
+                else if (thisItem.StringData == Overview[4].StringData)
+                {
+                    Tab_RtPower.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[4].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
+                }
+            }
+        }
 
         private void ChangeFaultStatus(bool result)
         {
@@ -1849,14 +1846,14 @@ namespace scada_analyst
                 explorEvent_MenuItem.Header = "Explore Event";
                 explorEvent_MenuItem.Click += ExploreEvent_MenuItem_Click;
                 menu.Items.Add(explorEvent_MenuItem);
-                MenuItem removeEvent_MenuItem = new MenuItem();
-                removeEvent_MenuItem.Header = "Remove Event";
-                removeEvent_MenuItem.Click += RemoveEvent_MenuItem_Click;
-                menu.Items.Add(removeEvent_MenuItem);
             }
 
             if (LView_PowrNone.SelectedItems.Count == 1)
             {
+                MenuItem removeEvent_MenuItem = new MenuItem();
+                removeEvent_MenuItem.Header = "Remove Event";
+                removeEvent_MenuItem.Click += RemoveEvent_MenuItem_Click;
+                menu.Items.Add(removeEvent_MenuItem);
                 MenuItem makeFault_MenuItem = new MenuItem();
                 makeFault_MenuItem.Header = "Change Event to Fault";
                 makeFault_MenuItem.Click += MakeFault_MenuItem_Click;
@@ -1868,6 +1865,10 @@ namespace scada_analyst
             }
             else if (LView_PowrNone.SelectedItems.Count > 1)
             {
+                MenuItem removeEvent_MenuItem = new MenuItem();
+                removeEvent_MenuItem.Header = "Remove Events";
+                removeEvent_MenuItem.Click += RemoveEvent_MenuItem_Click;
+                menu.Items.Add(removeEvent_MenuItem);
                 MenuItem makeFault_MenuItem = new MenuItem();
                 makeFault_MenuItem.Header = "Change Events to Faults";
                 makeFault_MenuItem.Click += MakeFault_MenuItem_Click;
@@ -1978,23 +1979,16 @@ namespace scada_analyst
         
         private void RemoveEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
+            if (LView_PowrNone.SelectedItems.Count > 0)
             {
-                EventData _event;
-
-                if (LView_PowrNone.SelectedItems.Count == 1)
+                foreach (object selectedItem in LView_PowrNone.SelectedItems)
                 {
-                    _event = (EventData)LView_PowrNone.SelectedItem;
+                    EventData _event = (EventData)selectedItem;
 
-                    // find index and removeat that index
-                    analyser.NoPwEvents.RemoveAt(analyser.NoPwEvents.FindIndex(x => x.Start == _event.Start));
-                }
-                else
-                {
-                    _event = (EventData)LView_PowrRted.SelectedItem;
+                    // find index and removeat that index but make certain it is the right asset we're removing from
+                    int index = analyser.NoPwEvents.FindIndex(x => x.FromAsset == _event.FromAsset && x.Start == _event.Start);
 
-                    // find index and removeat that index
-                    analyser.RtPwEvents.RemoveAt(analyser.RtPwEvents.FindIndex(x => x.Start == _event.Start));
+                    analyser.NoPwEvents.RemoveAt(index);
                 }
 
                 RefreshEvents();

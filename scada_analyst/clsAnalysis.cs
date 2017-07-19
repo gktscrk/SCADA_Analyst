@@ -1558,11 +1558,19 @@ namespace scada_analyst
         private void ProcessAverageDataValues(ScadaData.ScadaSample thisSample, int index)
         {
             // this tuple should return the required values for every input option
-            #region Ambient Temperatures
+            #region Main Variables
 
             Tuple<double, double> a01 = IncrementAverage(_fleetMeans.Data[index].AmbTemps.Mean, _fleetMeans.Data[index].AmbTemps.Maxm, thisSample.AmbTemps.Mean);
             _fleetMeans.Data[index].AmbTemps.Mean = a01.Item1;
             _fleetMeans.Data[index].AmbTemps.Maxm = a01.Item2;
+
+            Tuple<double, double> a02 = IncrementAverage(_fleetMeans.Data[index].Powers.Mean, _fleetMeans.Data[index].Powers.Maxm, thisSample.Powers.Mean);
+            _fleetMeans.Data[index].AmbTemps.Mean = a02.Item1;
+            _fleetMeans.Data[index].AmbTemps.Maxm = a02.Item2;
+
+            Tuple<double, double> a03 = IncrementAverage(_fleetMeans.Data[index].Nacel.Mean, _fleetMeans.Data[index].Nacel.Maxm, thisSample.Nacel.Mean);
+            _fleetMeans.Data[index].AmbTemps.Mean = a03.Item1;
+            _fleetMeans.Data[index].AmbTemps.Maxm = a03.Item2;
 
             #endregion
 
@@ -1620,15 +1628,15 @@ namespace scada_analyst
 
             #region Main Bearing
 
-            Tuple<double, double> a02 = IncrementAverage(_fleetMeans.Data[index].MainBear.Gs.Mean, _fleetMeans.Data[index].MainBear.Gs.Maxm, thisSample.MainBear.Gs.Mean);
-            _fleetMeans.Data[index].MainBear.Gs.Mean = a02.Item1;
-            _fleetMeans.Data[index].MainBear.Gs.Maxm = a02.Item2;
-            Tuple<double, double> a03 = IncrementAverage(_fleetMeans.Data[index].MainBear.Hs.Mean, _fleetMeans.Data[index].MainBear.Hs.Maxm, thisSample.MainBear.Hs.Mean);
-            _fleetMeans.Data[index].MainBear.Hs.Mean = a03.Item1;
-            _fleetMeans.Data[index].MainBear.Hs.Maxm = a03.Item2;
-            Tuple<double, double> a04 = IncrementAverage(_fleetMeans.Data[index].MainBear.Main.Mean, _fleetMeans.Data[index].MainBear.Main.Maxm, thisSample.MainBear.Main.Mean);
-            _fleetMeans.Data[index].MainBear.Main.Mean = a04.Item1;
-            _fleetMeans.Data[index].MainBear.Main.Maxm = a04.Item2;
+            Tuple<double, double> a10 = IncrementAverage(_fleetMeans.Data[index].MainBear.Gs.Mean, _fleetMeans.Data[index].MainBear.Gs.Maxm, thisSample.MainBear.Gs.Mean);
+            _fleetMeans.Data[index].MainBear.Gs.Mean = a10.Item1;
+            _fleetMeans.Data[index].MainBear.Gs.Maxm = a10.Item2;
+            Tuple<double, double> a11 = IncrementAverage(_fleetMeans.Data[index].MainBear.Hs.Mean, _fleetMeans.Data[index].MainBear.Hs.Maxm, thisSample.MainBear.Hs.Mean);
+            _fleetMeans.Data[index].MainBear.Hs.Mean = a11.Item1;
+            _fleetMeans.Data[index].MainBear.Hs.Maxm = a11.Item2;
+            Tuple<double, double> a12 = IncrementAverage(_fleetMeans.Data[index].MainBear.Main.Mean, _fleetMeans.Data[index].MainBear.Main.Maxm, thisSample.MainBear.Main.Mean);
+            _fleetMeans.Data[index].MainBear.Main.Mean = a12.Item1;
+            _fleetMeans.Data[index].MainBear.Main.Maxm = a12.Item2;
 
             #endregion
         }
@@ -1659,7 +1667,9 @@ namespace scada_analyst
             // lastly the incrementor needs to be used to get the average for all of the timestamps
             for (int i = 0; i < _fleetMeans.Data.Count; i++)
             {
+                _fleetMeans.Data[i].Powers.Mean = _fleetMeans.Data[i].Powers.Mean / _fleetMeans.Data[i].Powers.Maxm;
                 _fleetMeans.Data[i].AmbTemps.Mean = _fleetMeans.Data[i].AmbTemps.Mean / _fleetMeans.Data[i].AmbTemps.Maxm;
+                _fleetMeans.Data[i].Nacel.Mean = _fleetMeans.Data[i].Nacel.Mean / _fleetMeans.Data[i].Nacel.Maxm;
 
                 _fleetMeans.Data[i].Gearbox.Oils.Mean = _fleetMeans.Data[i].Gearbox.Oils.Mean / _fleetMeans.Data[i].Gearbox.Oils.Maxm;
                 _fleetMeans.Data[i].Gearbox.Hs.Gens.Mean = _fleetMeans.Data[i].Gearbox.Hs.Gens.Mean / _fleetMeans.Data[i].Gearbox.Hs.Gens.Maxm;
@@ -1719,7 +1729,9 @@ namespace scada_analyst
 
                     // doing the calculation this way round means that a negative difference is equal to a spec value
                     // which is lower than the fleet average, and a positive difference is above the fleet average
+                    thisSample.Powers.Dlta = thisSample.Powers.Mean - flytSample.Powers.Mean;
                     thisSample.AmbTemps.Dlta = thisSample.AmbTemps.Mean - flytSample.AmbTemps.Mean;
+                    thisSample.Nacel.Dlta = thisSample.Nacel.Mean - flytSample.Nacel.Mean;
 
                     thisSample.Gearbox.Oils.Dlta = thisSample.Gearbox.Oils.Mean - flytSample.Gearbox.Oils.Mean;
                     thisSample.Gearbox.Hs.Gens.Dlta = thisSample.Gearbox.Hs.Gens.Mean - flytSample.Gearbox.Hs.Gens.Mean;

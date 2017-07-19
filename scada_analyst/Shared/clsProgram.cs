@@ -12,7 +12,19 @@ namespace scada_analyst.Shared
         {
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
-            #region Verson 1.000 and after
+            #region Version 1.400 (Romax Visit)
+
+            ProgramVersion v1405 = new ProgramVersion(1405, new DateTime(2017, 07, 19));
+            v1405.AddChange("Remove events possible for multiple events at a time in the low power production area.");
+            results.Add(v1405);
+
+            ProgramVersion v1404 = new ProgramVersion(1404, new DateTime(2017, 07, 19));
+            v1404.AddChange("Loading SCADA data the turbine ID checks both Asset ID and Station ID to see which one to use.");
+            results.Add(v1404);
+
+            ProgramVersion v1403 = new ProgramVersion(1403, new DateTime(2017, 07, 19));
+            v1403.AddChange("All errors should come up as a similar black screen and fade in.");
+            results.Add(v1403);
 
             ProgramVersion v1402 = new ProgramVersion(1402, new DateTime(2017, 07, 19));
             v1402.AddChange("Can pick date format for input files.");
@@ -28,6 +40,10 @@ namespace scada_analyst.Shared
             v1400.AddChange("Fixed change fault status option workings.");
             results.Add(v1400);
 
+            #endregion
+
+            #region Version 1.000
+            
             ProgramVersion v1300 = new ProgramVersion(1300, new DateTime(2017, 07, 10));
             v1300.AddChange("Added option for displaying rate of change of variables above an user-defined limit.");
             v1300.AddChange("User can now certify certain events as 'faults' by right-clicking on them in the 'No Power Production' event list.");

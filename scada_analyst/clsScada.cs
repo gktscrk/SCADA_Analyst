@@ -46,12 +46,12 @@ namespace scada_analyst
 
         public ScadaData(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadNSort(filenames, _dateFormat, progress);
+            LoadAndSort(filenames, _dateFormat, progress);
         }
 
         public void AppendFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadNSort(filenames, _dateFormat, progress);
+            LoadAndSort(filenames, _dateFormat, progress);
         }
 
         private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
@@ -64,13 +64,15 @@ namespace scada_analyst
             }
         }
 
-        private void LoadNSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
             LoadFiles(filenames, _dateFormat, progress);
 
             SortScada();
             PopulateTimeDif();
             GetBearings();
+            
+            windFarm = windFarm.OrderBy(o => o.UnitID).ToList();
         }
 
         private void LoadScada(Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
@@ -106,6 +108,7 @@ namespace scada_analyst
 
                             int thisAsset;
 
+                            // if the file does not have an AssetID column, the Station Column should be used instead
                             if (fileHeader.AssetCol != -1)
                             {
                                 thisAsset = Common.CanConvert<int>(splits[fileHeader.AssetCol]) ?
@@ -118,8 +121,7 @@ namespace scada_analyst
                             }
 
                             // organise loading so it would check which ones have already
-                            // been loaded; then work around the ones have have been
-
+                            // been loaded; work around the ones have have been and add data there
                             if (inclTrbn.Contains(thisAsset))
                             {
                                 int index = windFarm.FindIndex(x => x.UnitID == thisAsset);
@@ -129,8 +131,7 @@ namespace scada_analyst
                             else
                             {
                                 windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
-
-                                inclTrbn.Add(Convert.ToInt32(splits[fileHeader.AssetCol]));
+                                inclTrbn.Add(windFarm[windFarm.Count - 1].UnitID);
                             }
                         }
 
@@ -476,7 +477,7 @@ namespace scada_analyst
                 
                 if (UnitID == -1 && data.Count > 0)
                 {
-                    UnitID = data[0].AssetID;
+                    UnitID = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
                 }
             }
                         
