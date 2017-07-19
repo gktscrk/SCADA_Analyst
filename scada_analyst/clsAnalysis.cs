@@ -72,11 +72,310 @@ namespace scada_analyst
 
         #endregion
 
+        #region Event Finding (Basic Step)
+
+        /// <summary>
+        /// Overall method for finding events: references separate functions that call the required
+        /// events for finding times with no power, times with high power, and times with wind speeds
+        /// over and below the cut-in and cut-out speeds of the turbine.
+        /// </summary>
+        /// <param name="progress"></param>
+        public void FindEvents(ScadaData scadaFile, MeteoData meteoFile, IProgress<int> progress)
+        {
+            // all of the find events methods follow a similar methodology
+            //
+            // firstly the full set of applicable data is taken to investigate
+            // the criteria these are tested against are defined based on wind speed or power output
+            // and a certain number of if-conditions need to be passed for the testing to take place
+            //
+            // namely whether the dataset is continuous in time, whether it doesn't end with the file,
+            // and whether all of the tested samples meet the same conditions
+
+            try
+            {
+                FindNoPowerEvents(scadaFile, progress);
+                FindRatedPowerEvents(scadaFile, progress);
+                FindWeatherFromMeteo(meteoFile, progress);
+                FindWeatherFromScada(scadaFile, progress);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private void FindNoPowerEvents(ScadaData scadaFile, IProgress<int> progress)
+        {
+            // this method investigates all loaded scada files for low power (defined as below 0)
+            // times in order to determine when the turbine may have been inactive --
+            // which will be carried out in a different method later on
+
+            // purpose of this is to find all suitable events
+
+            try
+            {
+                if (scadaFile.WindFarm != null)
+                {
+                    int count = 0;
+
+                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                    {
+                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                        {
+                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean < PowerLim &&
+                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
+                            {
+                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                                {
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
+
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > PowerLim) { j = k - 1; break; }
+                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                                }
+
+                                _noPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.NO_PWR));
+                                _allPwrEvts.Add(_noPwEvents[_noPwEvents.Count - 1]);
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
+                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private void FindRatedPowerEvents(ScadaData scadaFile, IProgress<int> progress)
+        {
+            // this method sees when and how often the turbine was operating
+            // at rated power in the time that we are inputting
+
+            try
+            {
+                if (scadaFile.WindFarm != null)
+                {
+                    int count = 0;
+
+                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                    {
+                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                        {
+                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean >= RatedPwr &&
+                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
+                            {
+                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                                {
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
+
+                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < RatedPwr) { j = k - 1; break; }
+                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                                }
+
+                                _hiPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.HI_PWR));
+                                _allPwrEvts.Add(_noPwEvents[_noPwEvents.Count - 1]);
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
+                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private void FindWeatherFromMeteo(MeteoData meteoFile, IProgress<int> progress)
+        {
+            // this method investigates all loaded meteorologic files for low and high wind speed
+            // times in order to determine when the turbine may have been inactive due to that --
+            // which will be carried out in a different method later on
+
+            // purpose of this is to find all suitable events
+
+            try
+            {
+                if (meteoFile.MetMasts != null)
+                {
+                    int count = 0;
+
+                    for (int i = 0; i < meteoFile.MetMasts.Count; i++)
+                    {
+                        for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
+                        {
+                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < CutIn &&
+                                meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean >= 0)
+                            {
+                                List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
+
+                                for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                {
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
+
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > CutIn) { j = k - 1; break; }
+                                    else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                }
+
+                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
+                                _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
+                            }
+                            else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > CutOut)
+                            {
+                                List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
+
+                                for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                {
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
+
+                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < CutOut) { j = k - 1; break; }
+                                    else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                }
+
+                                _hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
+                                _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / meteoFile.MetMasts.Count +
+                                        (double)j / meteoFile.MetMasts[i].MetDataSorted.Count / meteoFile.MetMasts.Count) * 100));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private void FindWeatherFromScada(ScadaData scadaFile, IProgress<int> progress)
+        {
+            // this method investigates all loaded scada files for low and high wind speed
+            // times in order to determine when the turbine may have been inactive due to that --
+            // which will be carried out in a different method later on
+
+            // purpose of this is to find all suitable events
+
+            try
+            {
+                if (scadaFile.WindFarm != null)
+                {
+                    int count = 0;
+
+                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+                    {
+                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                        {
+                            if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < CutIn &&
+                                scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean >= 0)
+                            {
+                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                                {
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
+
+                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > CutIn) { j = k - 1; break; }
+                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                                }
+
+                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
+                                _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
+                            }
+                            else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > CutOut)
+                            {
+                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+
+                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
+                                {
+                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
+
+                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < CutOut) { j = k - 1; break; }
+                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
+
+                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
+                                }
+
+                                _hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
+                                _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
+                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
         #region Algorithmic Analysis
         // these events here should be the real workhorse, trying to find connections between data, etc
 
         #region Rate of Change
-        
+
         public void RatesOfChange(List<ScadaData.ScadaSample> eventData)
         {
             // this method is the public introduction to the rate of change analysis display result
@@ -1181,304 +1480,7 @@ namespace scada_analyst
         }
 
         #endregion 
-
-        #region Finding Events
-
-        /// <summary>
-        /// Overall method for finding events: references separate functions that call the required
-        /// events for finding times with no power, times with high power, and times with wind speeds
-        /// over and below the cut-in and cut-out speeds of the turbine.
-        /// </summary>
-        /// <param name="progress"></param>
-        public void FindEvents(ScadaData scadaFile, MeteoData meteoFile, IProgress<int> progress)
-        {
-            // all of the find events methods follow a similar methodology
-            //
-            // firstly the full set of applicable data is taken to investigate
-            // the criteria these are tested against are defined based on wind speed or power output
-            // and a certain number of if-conditions need to be passed for the testing to take place
-            //
-            // namely whether the dataset is continuous in time, whether it doesn't end with the file,
-            // and whether all of the tested samples meet the same conditions
-
-            try
-            {
-                FindNoPowerEvents(scadaFile, progress);
-                FindRatedPowerEvents(scadaFile, progress);
-                FindWeatherFromMeteo(meteoFile, progress);
-                FindWeatherFromScada(scadaFile, progress);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private void FindNoPowerEvents(ScadaData scadaFile, IProgress<int> progress)
-        {
-            // this method investigates all loaded scada files for low power (defined as below 0)
-            // times in order to determine when the turbine may have been inactive --
-            // which will be carried out in a different method later on
-
-            // purpose of this is to find all suitable events
-
-            try
-            {
-                if (scadaFile.WindFarm != null)
-                {
-                    int count = 0;
-
-                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
-                    {
-                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
-                        {
-                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean < PowerLim &&
-                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
-                            {
-                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
-                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
-
-                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
-                                {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
-
-                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean > PowerLim) { j = k - 1; break; }
-                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
-
-                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
-                                }
-
-                                _noPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.NO_PWR));
-                            }
-
-                            count++;
-
-                            if (count % 1000 == 0)
-                            {
-                                if (progress != null)
-                                {
-                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
-                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private void FindRatedPowerEvents(ScadaData scadaFile, IProgress<int> progress)
-        {
-            // this method sees when and how often the turbine was operating
-            // at rated power in the time that we are inputting
-
-            try
-            {
-                if (scadaFile.WindFarm != null)
-                {
-                    int count = 0;
-
-                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
-                    {
-                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
-                        {
-                            if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean >= RatedPwr &&
-                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
-                            {
-                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
-                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
-
-                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
-                                {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
-
-                                    if (scadaFile.WindFarm[i].DataSorted[k].Powers.Mean < RatedPwr) { j = k - 1; break; }
-                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
-
-                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
-                                }
-
-                                _hiPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.HI_PWR));
-                            }
-
-                            count++;
-
-                            if (count % 1000 == 0)
-                            {
-                                if (progress != null)
-                                {
-                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
-                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private void FindWeatherFromMeteo(MeteoData meteoFile, IProgress<int> progress)
-        {
-            // this method investigates all loaded meteorologic files for low and high wind speed
-            // times in order to determine when the turbine may have been inactive due to that --
-            // which will be carried out in a different method later on
-
-            // purpose of this is to find all suitable events
-
-            try
-            {
-                if (meteoFile.MetMasts != null)
-                {
-                    int count = 0;
-
-                    for (int i = 0; i < meteoFile.MetMasts.Count; i++)
-                    {
-                        for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
-                        {
-                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < CutIn &&
-                                meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean >= 0)
-                            {
-                                List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
-                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
-
-                                for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
-                                {
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
-
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > CutIn) { j = k - 1; break; }
-                                    else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
-
-                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
-                                }
-
-                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
-                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
-                            }
-                            else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > CutOut)
-                            {
-                                List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
-                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
-
-                                for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
-                                {
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].DeltaTime > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
-
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < CutOut) { j = k - 1; break; }
-                                    else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
-
-                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
-                                }
-
-                                _hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
-                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
-                            }
-
-                            count++;
-
-                            if (count % 1000 == 0)
-                            {
-                                if (progress != null)
-                                {
-                                    progress.Report((int)(((double)i / meteoFile.MetMasts.Count +
-                                        (double)j / meteoFile.MetMasts[i].MetDataSorted.Count / meteoFile.MetMasts.Count) * 100));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private void FindWeatherFromScada(ScadaData scadaFile, IProgress<int> progress)
-        {
-            // this method investigates all loaded scada files for low and high wind speed
-            // times in order to determine when the turbine may have been inactive due to that --
-            // which will be carried out in a different method later on
-
-            // purpose of this is to find all suitable events
-
-            try
-            {
-                if (scadaFile.WindFarm != null)
-                {
-                    int count = 0;
-
-                    for (int i = 0; i < scadaFile.WindFarm.Count; i++)
-                    {
-                        for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
-                        {
-                            if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean < CutIn &&
-                                scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean >= 0)
-                            {
-                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
-                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
-
-                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
-                                {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
-
-                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean > CutIn) { j = k - 1; break; }
-                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
-
-                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
-                                }
-
-                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
-                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
-                            }
-                            else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > CutOut)
-                            {
-                                List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
-                                thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
-
-                                for (int k = j + 1; k < scadaFile.WindFarm[i].DataSorted.Count; k++)
-                                {
-                                    if (scadaFile.WindFarm[i].DataSorted[k].DeltaTime > ScadaSeprtr) { j = k - 1; break; }
-
-                                    if (scadaFile.WindFarm[i].DataSorted[k].AnemoM.ActWinds.Mean < CutOut) { j = k - 1; break; }
-                                    else if (k == scadaFile.WindFarm[i].DataSorted.Count - 1) { j = k; }
-
-                                    thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
-                                }
-
-                                _hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
-                                _allWtrEvts.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
-                            }
-
-                            count++;
-
-                            if (count % 1000 == 0)
-                            {
-                                if (progress != null)
-                                {
-                                    progress.Report((int)(((double)i / scadaFile.WindFarm.Count +
-                                        (double)j / scadaFile.WindFarm[i].DataSorted.Count / scadaFile.WindFarm.Count) * 100));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        #endregion
-
+        
         #region Fleet-wise Means and Difference
 
         public ScadaData FleetStats(ScadaData scadaFile, IProgress<int> progress)
@@ -1667,8 +1669,8 @@ namespace scada_analyst
             // lastly the incrementor needs to be used to get the average for all of the timestamps
             for (int i = 0; i < _fleetMeans.Data.Count; i++)
             {
-                _fleetMeans.Data[i].Powers.Mean = _fleetMeans.Data[i].Powers.Mean / _fleetMeans.Data[i].Powers.Maxm;
                 _fleetMeans.Data[i].AmbTemps.Mean = _fleetMeans.Data[i].AmbTemps.Mean / _fleetMeans.Data[i].AmbTemps.Maxm;
+                _fleetMeans.Data[i].Powers.Mean = _fleetMeans.Data[i].Powers.Mean / _fleetMeans.Data[i].Powers.Maxm;
                 _fleetMeans.Data[i].Nacel.Mean = _fleetMeans.Data[i].Nacel.Mean / _fleetMeans.Data[i].Nacel.Maxm;
 
                 _fleetMeans.Data[i].Gearbox.Oils.Mean = _fleetMeans.Data[i].Gearbox.Oils.Mean / _fleetMeans.Data[i].Gearbox.Oils.Maxm;
@@ -1729,8 +1731,8 @@ namespace scada_analyst
 
                     // doing the calculation this way round means that a negative difference is equal to a spec value
                     // which is lower than the fleet average, and a positive difference is above the fleet average
-                    thisSample.Powers.Dlta = thisSample.Powers.Mean - flytSample.Powers.Mean;
                     thisSample.AmbTemps.Dlta = thisSample.AmbTemps.Mean - flytSample.AmbTemps.Mean;
+                    thisSample.Powers.Dlta = thisSample.Powers.Mean - flytSample.Powers.Mean;
                     thisSample.Nacel.Dlta = thisSample.Nacel.Mean - flytSample.Nacel.Mean;
 
                     thisSample.Gearbox.Oils.Dlta = thisSample.Gearbox.Oils.Mean - flytSample.Gearbox.Oils.Mean;

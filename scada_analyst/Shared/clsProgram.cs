@@ -14,6 +14,20 @@ namespace scada_analyst.Shared
 
             #region Version 1.400 (Romax Visit)
 
+            ProgramVersion v1408 = new ProgramVersion(1408, new DateTime(2017, 07, 19));
+            v1408.AddChange("Fixed asset overview list as Station ID.");
+            results.Add(v1408);
+
+            ProgramVersion v1407 = new ProgramVersion(1407, new DateTime(2017, 07, 19));
+            v1407.AddChange("Fixed events counter problems.");
+            results.Add(v1407);
+
+            ProgramVersion v1406 = new ProgramVersion(1406, new DateTime(2017, 07, 19));
+            v1406.AddChange("Averages calculation includes the nacelle and the power output.");
+            v1406.AddChange("New listview for showing general overview of event stats.");
+            v1406.AddChange("Loaded assets sorts by ID.");
+            results.Add(v1406);
+
             ProgramVersion v1405 = new ProgramVersion(1405, new DateTime(2017, 07, 19));
             v1405.AddChange("Remove events possible for multiple events at a time in the low power production area.");
             results.Add(v1405);

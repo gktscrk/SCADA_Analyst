@@ -45,12 +45,12 @@ namespace scada_analyst
 
         public MeteoData(string[] filenames, IProgress<int> progress)
         {
-            LoadNSortMet(filenames, progress);
+            LoadAndSort(filenames, progress);
         }
 
         public void AppendFiles(string[] filenames, IProgress<int> progress)
         {
-            LoadNSortMet(filenames, progress);
+            LoadAndSort(filenames, progress);
         }
 
         private void LoadMetFiles(string[] filenames, IProgress<int> progress)
@@ -138,13 +138,15 @@ namespace scada_analyst
             }
         }
 
-        private void LoadNSortMet(string[] filenames, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, IProgress<int> progress)
         {
             LoadMetFiles(filenames, progress);
 
             SortMeteorology();
             PopulateTimeDif();
             GetBearings();
+
+            metMasts = metMasts.OrderBy(o => o.UnitID).ToList();
         }
 
         private void GetBearings()

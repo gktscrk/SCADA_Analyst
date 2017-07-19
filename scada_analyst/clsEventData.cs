@@ -43,7 +43,7 @@ namespace scada_analyst
 
         public EventData(List<MeteoData.MeteoSample> data, WeatherType input)
         {
-            FromAsset = data[0].AssetID;
+            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -77,7 +77,7 @@ namespace scada_analyst
 
         public EventData(List<ScadaData.ScadaSample> data, WeatherType input)
         {
-            FromAsset = data[0].AssetID;
+            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -111,7 +111,7 @@ namespace scada_analyst
 
         public EventData(List<ScadaData.ScadaSample> data, PwrProdType input)
         {
-            FromAsset = data[0].AssetID;
+            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -143,7 +143,7 @@ namespace scada_analyst
 
         public EventData(List<ScadaData.ScadaSample> data, AnomalyType input)
         {
-            FromAsset = data[0].AssetID;
+            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);

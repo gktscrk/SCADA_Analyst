@@ -1041,10 +1041,11 @@ namespace scada_analyst
             {
                 await this.ShowMessageAsync("Warning!", "Loading cancelled by user.");
             }
-            catch (WrongDateTimeException)
+            catch (WrongDateTimeException wdtE)
             {
                 await this.ShowMessageAsync("Warning!",
-                    "Try changing the loaded date-time format for the file(s) to load properly.");
+                    "Try changing the loaded date-time format for the file(s) to load properly. Problem caused at " + 
+                    wdtE.DateInfo[0] + " " + wdtE.DateInfo[1] + ".");
             }
             catch (WrongFileTypeException)
             {
@@ -1666,6 +1667,10 @@ namespace scada_analyst
                 }
             }
 
+            // sort the assetview-source before making it the itemssource
+            analyser.AssetList = analyser.AssetList.OrderBy(o => o.UnitID).ToList();
+
+            // proceed with a correctly ordered list
             LView_Overview.ItemsSource = AssetsView;
             LView_Overview.Items.Refresh();
 
@@ -2182,7 +2187,31 @@ namespace scada_analyst
 
     public class WritingCancelledException : Exception { }
 
-    public class WrongDateTimeException : Exception { }
+    public class WrongDateTimeException : Exception
+    {
+        #region Variables
+
+        private string[] dateInfo;
+
+        #endregion
+
+        #region Constructor
+
+        public WrongDateTimeException() { }
+
+        public WrongDateTimeException(string[] dateInfo)
+        {
+            this.dateInfo = dateInfo;
+        }
+
+        #endregion
+
+        #region Properties
+
+        public string[] DateInfo { get { return dateInfo; } set { dateInfo = value; } }
+
+        #endregion
+    }
 
     public class WrongFileTypeException : Exception { }
 

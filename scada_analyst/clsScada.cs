@@ -79,9 +79,10 @@ namespace scada_analyst
         {
             using (StreamReader sR = new StreamReader(FileName))
             {
+                int count = 0;
+
                 try
                 {
-                    int count = 0;
                     bool readHeader = false;
 
                     while (!sR.EndOfStream)
@@ -103,6 +104,12 @@ namespace scada_analyst
                         if (!line.Equals(""))
                         {
                             line = line.Replace("\"", String.Empty);
+
+                            if (line.Contains(",,"))
+                            {
+                                while (line.Contains(",,")) { line = line.Replace(",,", ",\\N,"); }
+                                line = line + "\\N";
+                            }
 
                             string[] splits = Common.GetSplits(line, ',');
 
@@ -147,9 +154,13 @@ namespace scada_analyst
                         }
                     }
                 }
-                catch
+                catch (WrongDateTimeException)
                 {
                     throw;
+                }
+                catch
+                {
+                    throw new Exception("Problem with loading was caused by Line " + count + 1 + ".");
                 }
                 finally
                 {

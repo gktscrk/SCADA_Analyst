@@ -318,7 +318,7 @@ namespace scada_analyst.Shared
 
                 return result;
             }
-            catch { throw new WrongDateTimeException(); }
+            catch { throw new WrongDateTimeException(dateInfo); }
         }
 
         public static DateTime StringToDateTime(string lengthSix, string lengthEight)
