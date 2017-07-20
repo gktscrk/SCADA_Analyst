@@ -350,7 +350,7 @@ namespace scada_analyst
                 LineSeries priGraph = new LineSeries();
                 LineSeries secGraph = new LineSeries();
 
-                for (int i = 0; i < WeekEventDataVw.Count; i++)
+                for (int i = 0; i < WeekEventDataVw.Count; i += 6)
                 {
                     double var1 = double.NaN;
                     double var2 = double.NaN;
@@ -376,7 +376,7 @@ namespace scada_analyst
                         priGraph.Title = "Main Bearing";
                         var1 = Math.Round(WeekEventDataVw[i].MainBear.Main.Mean, 1);
 
-                        priGraph.Title = "HS Bearing";
+                        secGraph.Title = "HS Bearing";
                         var2 = Math.Round(WeekEventDataVw[i].MainBear.Hs.Mean, 1);
                     }
 
