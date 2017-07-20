@@ -415,16 +415,16 @@ namespace scada_analyst
             List<AnalyticLimit> _newLimits = new List<AnalyticLimit>();
 
             _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox oil Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS generator side Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS rotor side Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS generator side Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS rotor side Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 200));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-bearing Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-bearing Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 10));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 10));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS generator side Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS rotor side Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS generator side Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS rotor side Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 1000));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-bearing Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-bearing Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 20));
 
             return _newLimits;
         }
@@ -760,14 +760,14 @@ namespace scada_analyst
         {
             List<AnalyticLimit> _newLimits = new List<AnalyticLimit>();
 
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox oil Temp", 0, 75));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS generator side Temp", 0, 75));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS rotor side Temp", 0, 75));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS generator side Temp", 0, 75));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS rotor side Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox Oil Temp", 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS Generator Side Temp", 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS Rotor Side Temp", 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS Generator Side Temp", 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS Rotor Side Temp", 0, 70));
             _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 1600));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-bearing Temp", 0, 75));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-bearing Temp", 0, 75));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-Bearing Temp", 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-Bearing Temp", 0, 70));
             _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 50));
             _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 50));
             _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 50));
@@ -1485,9 +1485,8 @@ namespace scada_analyst
             int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.FromAsset);
 
             // the index of the timestamp a week before the event began or otherwise the first timestamp in the series - long conditional but should work
-            TimeSpan stepBack = new TimeSpan(0, -60 * 24 * 7, 0);
+            TimeSpan stepBack = new TimeSpan(-24 * 7, 0, 0);
             int weekIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) != -1 ? _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) : 0;
-
             int timeIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0]);
 
             for (int i = 0; i < _thisEv.EvTimes.Count; i++)

@@ -53,7 +53,7 @@ namespace scada_analyst
             }
         }
 
-        public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, IProgress<int> progress)
+        public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress)
         {
             for (int i = filenames.Length - 1; i >= 0; i--)
             {
@@ -63,12 +63,12 @@ namespace scada_analyst
                 }
             }
 
-            LoadAndSort(filenames, _dateFormat, progress);
+            LoadAndSort(filenames, _dateFormat, _sTL, progress);
         }
 
-        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress)
         {
-            LoadFiles(filenames, _dateFormat, progress);
+            LoadFiles(filenames, _dateFormat, _sTL, progress);
 
             SortScada();
             PopulateTimeDif();
@@ -77,16 +77,16 @@ namespace scada_analyst
             _windFarm = _windFarm.OrderBy(o => o.UnitID).ToList();
         }
         
-        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 FileName.Add(filenames[i]);
-                LoadScada(filenames[i], _dateFormat, progress, filenames.Length, i);
+                LoadScada(filenames[i], _dateFormat, _sTL, progress, filenames.Length, i);
             }
         }
 
-        private void LoadScada(string filename, Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
+        private void LoadScada(string filename, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(filename))
             {
@@ -138,19 +138,42 @@ namespace scada_analyst
                                   Convert.ToInt32(splits[fileHeader.StatnCol]) : throw new FileFormatException();
                             }
 
+                            // add in a section to check whether singleTurbineLoading mode is not -1
+                            // if not, and has actual value, load only that turbine: _sTL
+
                             // organise loading so it would check which ones have already
                             // been loaded; work around the ones have have been and add data there
-                            if (_inclTrbn.Contains(thisAsset))
+                            if (_sTL == -1)
                             {
-                                int index = _windFarm.FindIndex(x => x.UnitID == thisAsset);
-
-                                _windFarm[index].AddData(splits, fileHeader, _dateFormat);
+                                if (_inclTrbn.Contains(thisAsset))
+                                {
+                                    int index = _windFarm.FindIndex(x => x.UnitID == thisAsset);
+                                    _windFarm[index].AddData(splits, fileHeader, _dateFormat);
+                                }
+                                else
+                                {
+                                    _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
+                                    _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                }
                             }
                             else
                             {
-                                _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
-                                _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                if (thisAsset == _sTL)
+                                {
+                                    if (_inclTrbn.Contains(thisAsset))
+                                    {
+                                        int index = _windFarm.FindIndex(x => x.UnitID == thisAsset);
+                                        _windFarm[index].AddData(splits, fileHeader, _dateFormat);
+                                    }
+                                    else
+                                    {
+                                        _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
+                                        _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                    }
+                                }
                             }
+
+                            
                         }
 
                         count++;

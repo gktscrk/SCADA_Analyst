@@ -49,6 +49,8 @@ namespace scada_analyst
         private static bool mnt_NauDs = false;
         private static bool mnt_AstDs = false;
 
+        private bool _usingPreviousWeekForGraphing = true;
+
         private bool exportPowMaxm = false, exportAmbMaxm = false, exportWSpMaxm = false;
         private bool exportPowMinm = false, exportAmbMinm = false, exportWSpMinm = false;
         private bool exportPowMean = true, exportAmbMean = true, exportWSpMean = true;
@@ -88,7 +90,9 @@ namespace scada_analyst
         private ObservableCollection<EventData> _hiSpView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _noPwView = new ObservableCollection<EventData>();
         private ObservableCollection<EventData> _rtPwView = new ObservableCollection<EventData>();
-        
+
+        private ObservableCollection<string> _turbines = new ObservableCollection<string>();
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
@@ -305,16 +309,6 @@ namespace scada_analyst
 
         #region Event Details View Manipulation
 
-        private void Chart_OnData_Click(object sender, ChartPoint point)
-        {
-            // bring up a messagebox to show the user the time and value of the datapoint they
-            // clicked on
-
-            string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
-
-            LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
-        }
-
         private void ChangeListViewDataset(object sender, RoutedEventArgs e)
         {
             // checks whether the dataset choice button has been activated and displays the respective
@@ -337,10 +331,25 @@ namespace scada_analyst
             }
         }
 
-        private void ChartShowSeries(string input)
+        private void Chart_OnData_Click(object sender, ChartPoint point)
+        {
+            // bring up a messagebox to show the user the time and value of the datapoint they
+            // clicked on
+
+            string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
+
+            LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
+        }
+
+        private void ChartShowSeries(string input, bool _previousWeekIncluded)
         {
             try
             {
+                // create an empty container for graphing to choose which source for the data is required
+                ObservableCollection<ScadaData.ScadaSample> _graphingData = new ObservableCollection<ScadaData.ScadaSample>();
+
+                if (_previousWeekIncluded) { _graphingData = WeekEventDataVw; } else { _graphingData = ThisEventDataVw; }
+
                 LChart_Basic.Series.Clear();
 
                 List<double> list1 = new List<double>();
@@ -352,15 +361,16 @@ namespace scada_analyst
 
                 // make automatic counter to suit data length and yet provide utilisable speed
                 int counter = 1;
-                TimeSpan length = WeekEventDataVw[WeekEventDataVw.Count - 1].TimeStamp - WeekEventDataVw[0].TimeStamp;
+                TimeSpan length = _graphingData[_graphingData.Count - 1].TimeStamp - _graphingData[0].TimeStamp;
 
                 if (length < new TimeSpan(3,0,0)) { counter = 1; }
                 else if (length < new TimeSpan(12, 0, 0)) { counter = 3; }
                 else if (length < new TimeSpan(24 * 7, 0, 0)) { counter = 6; }
-                else if (length <= new TimeSpan(24 * 30, 0, 0)) { counter = 12; }
-                else if (length > new TimeSpan(24 * 30, 0, 0)) { counter = 60; }
+                else if (length < new TimeSpan(24 * 30, 0, 0)) { counter = 12; }
+                else if (length < new TimeSpan(24 * 360, 0, 0)) { counter = 60; }
+                else if (length >= new TimeSpan(24 * 360, 0, 0)) { counter = 120; }
 
-                for (int i = 0; i < WeekEventDataVw.Count; i += counter)
+                for (int i = 0; i < _graphingData.Count; i += counter)
                 {
                     double var1 = double.NaN;
                     double var2 = double.NaN;
@@ -368,32 +378,32 @@ namespace scada_analyst
                     if (input == _eventDetailsSelection[1])
                     {
                         priGraph.Title = "HS Gens.";
-                        var1 = Math.Round(WeekEventDataVw[i].Gearbox.Hs.Gens.Mean, 1);
+                        var1 = Math.Round(_graphingData[i].Gearbox.Hs.Gens.Mean, 1);
 
                         secGraph.Title = "HS Rots.";
-                        var2 = Math.Round(WeekEventDataVw[i].Gearbox.Hs.Rots.Mean, 1);
+                        var2 = Math.Round(_graphingData[i].Gearbox.Hs.Rots.Mean, 1);
                     }
                     else if (input == _eventDetailsSelection[2])
                     {
                         priGraph.Title = "G-Bearing";
-                        var1 = Math.Round(WeekEventDataVw[i].Genny.BearingG.Mean, 1);
+                        var1 = Math.Round(_graphingData[i].Genny.BearingG.Mean, 1);
 
                         secGraph.Title = "R-Bearing";
-                        var2 = Math.Round(WeekEventDataVw[i].Genny.BearingR.Mean, 1);
+                        var2 = Math.Round(_graphingData[i].Genny.BearingR.Mean, 1);
                     }
                     else if (input == _eventDetailsSelection[3])
                     {
                         priGraph.Title = "Main Bearing";
-                        var1 = Math.Round(WeekEventDataVw[i].MainBear.Main.Mean, 1);
+                        var1 = Math.Round(_graphingData[i].MainBear.Main.Mean, 1);
 
                         secGraph.Title = "HS Bearing";
-                        var2 = Math.Round(WeekEventDataVw[i].MainBear.Hs.Mean, 1);
+                        var2 = Math.Round(_graphingData[i].MainBear.Hs.Mean, 1);
                     }
 
                     list1.Add(!double.IsNaN(var1) ? var1 : double.NaN);
                     list2.Add(!double.IsNaN(var2) ? var2 : double.NaN);
 
-                    times.Add(WeekEventDataVw[i].TimeStamp.ToString("HH:mm dd-MMM"));
+                    times.Add(_graphingData[i].TimeStamp.ToString("dd-mm-yy HH:mm"));
                 }
 
                 priGraph.Values = new ChartValues<double>(list1);
@@ -412,7 +422,7 @@ namespace scada_analyst
             catch { }
         }
 
-        private void DisplayCorrectEventDetails()
+        private void DisplayCorrectEventDetails(bool _graphIncludingPreviousWeek)
         {
             if (Comb_DisplayEvDetails.SelectedIndex != -1)
             {
@@ -434,7 +444,7 @@ namespace scada_analyst
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries(_eventDetailsSelection[1]);
+                    ChartShowSeries(_eventDetailsSelection[1], _graphIncludingPreviousWeek);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[2])
                 {
@@ -442,7 +452,7 @@ namespace scada_analyst
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Visible;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries(_eventDetailsSelection[2]);
+                    ChartShowSeries(_eventDetailsSelection[2], _graphIncludingPreviousWeek);
                 }
                 else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[3])
                 {
@@ -450,12 +460,12 @@ namespace scada_analyst
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
-                    ChartShowSeries(_eventDetailsSelection[3]);
+                    ChartShowSeries(_eventDetailsSelection[3], _graphIncludingPreviousWeek);
                 }
             }
         }
 
-        private void PickDetailedStartTime(object sender, RoutedEventArgs e)
+        private void PickDetailedBeginTime(object sender, RoutedEventArgs e)
         {
             Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose event start date", _eventExplrStart);
 
@@ -505,6 +515,11 @@ namespace scada_analyst
             Comb_SummaryChoose.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Controls the event summary view selection range results
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Comb_DisplaySummary_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (Comb_SummaryChoose.SelectedIndex != -1)
@@ -540,6 +555,17 @@ namespace scada_analyst
             }
         }
 
+        /// <summary>
+        /// Checks what equipment is chosen from the menu and changes information displayed based on that.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Comb_DisplayEvDetails_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // only go into this event if the below conditions are true; probably will disable the combobox as well though
+            DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
+        }
+
         private void CreateEventDetailsView()
         {
             _eventDetailsSelection.Add("Main Overview");
@@ -549,17 +575,6 @@ namespace scada_analyst
 
             Comb_DisplayEvDetails.ItemsSource = _eventDetailsSelection;
             Comb_DisplayEvDetails.SelectedIndex = 0;
-        }
-
-        /// <summary>
-        /// Checks what equipment is chosen from the menu and changes information displayed based on that.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Comb_DisplayEvDetails_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // only go into this event if the below conditions are true; probably will disable the combobox as well though
-            DisplayCorrectEventDetails();
         }
 
         #endregion
@@ -1026,7 +1041,7 @@ namespace scada_analyst
         /// <param name="isLoaded"></param>
         /// <param name="progress"></param>
         /// <returns></returns>
-        private async Task LoadScadaData(ScadaData existingData, string[] filenames, bool isLoaded, IProgress<int> progress)
+        private async Task LoadScadaData(ScadaData existingData, string[] filenames, int _singleTurbineLoading, IProgress<int> progress)
         {
             try
             {
@@ -1034,7 +1049,7 @@ namespace scada_analyst
 
                 await Task.Run(() =>
                 {
-                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, progress);
+                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, _singleTurbineLoading, progress);
                     _loadedFiles.AddRange(filenames);
                 });
 
@@ -1067,10 +1082,20 @@ namespace scada_analyst
 
                 if (openFileDialog.ShowDialog().Value)
                 {
+                    int _singleTurbineLoading = -1;
+
+                    if (CBox_SingleTurbineLoading.IsChecked)
+                    {
+                        // option to just load one turbine from the entire file if the code goes into here
+                        Window_NumberOne _whichTurbine = new Window_NumberOne(this, "Which Turbine Should Be Loaded?", "Turbine ID");
+
+                        if (_whichTurbine.ShowDialog().Value) { _singleTurbineLoading = (int)_whichTurbine.NumericValue1; }
+                    }
+
                     ProgressBarVisible();
 
                     await Task.Run(() =>
-                        LoadScadaData(_scadaFile, openFileDialog.FileNames, _scadaLoaded, progress), token);
+                        LoadScadaData(_scadaFile, openFileDialog.FileNames, _singleTurbineLoading, progress), token);
 
                     ProgressBarInvisible();
                     PopulateOverview();
@@ -1627,6 +1652,16 @@ namespace scada_analyst
         {
             DataSummary();
             EventsSummary();
+            ComboBoxInformationList();
+        }
+
+        void ComboBoxInformationList()
+        {
+            Combo_LoadedAssets.ItemsSource = AssetsView;
+            Combo_LoadedAssets.SelectedValue = AssetsView;
+            Combo_LoadedAssets.DisplayMemberPath = "UnitID";
+            Combo_LoadedAssets.SelectedValuePath = "UnitID";
+            Combo_LoadedAssets.Items.Refresh();
         }
 
         void DataSummary()
@@ -1723,10 +1758,9 @@ namespace scada_analyst
                     if (AssetsView[i].EndTime > _dataExportEndTm) { _dataExportEndTm = _eventExplrEndTm = AssetsView[i].EndTime; }
                 }
 
+
                 CreateSummaries();
             }
-
-            Combo_LoadedAssets.ItemsSource = TurbineList;
         }
 
         void ProgressBarVisible()
@@ -1933,19 +1967,22 @@ namespace scada_analyst
 
                 if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
                 {
+                    _usingPreviousWeekForGraphing = true;
+
                     thisEv = LView_PowrNone.SelectedItems.Count == 1 ?
                         (EventData)LView_PowrNone.SelectedItem : (EventData)LView_PowrRted.SelectedItem;
                 }
                 else
                 {
+                    _usingPreviousWeekForGraphing = false;
                     List<ScadaData.ScadaSample> thisList = new List<ScadaData.ScadaSample>();
 
                     if (Combo_LoadedAssets.SelectedIndex != -1)
                     {
-                        int selectedAsset = Convert.ToInt32(Combo_LoadedAssets.SelectedItem);
+                        Structure selectedAsset = (Structure)Combo_LoadedAssets.SelectedItem;
 
                         thisList = _analyser.GetSpecEventDetails
-                            (_scadaFile, selectedAsset, _eventExplrStart, _eventExplrEndTm);
+                            (_scadaFile, selectedAsset.UnitID, _eventExplrStart, _eventExplrEndTm);
                     }
 
                     thisEv = new EventData(thisList, EventData.AnomalyType.NOANOMALY);
@@ -1972,12 +2009,12 @@ namespace scada_analyst
 
             // first add it to the gridview on the list
             LView_EventExplorer_Gearbox.ItemsSource =  ThisEventDataVw;
-            LView_EventExplorer_Generator.ItemsSource =ThisEventDataVw;
+            LView_EventExplorer_Generator.ItemsSource = ThisEventDataVw;
             LView_EventExplorer_MainBear.ItemsSource = ThisEventDataVw;
 
             ChangeListViewDataset(sender, e);
 
-            DisplayCorrectEventDetails();
+            DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
 
             // lastly also add respective dataviews to the chart and also to the viewmodel
 
@@ -2182,7 +2219,7 @@ namespace scada_analyst
                 return new ObservableCollection<string>(_list);
             }
         }
-
+        
         public ObservableCollection<EventData> AllWtrView
         {
             get { return new ObservableCollection<EventData>(_analyser.AllWtrEvts); }
@@ -2231,36 +2268,7 @@ namespace scada_analyst
                 }
             }
         }
-
-        public ObservableCollection<Structure> ThrsEventData
-        {
-            get { return _assetsVw = new ObservableCollection<Structure>(_analyser.AssetList); }
-            set
-            {
-                if (_assetsVw != value)
-                {
-                    _assetsVw = value;
-                    OnPropertyChanged(nameof(_analyser.AssetList));
-                }
-            }
-        }
-
-        public ObservableCollection<string> TurbineList
-        {
-            get
-            {
-                ObservableCollection<string> _turbines = new ObservableCollection<string>();
-
-                _turbines.Add("");
-                foreach (int id in ScadaFile.InclTrbn)
-                {
-                    _turbines.Add(id.ToString());
-                }
-
-                return _turbines;
-            }
-        }
-
+        
         public ObservableCollection<ScadaData.ScadaSample> ThisEventDataVw
         {
             get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.ThisEvScada); }

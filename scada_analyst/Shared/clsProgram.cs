@@ -14,6 +14,18 @@ namespace scada_analyst.Shared
 
             #region Version 1.400 - Romax Visit and Results
 
+            ProgramVersion v1506 = new ProgramVersion(1506, new DateTime(2017, 07, 20));
+            v1506.AddChange("The detailed event investigation now only shows that exact time in the graphs and tables while the specific event investigation highlights the full week previous as well.");
+            results.Add(v1506);
+
+            ProgramVersion v1505 = new ProgramVersion(1505, new DateTime(2017, 07, 20));
+            v1505.AddChange("Can only load one turbine at a time.");
+            results.Add(v1505);
+
+            ProgramVersion v1504 = new ProgramVersion(1504, new DateTime(2017, 07, 20));
+            v1504.AddChange("Cannot select turbines which are no longer loaded in the user-defined event selection options.");
+            results.Add(v1504);
+
             ProgramVersion v1503 = new ProgramVersion(1503, new DateTime(2017, 07, 20));
             v1503.AddChange("Can remove several assets at once.");
             results.Add(v1503);
