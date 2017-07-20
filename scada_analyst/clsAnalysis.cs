@@ -29,6 +29,10 @@ namespace scada_analyst
         private List<EventData> _noPwEvents = new List<EventData>();
         private List<EventData> _hiPwEvents = new List<EventData>();
 
+        private List<ScadaData.ScadaSample> thisEvScada = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> weekHistory = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> dataHistory = new List<ScadaData.ScadaSample>();
+
         private List<EventData> _thresEvnts = new List<EventData>();
         private List<EventData> _rChngEvnts = new List<EventData>();
 
@@ -59,11 +63,11 @@ namespace scada_analyst
             //this method resets the eventlist in case the user so wishes
             for (int i = 0; i < AllPwrEvts.Count; i++)
             {
-                if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.NO_PWR)
+                if (AllPwrEvts[i].PwrProd == scada_analyst.EventData.PwrProdType.NO_PWR)
                 {
                     NoPwEvents.Add(AllPwrEvts[i]);
                 }
-                else if (AllPwrEvts[i].PwrProd == EventData.PwrProdType.HI_PWR)
+                else if (AllPwrEvts[i].PwrProd == scada_analyst.EventData.PwrProdType.HI_PWR)
                 {
                     RtPwEvents.Add(AllPwrEvts[i]);
                 }
@@ -104,6 +108,29 @@ namespace scada_analyst
             }
         }
 
+        public List<ScadaData.ScadaSample> GetSpecEventDetails(ScadaData scadaFile, int targetAsset, 
+            DateTime _startTime, DateTime _endTime)
+        {
+            List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
+
+            for (int i = 0; i < scadaFile.WindFarm.Count; i++)
+            {
+                if (scadaFile.WindFarm[i].UnitID == targetAsset)
+                {
+                    for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
+                    {
+                        if (scadaFile.WindFarm[i].DataSorted[j].TimeStamp >= _startTime &&
+                            scadaFile.WindFarm[i].DataSorted[j].TimeStamp < _endTime)
+                        {
+                            thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
+                        }
+                    }
+                }
+            }
+
+            return thisEvent;
+        }
+
         private void FindNoPowerEvents(ScadaData scadaFile, IProgress<int> progress)
         {
             // this method investigates all loaded scada files for low power (defined as below 0)
@@ -123,7 +150,7 @@ namespace scada_analyst
                         for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                         {
                             if (scadaFile.WindFarm[i].DataSorted[j].Powers.Mean < PowerLim &&
-                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != -9999)
+                                scadaFile.WindFarm[i].DataSorted[j].Powers.Mean != double.NaN)
                             {
                                 List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                                 thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
@@ -138,7 +165,7 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _noPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.NO_PWR));
+                                _noPwEvents.Add(new EventData(thisEvent, scada_analyst.EventData.PwrProdType.NO_PWR));
                                 _allPwrEvts.Add(_noPwEvents[_noPwEvents.Count - 1]);
                             }
 
@@ -193,7 +220,7 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _hiPwEvents.Add(new EventData(thisEvent, EventData.PwrProdType.HI_PWR));
+                                _hiPwEvents.Add(new EventData(thisEvent, scada_analyst.EventData.PwrProdType.HI_PWR));
                                 _allPwrEvts.Add(_noPwEvents[_noPwEvents.Count - 1]);
                             }
 
@@ -251,7 +278,7 @@ namespace scada_analyst
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                                 }
 
-                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
+                                _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
                                 _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
                             }
                             else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > CutOut)
@@ -269,7 +296,7 @@ namespace scada_analyst
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
                                 }
 
-                                _hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
+                                _hiSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.HI_SPD));
                                 _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
                             }
 
@@ -327,7 +354,7 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _loSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.LO_SPD));
+                                _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
                                 _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
                             }
                             else if (scadaFile.WindFarm[i].DataSorted[j].AnemoM.ActWinds.Mean > CutOut)
@@ -345,7 +372,7 @@ namespace scada_analyst
                                     thisEvent.Add(scadaFile.WindFarm[i].DataSorted[k]);
                                 }
 
-                                _hiSpEvents.Add(new EventData(thisEvent, EventData.WeatherType.HI_SPD));
+                                _hiSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.HI_SPD));
                                 _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
                             }
 
@@ -430,7 +457,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GEAR_OIL));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_OIL));
                 }
             }
 
@@ -456,7 +483,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GEAR_HS_GENS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_HS_GENS));
                 }
             }
 
@@ -482,7 +509,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GEAR_HS_ROTS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_HS_ROTS));
                 }
             }
 
@@ -508,7 +535,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GEAR_IM_GENS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_IM_GENS));
                 }
             }
 
@@ -534,7 +561,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GEAR_IM_ROTS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_IM_ROTS));
                 }
             }
 
@@ -564,7 +591,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GNNY_RPM));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GNNY_RPM));
                 }
             }
 
@@ -590,7 +617,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GNNY_G));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GNNY_G));
                 }
             }
 
@@ -616,7 +643,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_GNNY_R));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GNNY_R));
                 }
             }
 
@@ -646,7 +673,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_BEAR));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_BEAR));
                 }
             }
 
@@ -672,7 +699,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_BEAR_HS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_BEAR_HS));
                 }
             }
 
@@ -698,7 +725,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.ROC_BEAR_GS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_BEAR_GS));
                 }
             }
 
@@ -836,7 +863,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_OIL));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_OIL));
                 }
             }
 
@@ -859,7 +886,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_HS_GENS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_HS_GENS));
                 }
             }
 
@@ -882,7 +909,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_HS_ROTS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_HS_ROTS));
                 }
             }
 
@@ -905,7 +932,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_IM_GENS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_IM_GENS));
                 }
             }
 
@@ -928,7 +955,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_IM_ROTS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_IM_ROTS));
                 }
             }
 
@@ -955,7 +982,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GNNY_RPM));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GNNY_RPM));
                 }
             }
 
@@ -978,7 +1005,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GNNY_G));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GNNY_G));
                 }
             }
 
@@ -1001,7 +1028,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GNNY_R));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GNNY_R));
                 }
             }
 
@@ -1028,7 +1055,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_BEAR));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_BEAR));
                 }
             }
 
@@ -1051,7 +1078,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_BEAR_HS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_BEAR_HS));
                 }
             }
 
@@ -1074,7 +1101,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_BEAR_GS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_BEAR_GS));
                 }
             }
 
@@ -1108,7 +1135,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, EventData.AnomalyType.THRS_GEAR_IM_ROTS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_IM_ROTS));
                 }
             }
         }
@@ -1163,7 +1190,7 @@ namespace scada_analyst
                     {
                         if (currentEvents[i].EvTimes.Intersect(_loSpEvents[j].EvTimes).Any())
                         {
-                            currentEvents[i].AssocEv = EventData.EventAssoct.LO_SP;
+                            currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.LO_SP;
 
                             goIntoHiSpEvents = false;
                             break;
@@ -1176,15 +1203,15 @@ namespace scada_analyst
                         {
                             if (currentEvents[i].EvTimes.Intersect(_hiSpEvents[k].EvTimes).Any())
                             {
-                                currentEvents[i].AssocEv = EventData.EventAssoct.HI_SP;
+                                currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.HI_SP;
 
                                 break;
                             }
                         }
                     }
 
-                    if (currentEvents[i].AssocEv == EventData.EventAssoct.NONE)
-                    { currentEvents[i].AssocEv = EventData.EventAssoct.OTHER; }
+                    if (currentEvents[i].AssocEv == scada_analyst.EventData.EventAssoct.NONE)
+                    { currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.OTHER; }
 
                     count++;
 
@@ -1224,8 +1251,8 @@ namespace scada_analyst
 
                 for (int i = currentEvents.Count - 1; i >= 0; i--)
                 {
-                    if (currentEvents[i].AssocEv == EventData.EventAssoct.LO_SP ||
-                        currentEvents[i].AssocEv == EventData.EventAssoct.HI_SP)
+                    if (currentEvents[i].AssocEv == scada_analyst.EventData.EventAssoct.LO_SP ||
+                        currentEvents[i].AssocEv == scada_analyst.EventData.EventAssoct.HI_SP)
                     {
                         currentEvents.RemoveAt(i);
                     }
@@ -1299,7 +1326,7 @@ namespace scada_analyst
             {
                 Structure asset = _assetList.Where(x => x.UnitID == currentEvents[i].FromAsset).FirstOrDefault();
 
-                currentEvents[i].DayTime = EventData.GetEventDayTime(currentEvents[i], asset);
+                currentEvents[i].DayTime = scada_analyst.EventData.GetEventDayTime(currentEvents[i], asset);
 
                 count++;
 
@@ -1336,35 +1363,35 @@ namespace scada_analyst
                 if (currentEvents[i].Start.TimeOfDay > WorkHoursMorning &&
                     currentEvents[i].Start.TimeOfDay < WorkHoursEvening)
                 {
-                    if (currentEvents[i].DayTime == EventData.TimeOfEvent.NIGHTTM && MainWindow.Mnt_Night)
+                    if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.NIGHTTM && MainWindow.Mnt_Night)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DAWN && MainWindow.Mnt_AstDw)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.AS_DAWN && MainWindow.Mnt_AstDw)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DAWN && MainWindow.Mnt_NauDw)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.NA_DAWN && MainWindow.Mnt_NauDw)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DAWN && MainWindow.Mnt_CivDw)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.CI_DAWN && MainWindow.Mnt_CivDw)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.DAYTIME && MainWindow.Mnt_Daytm)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.DAYTIME && MainWindow.Mnt_Daytm)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.CI_DUSK && MainWindow.Mnt_CivDs)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.CI_DUSK && MainWindow.Mnt_CivDs)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.NA_DUSK && MainWindow.Mnt_NauDs)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.NA_DUSK && MainWindow.Mnt_NauDs)
                     {
                         currentEvents.RemoveAt(i);
                     }
-                    else if (currentEvents[i].DayTime == EventData.TimeOfEvent.AS_DUSK && MainWindow.Mnt_AstDs)
+                    else if (currentEvents[i].DayTime == scada_analyst.EventData.TimeOfEvent.AS_DUSK && MainWindow.Mnt_AstDs)
                     {
                         currentEvents.RemoveAt(i);
                     }
@@ -1431,7 +1458,51 @@ namespace scada_analyst
             NEARBY_TRBNS
         }
 
-        #endregion 
+        #endregion
+
+        #region Event Data Retrieval Tasks
+
+        public void EventData(ScadaData _scadaFile, EventData _thisEvent)
+        {
+            // public accessor method
+            EventDataRetrieval(_scadaFile, _thisEvent);
+        }
+
+        private void EventDataRetrieval(ScadaData _scadaFile, EventData _thisEv)
+        {
+            // do something part of the method
+            // this one needs to take the event details and send it to another listbox plus graph
+
+            // thisEvent has the event data only -- for the actual data to display, we'll need to find 
+            // the datapoints from the source data
+
+            // get index of the asset and get index of the event time in the asset
+            // the index of the asset to be used below
+            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.FromAsset);
+
+            // the index of the timestamp a week before the event began or otherwise the first timestamp in the series - long conditional but should work
+            TimeSpan stepBack = new TimeSpan(0, -60 * 24 * 7, 0);
+            int weekIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) != -1 ? _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) : 0;
+
+            int timeIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0]);
+
+            for (int i = 0; i < _thisEv.EvTimes.Count; i++)
+            {
+                thisEvScada.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+            }
+
+            for (int i = weekIndex; i < (timeIndex + _thisEv.EvTimes.Count); i++)
+            {
+                weekHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
+            }
+
+            for (int j = 0; j < (timeIndex + _thisEv.EvTimes.Count); j++)
+            {
+                dataHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
+            }
+        }
+
+        #endregion
 
         #region Event Duration Tasks
 
@@ -2003,13 +2074,13 @@ namespace scada_analyst
                 this.PrevailingWindString = thisAsset.PrevailingWindString;
 
                 //the below also needs to take into account the right asset ID only
-                _hiWinds = new EventsCounter(this.UnitID, EventData.WeatherType.HI_SPD, hiWindEvents);
-                _loWinds = new EventsCounter(this.UnitID, EventData.WeatherType.LO_SPD, loWindEvents);
+                _hiWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.HI_SPD, hiWindEvents);
+                _loWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.LO_SPD, loWindEvents);
 
                 if (this.Type == Types.TURBINE)
                 {
-                    _hiPower = new EventsCounter(this.UnitID, EventData.PwrProdType.HI_PWR, hiPowrEvents);
-                    _noPower = new EventsCounter(this.UnitID, EventData.PwrProdType.NO_PWR, noPowrEvents);
+                    _hiPower = new EventsCounter(this.UnitID, scada_analyst.EventData.PwrProdType.HI_PWR, hiPowrEvents);
+                    _noPower = new EventsCounter(this.UnitID, scada_analyst.EventData.PwrProdType.NO_PWR, noPowrEvents);
                 }
             }
 
@@ -2031,25 +2102,25 @@ namespace scada_analyst
 
                 public EventsCounter(int asset, EventData.PwrProdType thisType, List<EventData> theseEvents)
                 {
-                    _cntrType = thisType == EventData.PwrProdType.HI_PWR ? EventType.HI_PWR : EventType.LO_PWR;
+                    _cntrType = thisType == scada_analyst.EventData.PwrProdType.HI_PWR ? EventType.HI_PWR : EventType.LO_PWR;
 
                     AssignCounters(asset, theseEvents);
                 }
 
                 public EventsCounter(int asset, EventData.WeatherType thisType, List<EventData> theseEvents)
                 {
-                    _cntrType = thisType == EventData.WeatherType.HI_SPD ? EventType.HI_SPD : EventType.LO_SPD;
+                    _cntrType = thisType == scada_analyst.EventData.WeatherType.HI_SPD ? EventType.HI_SPD : EventType.LO_SPD;
 
                     AssignCounters(asset, theseEvents);
                 }
 
                 private void AssignCounters(int asset, List<EventData> theseEvents)
                 {
-                    _shortEvs = AssessEvents(asset, theseEvents, EventData.EvtDuration.SHORT);
-                    _deciMins = AssessEvents(asset, theseEvents, EventData.EvtDuration.DECIMINS);
-                    _hourLong = AssessEvents(asset, theseEvents, EventData.EvtDuration.HOURS);
-                    _manyHors = AssessEvents(asset, theseEvents, EventData.EvtDuration.MANYHOURS);
-                    _daysLong = AssessEvents(asset, theseEvents, EventData.EvtDuration.DAYS);
+                    _shortEvs = AssessEvents(asset, theseEvents, scada_analyst.EventData.EvtDuration.SHORT);
+                    _deciMins = AssessEvents(asset, theseEvents, scada_analyst.EventData.EvtDuration.DECIMINS);
+                    _hourLong = AssessEvents(asset, theseEvents, scada_analyst.EventData.EvtDuration.HOURS);
+                    _manyHors = AssessEvents(asset, theseEvents, scada_analyst.EventData.EvtDuration.MANYHOURS);
+                    _daysLong = AssessEvents(asset, theseEvents, scada_analyst.EventData.EvtDuration.DAYS);
                 }
 
                 private int AssessEvents(int asset, List<EventData> theseEvents, EventData.EvtDuration counter)
@@ -2134,6 +2205,10 @@ namespace scada_analyst
         public List<EventData> AllPwrEvts { get { return _allPwrEvts; } set { _allPwrEvts = value; } }
         public List<EventData> ThresEvnts { get { return _thresEvnts; } set { _thresEvnts = value; } }
         public List<EventData> RChngEvnts { get { return _rChngEvnts; } set { _rChngEvnts = value; } }
+
+        public List<ScadaData.ScadaSample> ThisEvScada { get { return thisEvScada; } set { thisEvScada = value; } }
+        public List<ScadaData.ScadaSample> WeekHistory { get { return weekHistory; } set { weekHistory = value; } }
+        public List<ScadaData.ScadaSample> HistEventData { get { return dataHistory; } set { dataHistory = value; } }
 
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
         public List<Structure> AssetList { get { return _assetList; } set { _assetList = value; } }

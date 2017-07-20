@@ -36,11 +36,7 @@ namespace scada_analyst
         #region Constructor
 
         public EventData() { }
-
-        #endregion
-
-        #region Create Events
-
+        
         public EventData(List<MeteoData.MeteoSample> data, WeatherType input)
         {
             FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;

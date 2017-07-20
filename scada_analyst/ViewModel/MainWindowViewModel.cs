@@ -93,6 +93,13 @@ namespace scada_analyst
 
         #endregion
 
+        public DirectoryItem(string strValue)
+        {
+            this._strValue = strValue;
+
+            _displayString = strValue;
+        }
+
         public DirectoryItem(string strValue, int intValue)
         {
             this._strValue = strValue;

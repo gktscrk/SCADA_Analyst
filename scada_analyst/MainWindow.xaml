@@ -234,8 +234,7 @@
                        FontSize="15" FontWeight="Bold" Name="Lbl_TabDescription" />
 
                 <ComboBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Name="Comb_SummaryChoose"
-                          Width="200"
-                          SelectionChanged="Comb_DisplaySummary_SelectionChanged"/>
+                          Width="200" SelectionChanged="Comb_DisplaySummary_SelectionChanged"/>
 
                 <Button Grid.Column="3" Grid.Row="0" Margin="5,5,5,5" Name="Btn_DurationFilter"                             
                         HorizontalContentAlignment="Center" MinWidth="80"
@@ -570,6 +569,45 @@
                         </Grid>
                     </TabItem>
 
+                    <TabItem Name="Tab_DetailTimeFrame" >
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Label Grid.Column="0" Grid.Row="0" Margin="5" Content="Choose Asset:" />
+                            <ComboBox Grid.Column="1" Grid.Row="0" Margin="5" Name="Combo_LoadedAssets"
+                                      HorizontalContentAlignment="Center"/>
+
+                            <Separator Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Margin="5" />
+
+                            <Button Grid.Column="0" Grid.Row="2" Margin="5" Content="Pick Start Time" Click="PickDetailedStartTime" />
+                            <Label Grid.Column="1" Grid.Row="2" Margin="5" Name="LBL_DetailedStartTime" 
+                                   HorizontalContentAlignment="Center" />
+
+                            <Button Grid.Column="0" Grid.Row="3" Margin="5" Content="Pick End Time" Click="PickDetailedEndTime" />
+                            <Label Grid.Column="1" Grid.Row="3" Margin="5" Name="LBL_DetailedEndTime" 
+                                   HorizontalContentAlignment="Center" />
+    
+                            <Separator Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="3" Margin="5" />
+
+                            <Button Grid.Column="2" Grid.Row="5" Margin="5" Content="Explore Event"
+                                    Name="BTN_Explore" Click="ExploreDetailedEvent" />
+
+                        </Grid>
+                    </TabItem>
+                    
                     <TabItem Name="Tab_LoWinds" >
                         <Grid>
                             <Grid.ColumnDefinitions>

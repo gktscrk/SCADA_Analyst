@@ -19,6 +19,7 @@ namespace scada_analyst.Shared
             v1500.AddChange("Events summary now counts events properly.");
             v1500.AddChange("Option to check what files have been loaded is added.");
             v1500.AddChange("User can remove all events associated with a specific asset ID.");
+            v1500.AddChange("A user-detailed time period can be investigated.");
             results.Add(v1500);
 
             ProgramVersion v1408 = new ProgramVersion(1408, new DateTime(2017, 07, 19));

@@ -243,6 +243,11 @@ namespace scada_analyst.Shared
             return input;
         }
 
+        public static DateTime StringToDateTime(string dateInfo, DateFormat format)
+        {
+            return StringToDateTime(GetSplits(dateInfo, ' '), format);
+        }
+
         public static DateTime StringToDateTime(string dateInfo, bool correctYearOrder = true)
         {
             return StringToDateTime(GetSplits(dateInfo, ' '), correctYearOrder);
