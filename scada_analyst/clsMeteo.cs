@@ -30,42 +30,64 @@ namespace scada_analyst
 
         #region Load Data
 
-        public MeteoData(MeteoData existingFiles)
+        /// <summary>
+        /// This method creates a copy of an existing instance of a ScadaData class
+        /// </summary>
+        /// <param name="_existingInfo"></param>
+        public MeteoData(MeteoData _existingInfo)
         {
-            for (int i = 0; i < existingFiles.MetMasts.Count; i++)
+            for (int i = 0; i < _existingInfo.MetMasts.Count; i++)
             {
-                metMasts.Add(existingFiles.MetMasts[i]);
+                metMasts.Add(_existingInfo.MetMasts[i]);
             }
 
-            for (int i = 0; i < existingFiles.InclMetm.Count; i++)
+            for (int i = 0; i < _existingInfo.InclMetm.Count; i++)
             {
-                inclMetm.Add(existingFiles.InclMetm[i]);
+                inclMetm.Add(_existingInfo.InclMetm[i]);
+            }
+
+            for (int i = 0; i < _existingInfo.FileName.Count; i++)
+            {
+                FileName.Add(_existingInfo.FileName[i]);
             }
         }
 
-        public MeteoData(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
+            for (int i = filenames.Length - 1; i >= 0; i--)
+            {
+                if (loadedFiles.Contains(filenames[i]))
+                {
+                    filenames = filenames.Where(w => w != filenames[i]).ToArray();
+                }
+            }
+
             LoadAndSort(filenames, _dateFormat, progress);
         }
 
-        public void AppendFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
-            LoadAndSort(filenames, _dateFormat, progress);
+            LoadMetFiles(filenames, _dateFormat, progress);
+
+            SortMeteorology();
+            PopulateTimeDif();
+            GetBearings();
+
+            metMasts = metMasts.OrderBy(o => o.UnitID).ToList();
         }
 
         private void LoadMetFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
-                this.FileName = filenames[i];
-
-                LoadMeteorology(_dateFormat, progress, filenames.Length, i);
+                FileName.Add(filenames[i]);
+                LoadMeteorology(filenames[i], _dateFormat, progress, filenames.Length, i);
             }
         }
 
-        private void LoadMeteorology(Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
+        private void LoadMeteorology(string filename, Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
-            using (StreamReader sR = new StreamReader(FileName))
+            using (StreamReader sR = new StreamReader(filename))
             {
                 try
                 {
@@ -148,16 +170,6 @@ namespace scada_analyst
             }
         }
 
-        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
-        {
-            LoadMetFiles(filenames, _dateFormat, progress);
-
-            SortMeteorology();
-            PopulateTimeDif();
-            GetBearings();
-
-            metMasts = metMasts.OrderBy(o => o.UnitID).ToList();
-        }
 
         private void GetBearings()
         {

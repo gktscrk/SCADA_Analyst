@@ -350,7 +350,17 @@ namespace scada_analyst
                 LineSeries priGraph = new LineSeries();
                 LineSeries secGraph = new LineSeries();
 
-                for (int i = 0; i < WeekEventDataVw.Count; i += 6)
+                // make automatic counter to suit data length and yet provide utilisable speed
+                int counter = 1;
+                TimeSpan length = WeekEventDataVw[WeekEventDataVw.Count - 1].TimeStamp - WeekEventDataVw[0].TimeStamp;
+
+                if (length < new TimeSpan(3,0,0)) { counter = 1; }
+                else if (length < new TimeSpan(12, 0, 0)) { counter = 3; }
+                else if (length < new TimeSpan(24 * 7, 0, 0)) { counter = 6; }
+                else if (length <= new TimeSpan(24 * 30, 0, 0)) { counter = 12; }
+                else if (length > new TimeSpan(24 * 30, 0, 0)) { counter = 60; }
+
+                for (int i = 0; i < WeekEventDataVw.Count; i += counter)
                 {
                     double var1 = double.NaN;
                     double var2 = double.NaN;
@@ -453,7 +463,7 @@ namespace scada_analyst
             {
                 DateTime tempDate = Common.StringToDateTime(startCal.TextBox_Calendar.Text, Common.DateFormat.DMY);
 
-                _eventExplrStart = tempDate < _eventExplrEndTm && tempDate > _dataExportStart ? tempDate : _eventExplrEndTm;
+                _eventExplrStart = tempDate < _eventExplrEndTm ? tempDate : _eventExplrEndTm;
 
                 LBL_DetailedStartTime.Content = _eventExplrStart.ToString();
             }
@@ -467,7 +477,7 @@ namespace scada_analyst
             {
                 DateTime tempDate = Common.StringToDateTime(endCal.TextBox_Calendar.Text, Common.DateFormat.DMY);
 
-                _eventExplrEndTm = tempDate > _eventExplrStart && tempDate < _dataExportEndTm ? tempDate : _eventExplrStart.AddHours(1);
+                _eventExplrEndTm = tempDate > _eventExplrStart ? tempDate : _eventExplrStart.AddHours(6);
 
                 LBL_DetailedEndTime.Content = _eventExplrEndTm.ToString();
             }
@@ -949,15 +959,7 @@ namespace scada_analyst
 
                 await Task.Run(() =>
                 {
-                    if (!isLoaded)
-                    {
-                        analysis = new MeteoData(filenames, _dateFormat, progress);
-                    }
-                    else
-                    {
-                        analysis.AppendFiles(filenames, _dateFormat, progress);
-                    }
-
+                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, progress);
                     _loadedFiles.AddRange(filenames);
                 });
 
@@ -1032,15 +1034,7 @@ namespace scada_analyst
 
                 await Task.Run(() =>
                 {
-                    if (!isLoaded)
-                    {
-                        analysis = new ScadaData(filenames, _dateFormat, progress);
-                    }
-                    else
-                    {
-                        analysis.AppendFiles(filenames, _dateFormat, progress);
-                    }
-
+                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, progress);
                     _loadedFiles.AddRange(filenames);
                 });
 
@@ -1788,27 +1782,7 @@ namespace scada_analyst
 
             CreateSummaries();
         }
-
-        void RemoveSingleAsset(int toRemove)
-        {
-            if (_analyser.AssetList.Count != 0)
-            {
-                for (int i = _analyser.AssetList.Count - 1; i >= 0; i--)
-                {
-                    if (_analyser.AssetList[i].UnitID == toRemove)
-                    {
-                        _analyser.AssetList.RemoveAt(i);
-
-                        break;
-                    }
-                }
-            }
-
-            LView_Overview.ItemsSource = AssetsView;
-            LView_Overview.Items.Refresh();
-            CreateSummaries();
-        }
-
+        
         void OnPropertyChanged(string name)
         {
             var changed = PropertyChanged;
@@ -1836,13 +1810,20 @@ namespace scada_analyst
         private void SetContextMenuAssets()
         {
             ContextMenu menu = null;
+                menu = new ContextMenu();
 
             if (LView_Overview.SelectedItems.Count == 1)
             {
-                menu = new ContextMenu();
-
                 MenuItem removeAsset_MenuItem = new MenuItem();
                 removeAsset_MenuItem.Header = "Remove Asset";
+                removeAsset_MenuItem.Click += RemoveAsset_MenuItem_Click;
+                menu.Items.Add(removeAsset_MenuItem);
+            }
+
+            if (LView_Overview.SelectedItems.Count > 1)
+            {
+                MenuItem removeAsset_MenuItem = new MenuItem();
+                removeAsset_MenuItem.Header = "Remove Assets";
                 removeAsset_MenuItem.Click += RemoveAsset_MenuItem_Click;
                 menu.Items.Add(removeAsset_MenuItem);
             }
@@ -1852,25 +1833,34 @@ namespace scada_analyst
 
         private void RemoveAsset_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (LView_Overview.SelectedItems.Count == 1)
+            if (LView_Overview.SelectedItems.Count > 0)
             {
-                Structure struc = (Structure)LView_Overview.SelectedItem;
-
-                if (struc.Type == BaseStructure.Types.METMAST)
+                foreach (object selectedItem in LView_Overview.SelectedItems)
                 {
-                    int index = _meteoFile.MetMasts.FindIndex(x => x.UnitID == struc.UnitID);
-                    _meteoFile.MetMasts.RemoveAt(index);
-                    _meteoFile.InclMetm.Remove(struc.UnitID);
-                }
-                else if (struc.Type == BaseStructure.Types.TURBINE)
-                {
-                    int index = _scadaFile.WindFarm.FindIndex(x => x.UnitID == struc.UnitID);
-                    _scadaFile.WindFarm.RemoveAt(index);
-                    _scadaFile.InclTrbn.Remove(struc.UnitID);
+                    Structure _struc = (Structure)selectedItem;
+
+                    if (_struc.Type == BaseStructure.Types.METMAST)
+                    {
+                        int index = _meteoFile.MetMasts.FindIndex(x => x.UnitID == _struc.UnitID);
+                        _meteoFile.MetMasts.RemoveAt(index);
+                        _meteoFile.InclMetm.Remove(_struc.UnitID);
+                    }
+                    else if (_struc.Type == BaseStructure.Types.TURBINE)
+                    {
+                        int index = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _struc.UnitID);
+                        _scadaFile.WindFarm.RemoveAt(index);
+                        _scadaFile.InclTrbn.Remove(_struc.UnitID);
+                    }
+
+                    loadedAsset.Remove(_struc.UnitID);
+
+                    int target = _analyser.AssetList.FindIndex(x => x.UnitID == _struc.UnitID);
+                    _analyser.AssetList.RemoveAt(target);
                 }
 
-                loadedAsset.Remove(struc.UnitID);
-                RemoveSingleAsset(struc.UnitID);
+                LView_Overview.ItemsSource = AssetsView;
+                LView_Overview.Items.Refresh();
+                CreateSummaries();
             }
         }
 
@@ -2021,7 +2011,6 @@ namespace scada_analyst
 
                     // find index and removeat that index but make certain it is the right asset we're removing from
                     int index = _analyser.NoPwEvents.FindIndex(x => x.FromAsset == _event.FromAsset && x.Start == _event.Start);
-
                     _analyser.NoPwEvents.RemoveAt(index);
                 }
 

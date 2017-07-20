@@ -25,18 +25,17 @@ namespace scada_analyst
 
         public GeoData(string filename, IProgress<int> progress)
         {
-            this.FileName = filename;
-
-            LoadGeography(progress);
+            FileName.Add(filename);
+            LoadGeography(filename, progress);
         }
 
         #endregion
 
         #region Load Data
 
-        private void LoadGeography(IProgress<int> progress)
+        private void LoadGeography(string filename, IProgress<int> progress)
         {
-            using (StreamReader sR = new StreamReader(FileName))
+            using (StreamReader sR = new StreamReader(filename))
             {
                 try
                 {

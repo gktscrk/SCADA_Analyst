@@ -14,6 +14,15 @@ namespace scada_analyst.Shared
 
             #region Version 1.400 (Romax Visit and Results)
 
+            ProgramVersion v1502 = new ProgramVersion(1501, new DateTime(2017, 07, 20));
+            v1502.AddChange("Cannot load file again which is already loaded.");
+            v1502.AddChange("Fixed event display to clear previous information.");
+            results.Add(v1502);
+
+            ProgramVersion v1501 = new ProgramVersion(1501, new DateTime(2017, 07, 20));
+            v1501.AddChange("Graph counter takes into account length of event.");
+            results.Add(v1501);
+
             ProgramVersion v1500 = new ProgramVersion(1500, new DateTime(2017, 07, 19));
             v1500.AddChange("Changed meteorology data loading to fit in with SCADA data.");
             v1500.AddChange("Events summary now counts events properly.");

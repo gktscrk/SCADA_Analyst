@@ -45,13 +45,13 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        private string fileName = "";
+        private List<string> _fileName = new List<string>();
 
         #endregion
         
         #region Properties
 
-        public string FileName { get { return fileName; } set { fileName = value; } }
+        public List<string> FileName { get { return _fileName; } set { _fileName = value; } }
 
         #endregion
     }

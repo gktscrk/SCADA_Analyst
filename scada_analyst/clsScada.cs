@@ -17,9 +17,9 @@ namespace scada_analyst
         private ScadaHeader fileHeader = new ScadaHeader();
 
         // a list for including the asset IDs for all loaded turbines
-        private List<int> inclTrbn = new List<int>();
+        private List<int> _inclTrbn = new List<int>();
 
-        private List<TurbineData> windFarm = new List<TurbineData>();
+        private List<TurbineData> _windFarm = new List<TurbineData>();
 
         #endregion
 
@@ -31,37 +31,39 @@ namespace scada_analyst
 
         #region Load Data
 
-        public ScadaData(ScadaData existingFiles)
+        /// <summary>
+        /// This method creates a copy of an existing instance of a ScadaData class
+        /// </summary>
+        /// <param name="_existingInfo"></param>
+        public ScadaData(ScadaData _existingInfo)
         {
-            for (int i = 0; i < existingFiles.WindFarm.Count; i++)
+            for (int i = 0; i < _existingInfo.WindFarm.Count; i++)
             {
-                windFarm.Add(existingFiles.WindFarm[i]);
+                _windFarm.Add(_existingInfo.WindFarm[i]);
             }
 
-            for (int i = 0; i < existingFiles.InclTrbn.Count; i++)
+            for (int i = 0; i < _existingInfo.InclTrbn.Count; i++)
             {
-                inclTrbn.Add(existingFiles.InclTrbn[i]);
+                _inclTrbn.Add(_existingInfo.InclTrbn[i]);
+            }
+
+            for (int i = 0; i < _existingInfo.FileName.Count; i++)
+            {
+                FileName.Add(_existingInfo.FileName[i]);
             }
         }
 
-        public ScadaData(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, IProgress<int> progress)
         {
+            for (int i = filenames.Length - 1; i >= 0; i--)
+            {
+                if (loadedFiles.Contains(filenames[i]))
+                {
+                    filenames = filenames.Where(w => w != filenames[i]).ToArray();
+                }
+            }
+
             LoadAndSort(filenames, _dateFormat, progress);
-        }
-
-        public void AppendFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
-        {
-            LoadAndSort(filenames, _dateFormat, progress);
-        }
-
-        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
-        {
-            for (int i = 0; i < filenames.Length; i++)
-            {
-                this.FileName = filenames[i];
-
-                LoadScada(_dateFormat, progress, filenames.Length, i);
-            }
         }
 
         private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
@@ -72,12 +74,21 @@ namespace scada_analyst
             PopulateTimeDif();
             GetBearings();
             
-            windFarm = windFarm.OrderBy(o => o.UnitID).ToList();
+            _windFarm = _windFarm.OrderBy(o => o.UnitID).ToList();
+        }
+        
+        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
+        {
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                FileName.Add(filenames[i]);
+                LoadScada(filenames[i], _dateFormat, progress, filenames.Length, i);
+            }
         }
 
-        private void LoadScada(Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
+        private void LoadScada(string filename, Common.DateFormat _dateFormat, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
-            using (StreamReader sR = new StreamReader(FileName))
+            using (StreamReader sR = new StreamReader(filename))
             {
                 int count = 0;
 
@@ -129,16 +140,16 @@ namespace scada_analyst
 
                             // organise loading so it would check which ones have already
                             // been loaded; work around the ones have have been and add data there
-                            if (inclTrbn.Contains(thisAsset))
+                            if (_inclTrbn.Contains(thisAsset))
                             {
-                                int index = windFarm.FindIndex(x => x.UnitID == thisAsset);
+                                int index = _windFarm.FindIndex(x => x.UnitID == thisAsset);
 
-                                windFarm[index].AddData(splits, fileHeader, _dateFormat);
+                                _windFarm[index].AddData(splits, fileHeader, _dateFormat);
                             }
                             else
                             {
-                                windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
-                                inclTrbn.Add(windFarm[windFarm.Count - 1].UnitID);
+                                _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
+                                _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
                             }
                         }
 
@@ -172,30 +183,30 @@ namespace scada_analyst
 
         private void PopulateTimeDif()
         {
-            for (int i = 0; i < windFarm.Count; i++)
+            for (int i = 0; i < _windFarm.Count; i++)
             {
-                for (int j = 1; j < windFarm[i].DataSorted.Count; j++)
+                for (int j = 1; j < _windFarm[i].DataSorted.Count; j++)
                 {
-                    windFarm[i].DataSorted[j].DeltaTime = windFarm[i].DataSorted[j].TimeStamp - windFarm[i].DataSorted[j - 1].TimeStamp;
+                    _windFarm[i].DataSorted[j].DeltaTime = _windFarm[i].DataSorted[j].TimeStamp - _windFarm[i].DataSorted[j - 1].TimeStamp;
                 }
             }
         }
 
         private void SortScada()
         {
-            for (int i = 0; i < windFarm.Count; i++)
+            for (int i = 0; i < _windFarm.Count; i++)
             {
-                windFarm[i].DataSorted = windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
+                _windFarm[i].DataSorted = _windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
             }
         }
         
         private void GetBearings()
         {
-            for (int i = 0; i < windFarm.Count; i++)
+            for (int i = 0; i < _windFarm.Count; i++)
             {
-                string mode = windFarm[i].DataSorted.GroupBy(v => v.YawPostn.DStr).OrderByDescending(g => g.Count()).First().Key;
+                string mode = _windFarm[i].DataSorted.GroupBy(v => v.YawPostn.DStr).OrderByDescending(g => g.Count()).First().Key;
 
-                windFarm[i].PrevailingWindString = mode;
+                _windFarm[i].PrevailingWindString = mode;
             }
         }
 
@@ -245,14 +256,14 @@ namespace scada_analyst
                     int count = 0;
                     bool header = false;
 
-                    for (int i = 0; i < windFarm.Count; i++)
+                    for (int i = 0; i < _windFarm.Count; i++)
                     {
-                        for (int j = 0; j < windFarm[i].DataSorted.Count; j++)
+                        for (int j = 0; j < _windFarm[i].DataSorted.Count; j++)
                         {
                             StringBuilder hB = new StringBuilder();
                             StringBuilder sB = new StringBuilder();
 
-                            ScadaSample unit = windFarm[i].DataSorted[j];
+                            ScadaSample unit = _windFarm[i].DataSorted[j];
 
                             if (unit.TimeStamp >= expStart && unit.TimeStamp <= exprtEnd)
                             {
@@ -448,7 +459,7 @@ namespace scada_analyst
                             {
                                 if (progress != null)
                                 {
-                                    progress.Report((int)(((double)i / windFarm.Count + (double)j / windFarm[i].DataSorted.Count / windFarm.Count) * 100));
+                                    progress.Report((int)(((double)i / _windFarm.Count + (double)j / _windFarm[i].DataSorted.Count / _windFarm.Count) * 100));
                                 }
                             }
                         }
@@ -2090,9 +2101,9 @@ namespace scada_analyst
 
         public ScadaHeader FileHeader { get { return fileHeader; } }
 
-        public List<int> InclTrbn { get { return inclTrbn; } }
+        public List<int> InclTrbn { get { return _inclTrbn; } }
 
-        public List<TurbineData> WindFarm { get { return windFarm; } }
+        public List<TurbineData> WindFarm { get { return _windFarm; } }
 
         #endregion 
     }

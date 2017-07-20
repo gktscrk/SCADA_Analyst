@@ -29,9 +29,9 @@ namespace scada_analyst
         private List<EventData> _noPwEvents = new List<EventData>();
         private List<EventData> _hiPwEvents = new List<EventData>();
 
-        private List<ScadaData.ScadaSample> thisEvScada = new List<ScadaData.ScadaSample>();
-        private List<ScadaData.ScadaSample> weekHistory = new List<ScadaData.ScadaSample>();
-        private List<ScadaData.ScadaSample> dataHistory = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> _eventScadaOnly = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> _weekBeforeInfo = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> _fullHistory = new List<ScadaData.ScadaSample>();
 
         private List<EventData> _thresEvnts = new List<EventData>();
         private List<EventData> _rChngEvnts = new List<EventData>();
@@ -1470,6 +1470,10 @@ namespace scada_analyst
 
         private void EventDataRetrieval(ScadaData _scadaFile, EventData _thisEv)
         {
+            _eventScadaOnly.Clear();
+            _weekBeforeInfo.Clear();
+            _fullHistory.Clear();
+
             // do something part of the method
             // this one needs to take the event details and send it to another listbox plus graph
 
@@ -1488,17 +1492,17 @@ namespace scada_analyst
 
             for (int i = 0; i < _thisEv.EvTimes.Count; i++)
             {
-                thisEvScada.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+                _eventScadaOnly.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
             }
 
             for (int i = weekIndex; i < (timeIndex + _thisEv.EvTimes.Count); i++)
             {
-                weekHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
+                _weekBeforeInfo.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
             }
 
             for (int j = 0; j < (timeIndex + _thisEv.EvTimes.Count); j++)
             {
-                dataHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
+                _fullHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
             }
         }
 
@@ -2206,9 +2210,9 @@ namespace scada_analyst
         public List<EventData> ThresEvnts { get { return _thresEvnts; } set { _thresEvnts = value; } }
         public List<EventData> RChngEvnts { get { return _rChngEvnts; } set { _rChngEvnts = value; } }
 
-        public List<ScadaData.ScadaSample> ThisEvScada { get { return thisEvScada; } set { thisEvScada = value; } }
-        public List<ScadaData.ScadaSample> WeekHistory { get { return weekHistory; } set { weekHistory = value; } }
-        public List<ScadaData.ScadaSample> HistEventData { get { return dataHistory; } set { dataHistory = value; } }
+        public List<ScadaData.ScadaSample> ThisEvScada { get { return _eventScadaOnly; } set { _eventScadaOnly = value; } }
+        public List<ScadaData.ScadaSample> WeekHistory { get { return _weekBeforeInfo; } set { _weekBeforeInfo = value; } }
+        public List<ScadaData.ScadaSample> HistEventData { get { return _fullHistory; } set { _fullHistory = value; } }
 
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
         public List<Structure> AssetList { get { return _assetList; } set { _assetList = value; } }
