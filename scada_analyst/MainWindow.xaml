@@ -170,7 +170,7 @@
                         </ListView.ItemContainerStyle>
                         <ListView.View>
                             <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                <GridViewColumn Header="Asset ID" Width="60" >
+                                <GridViewColumn Header="Asset ID" Width="70" >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Label Content="{Binding UnitID, Mode=OneWay}" />
@@ -278,7 +278,7 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding UnitID, Mode=OneWay}" />
@@ -354,7 +354,7 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding UnitID, Mode=OneWay}" />
@@ -430,7 +430,7 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding UnitID, Mode=OneWay}" />
@@ -506,7 +506,7 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding UnitID, Mode=OneWay}" />
@@ -770,7 +770,7 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding FromAsset, Mode=OneWay}" />
@@ -854,7 +854,7 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
-                                        <GridViewColumn Header="Asset ID" Width="60" >
+                                        <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Label Content="{Binding FromAsset, Mode=OneWay}" />

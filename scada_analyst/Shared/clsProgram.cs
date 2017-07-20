@@ -12,9 +12,13 @@ namespace scada_analyst.Shared
         {
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
-            #region Version 1.400 (Romax Visit and Results)
+            #region Version 1.400 - Romax Visit and Results
 
-            ProgramVersion v1502 = new ProgramVersion(1501, new DateTime(2017, 07, 20));
+            ProgramVersion v1503 = new ProgramVersion(1503, new DateTime(2017, 07, 20));
+            v1503.AddChange("Can remove several assets at once.");
+            results.Add(v1503);
+
+            ProgramVersion v1502 = new ProgramVersion(1502, new DateTime(2017, 07, 20));
             v1502.AddChange("Cannot load file again which is already loaded.");
             v1502.AddChange("Fixed event display to clear previous information.");
             results.Add(v1502);
