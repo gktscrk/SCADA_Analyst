@@ -16,6 +16,8 @@ namespace scada_analyst.Shared
 
             ProgramVersion v1600 = new ProgramVersion(1600, new DateTime(2017, 07, 212));
             v1600.AddChange("");
+            v1600.AddChange("Descriptions for what different equipment fields stand for are included programmatically.");
+            v1600.AddChange("Correct names are used for variables throughout.");
             v1600.AddChange("User-defined event selection now includes exactly the time period chosen.");
             v1600.AddChange("New empty sample is added in where separation between samples is greater than that of the input data.");
             v1600.AddChange("Fixed the specific event investigation date choosing.");

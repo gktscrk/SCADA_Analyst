@@ -49,6 +49,7 @@ namespace scada_analyst
         private static bool mnt_NauDs = false;
         private static bool mnt_AstDs = false;
 
+        private bool _averagesComputed = false;
         private bool _usingPreviousWeekForGraphing = true;
 
         private bool exportPowMaxm = false, exportAmbMaxm = false, exportWSpMaxm = false;
@@ -83,6 +84,10 @@ namespace scada_analyst
         private ScadaData _scadaFile = new ScadaData();
         
         private List<DirectoryItem> _overview = new List<DirectoryItem>();
+        
+        private ScadaData.ScadaSample.GearBox _gbox = new ScadaData.ScadaSample.GearBox();
+        private ScadaData.ScadaSample.Generator _genr = new ScadaData.ScadaSample.Generator();
+        private ScadaData.ScadaSample.MainBearing _mbrg = new ScadaData.ScadaSample.MainBearing();
 
         private ObservableCollection<Structure> _assetsVw = new ObservableCollection<Structure>();
         private ObservableCollection<EventData> _allWtrVw = new ObservableCollection<EventData>();
@@ -303,7 +308,7 @@ namespace scada_analyst
             }
 
             _loadedFiles.Clear();
-            _scadaFile = new ScadaData(); _scadaLoaded = false;
+            _scadaFile = new ScadaData(); _scadaLoaded = false; _averagesComputed = false;
 
             _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             CreateSummaries();
@@ -382,45 +387,54 @@ namespace scada_analyst
 
                     if (input == _eventDetailsSelection[1])
                     {
-                        priGraph.Title = "HS Gens.";
+                        priGraph.Title = _gbox.HsGen.Description;
                         var1 = Math.Round(_graphingData[i].Gearbox.HsGen.Mean, 1);
 
-                        secGraph.Title = "HS Rots.";
-                        var2 = Math.Round(_graphingData[i].Gearbox.HsRot.Mean, 1);
+                        if (_averagesComputed)
+                        {
+                            var2 = Math.Round(_graphingData[i].Gearbox.HsRot.Mean, 1);
+                        }
                     }
                     else if (input == _eventDetailsSelection[2])
                     {
-                        priGraph.Title = "G-Bearing";
+                        priGraph.Title = _genr.BearingG.Description;
                         var1 = Math.Round(_graphingData[i].Genny.BearingG.Mean, 1);
 
-                        secGraph.Title = "R-Bearing";
-                        var2 = Math.Round(_graphingData[i].Genny.BearingR.Mean, 1);
+                        if (_averagesComputed)
+                        {
+                            var2 = Math.Round(_graphingData[i].Genny.BearingR.Mean, 1);
+                        }
                     }
                     else if (input == _eventDetailsSelection[3])
                     {
-                        priGraph.Title = "Main Bearing";
+                        priGraph.Title = _mbrg.Main.Description;
                         var1 = Math.Round(_graphingData[i].MainBear.Main.Mean, 1);
 
-                        secGraph.Title = "HS Bearing";
-                        var2 = Math.Round(_graphingData[i].MainBear.Hs.Mean, 1);
+                        if (_averagesComputed)
+                        {
+                            var2 = Math.Round(_graphingData[i].MainBear.Hs.Mean, 1);
+                        }
                     }
 
+                    times.Add(_graphingData[i].TimeStamp.ToString("dd/MMM/yy HH:mm"));
                     list1.Add(!double.IsNaN(var1) ? var1 : double.NaN);
-                    list2.Add(!double.IsNaN(var2) ? var2 : double.NaN);
 
-                    times.Add(_graphingData[i].TimeStamp.ToString("dd-mm-yy HH:mm"));
+                    if (_averagesComputed) { list2.Add(!double.IsNaN(var2) ? var2 : double.NaN); }
                 }
-
-                priGraph.Values = new ChartValues<double>(list1);
-                priGraph.Fill = Brushes.Transparent;
-
-                secGraph.Values = new ChartValues<double>(list2);
-                secGraph.Fill = Brushes.Transparent;
 
                 Labels = times.ToArray();
 
+                priGraph.Values = new ChartValues<double>(list1);
+                priGraph.Fill = Brushes.Transparent;
                 LChart_Basic.Series.Add(priGraph);
-                LChart_Basic.Series.Add(secGraph);
+
+                if (_averagesComputed)
+                {
+                    secGraph.Title = "Fleetwise Average";
+                    secGraph.Values = new ChartValues<double>(list2);
+                    secGraph.Fill = Brushes.Transparent;
+                    LChart_Basic.Series.Add(secGraph);
+                }
 
                 LChart_XAxis.Labels = Labels;
             }
@@ -443,7 +457,7 @@ namespace scada_analyst
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[1])
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == _gbox.Name)
                 {
                     LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
@@ -451,7 +465,7 @@ namespace scada_analyst
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     ChartShowSeries(_eventDetailsSelection[1], _graphIncludingPreviousWeek);
                 }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[2])
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == _genr.Name)
                 {
                     LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
@@ -459,7 +473,7 @@ namespace scada_analyst
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     ChartShowSeries(_eventDetailsSelection[2], _graphIncludingPreviousWeek);
                 }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[3])
+                else if ((string)Comb_DisplayEvDetails.SelectedItem == _mbrg.Name)
                 {
                     LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
@@ -606,9 +620,9 @@ namespace scada_analyst
         private void CreateEventDetailsView()
         {
             _eventDetailsSelection.Add("Main Overview");
-            _eventDetailsSelection.Add("Gearbox");
-            _eventDetailsSelection.Add("Generator");
-            _eventDetailsSelection.Add("Main Bearing");
+            _eventDetailsSelection.Add(_gbox.Name);
+            _eventDetailsSelection.Add(_genr.Name);
+            _eventDetailsSelection.Add(_mbrg.Name);
 
             Comb_DisplayEvDetails.ItemsSource = _eventDetailsSelection;
             Comb_DisplayEvDetails.SelectedIndex = 0;
@@ -2024,7 +2038,7 @@ namespace scada_analyst
                             (_scadaFile, selectedAsset.UnitID, _eventExplrStart, _eventExplrEndTm);
                     }
 
-                    thisEv = new EventData(thisList, EventData.AnomalyType.USERDEFINED);
+                    thisEv = new EventData(thisList, EventData.AnomalySource.USERDEFINED);
                 }
 
                 _analyser.EventData(_scadaFile, thisEv);

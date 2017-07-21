@@ -1827,9 +1827,9 @@ namespace scada_analyst
                 public Temperature OilTemp { get { return _oilTemp; } set { _oilTemp = value; } }
 
                 public Temperature HsGen { get { return _hsGen; } set { _hsGen = value; } }
-                public Temperature HsRot { get { return _hsGen; } set { _hsGen = value; } }
+                public Temperature HsRot { get { return _hsRot; } set { _hsRot = value; } }
                 public Temperature ImsGen { get { return _imsGen; } set { _imsGen = value; } }
-                public Temperature ImsRot { get { return _imsGen; } set { _imsGen = value; } }
+                public Temperature ImsRot { get { return _imsRot; } set { _imsRot = value; } }
 
                 #endregion 
             }

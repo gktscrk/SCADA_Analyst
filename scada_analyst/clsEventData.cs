@@ -23,7 +23,7 @@ namespace scada_analyst
 
         private TimeSpan _sampleLen = new TimeSpan(0, 9, 59);
 
-        private AnomalyType _anomaly = AnomalyType.NOANOMALY;
+        private AnomalySource _anomaly = AnomalySource.NO_ANOMALY;
         private EventAssoct _assocEv = EventAssoct.NONE;
         private EventSource _eSource = EventSource.UNKNOWN;
         private EvtDuration _evtDrtn = EvtDuration.UNKNOWN;
@@ -137,7 +137,7 @@ namespace scada_analyst
             SetEventDuration();
         }
 
-        public EventData(List<ScadaData.ScadaSample> data, AnomalyType input)
+        public EventData(List<ScadaData.ScadaSample> data, AnomalySource input)
         {
             SourceAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
@@ -153,11 +153,11 @@ namespace scada_analyst
             
             for (int i = 1; i < data.Count; i++)
             {
-                if (_anomaly == AnomalyType.USERDEFINED)
+                if (_anomaly == AnomalySource.USERDEFINED)
                 {
                     if (i == 1) { EvTimes.Add(data[0].TimeStamp); }
                 }
-                else if (_anomaly == AnomalyType.THRS_BEAR || _anomaly == AnomalyType.ROC_BEAR)
+                else if (_anomaly == AnomalySource.BEARING)
                 {
                     if (i == 1) { _extrmValue = data[0].MainBear.Main.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -165,7 +165,7 @@ namespace scada_analyst
                         Math.Abs(data[i].MainBear.Main.Mean - data[i - 1].MainBear.Main.Mean) : _maxValChng;
                     if (data[i].MainBear.Main.Mean > _extrmValue) { _extrmValue = data[i].MainBear.Main.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_BEAR_GS || _anomaly == AnomalyType.ROC_BEAR_GS)
+                else if (_anomaly == AnomalySource.BEARING_GS)
                 {
                     if (i == 1) { _extrmValue = data[0].MainBear.Gs.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -173,7 +173,7 @@ namespace scada_analyst
                         Math.Abs(data[i].MainBear.Gs.Mean - data[i - 1].MainBear.Gs.Mean) : _maxValChng;
                     if (data[i].MainBear.Gs.Mean > _extrmValue) { _extrmValue = data[i].MainBear.Gs.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_BEAR_HS || _anomaly == AnomalyType.ROC_BEAR_HS)
+                else if (_anomaly == AnomalySource.BEARING_HS)
                 {
                     if (i == 1) { _extrmValue = data[0].MainBear.Hs.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -181,7 +181,7 @@ namespace scada_analyst
                         Math.Abs(data[i].MainBear.Hs.Mean - data[i - 1].MainBear.Hs.Mean) : _maxValChng;
                     if (data[i].MainBear.Hs.Mean > _extrmValue) { _extrmValue = data[i].MainBear.Hs.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GEAR_HS_GENS || _anomaly == AnomalyType.ROC_GEAR_HS_GENS)
+                else if (_anomaly == AnomalySource.GEAR_HS_GEN)
                 {
                     if (i == 1) { _extrmValue = data[0].Gearbox.HsGen.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -189,7 +189,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Gearbox.HsGen.Mean - data[i - 1].Gearbox.HsGen.Mean) : _maxValChng;
                     if (data[i].Gearbox.HsGen.Mean > _extrmValue) { _extrmValue = data[i].Gearbox.HsGen.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GEAR_HS_ROTS || _anomaly == AnomalyType.ROC_GEAR_HS_ROTS)
+                else if (_anomaly == AnomalySource.GEAR_HS_ROT)
                 {
                     if (i == 1) { _extrmValue = data[0].Gearbox.HsRot.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -197,7 +197,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Gearbox.HsRot.Mean - data[i - 1].Gearbox.HsRot.Mean) : _maxValChng;
                     if (data[i].Gearbox.HsRot.Mean > _extrmValue) { _extrmValue = data[i].Gearbox.HsRot.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GEAR_IM_GENS || _anomaly == AnomalyType.ROC_GEAR_IM_GENS)
+                else if (_anomaly == AnomalySource.GEAR_IM_GEN)
                 {
                     if (i == 1) { _extrmValue = data[0].Gearbox.ImsGen.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -205,7 +205,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Gearbox.ImsGen.Mean - data[i - 1].Gearbox.ImsGen.Mean) : _maxValChng;
                     if (data[i].Gearbox.ImsGen.Mean > _extrmValue) { _extrmValue = data[i].Gearbox.ImsGen.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GEAR_IM_ROTS || _anomaly == AnomalyType.ROC_GEAR_IM_ROTS)
+                else if (_anomaly == AnomalySource.GEAR_IM_ROT)
                 {
                     if (i == 1) { _extrmValue = data[0].Gearbox.ImsRot.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -213,7 +213,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Gearbox.ImsRot.Mean - data[i - 1].Gearbox.ImsRot.Mean) : _maxValChng;
                     if (data[i].Gearbox.ImsRot.Mean > _extrmValue) { _extrmValue = data[i].Gearbox.ImsRot.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GEAR_OIL || _anomaly == AnomalyType.ROC_GEAR_OIL)
+                else if (_anomaly == AnomalySource.GEAR_OIL)
                 {
                     if (i == 1) { _extrmValue = data[0].Gearbox.OilTemp.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -221,7 +221,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Gearbox.OilTemp.Mean - data[i - 1].Gearbox.OilTemp.Mean) : _maxValChng;
                     if (data[i].Gearbox.OilTemp.Mean > _extrmValue) { _extrmValue = data[i].Gearbox.OilTemp.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GNNY_G || _anomaly == AnomalyType.ROC_GNNY_G)
+                else if (_anomaly == AnomalySource.GENNY_G)
                 {
                     if (i == 1) { _extrmValue = data[0].Genny.BearingG.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -229,7 +229,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Genny.BearingG.Mean - data[i - 1].Genny.BearingG.Mean) : _maxValChng;
                     if (data[i].Genny.BearingG.Mean > _extrmValue) { _extrmValue = data[i].Genny.BearingG.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GNNY_R || _anomaly == AnomalyType.ROC_GNNY_R)
+                else if (_anomaly == AnomalySource.GENNY_R)
                 {
                     if (i == 1) { _extrmValue = data[0].Genny.BearingR.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -237,7 +237,7 @@ namespace scada_analyst
                         Math.Abs(data[i].Genny.BearingR.Mean - data[i - 1].Genny.BearingR.Mean) : _maxValChng;
                     if (data[i].Genny.BearingR.Mean > _extrmValue) { _extrmValue = data[i].Genny.BearingR.Mean; _extrmPower = data[i].Power.Mean; }
                 }
-                else if (_anomaly == AnomalyType.THRS_GNNY_RPM || _anomaly == AnomalyType.ROC_GNNY_RPM)
+                else if (_anomaly == AnomalySource.GENNY_RPM)
                 {
                     if (i == 1) { _extrmValue = data[0].Genny.RPMs.Mean; _extrmPower = data[0].Power.Mean; }
 
@@ -416,32 +416,21 @@ namespace scada_analyst
             HI_SPD  // above cutout
         }
 
-        public enum AnomalyType
+        public enum AnomalySource
         {
-            NOANOMALY,
+            NO_ANOMALY,
             USERDEFINED,
-            THRS_BEAR,
-            THRS_BEAR_GS,
-            THRS_BEAR_HS,
-            THRS_GEAR_OIL,
-            THRS_GEAR_HS_GENS,
-            THRS_GEAR_HS_ROTS,
-            THRS_GEAR_IM_GENS,
-            THRS_GEAR_IM_ROTS,
-            THRS_GNNY_G,
-            THRS_GNNY_R,
-            THRS_GNNY_RPM,
-            ROC_BEAR,
-            ROC_BEAR_GS,
-            ROC_BEAR_HS,
-            ROC_GEAR_OIL,
-            ROC_GEAR_HS_GENS,
-            ROC_GEAR_HS_ROTS,
-            ROC_GEAR_IM_GENS,
-            ROC_GEAR_IM_ROTS,
-            ROC_GNNY_G,
-            ROC_GNNY_R,
-            ROC_GNNY_RPM,
+            BEARING,
+            BEARING_GS,
+            BEARING_HS,
+            GEAR_OIL,
+            GEAR_HS_GEN,
+            GEAR_HS_ROT,
+            GEAR_IM_GEN,
+            GEAR_IM_ROT,
+            GENNY_G,
+            GENNY_R,
+            GENNY_RPM
         }
 
         #endregion
@@ -494,34 +483,23 @@ namespace scada_analyst
         {
             get
             {
-                if (Anomaly == AnomalyType.NOANOMALY) { return "No anomaly"; }
-                else if (Anomaly == AnomalyType.THRS_BEAR) { return "Main bearing"; }
-                else if (Anomaly == AnomalyType.THRS_BEAR_GS) { return "Main bearing GS"; }
-                else if (Anomaly == AnomalyType.THRS_BEAR_HS) { return "Main bearing HS"; }
-                else if (Anomaly == AnomalyType.THRS_GEAR_HS_GENS) { return "Gearbox HS Gen. Side"; }
-                else if (Anomaly == AnomalyType.THRS_GEAR_HS_ROTS) { return "Gearbox HS Rot. Side"; }
-                else if (Anomaly == AnomalyType.THRS_GEAR_IM_GENS) { return "Gearbox IMS Gen. Side"; }
-                else if (Anomaly == AnomalyType.THRS_GEAR_IM_ROTS) { return "Gearbox IMS Rot. Side"; }
-                else if (Anomaly == AnomalyType.THRS_GEAR_OIL) { return "Gearbox Oil"; }
-                else if (Anomaly == AnomalyType.THRS_GNNY_G) { return "Generator G-Bearing"; }
-                else if (Anomaly == AnomalyType.THRS_GNNY_R) { return "Generator R-Bearing"; }
-                else if (Anomaly == AnomalyType.THRS_GNNY_RPM) { return "Generator RPMs"; }
-                else if (Anomaly == AnomalyType.ROC_BEAR) { return "Main bearing"; }
-                else if (Anomaly == AnomalyType.ROC_BEAR_GS) { return "Main bearing GS"; }
-                else if (Anomaly == AnomalyType.ROC_BEAR_HS) { return "Main bearing HS"; }
-                else if (Anomaly == AnomalyType.ROC_GEAR_HS_GENS) { return "Gearbox HS Gen. Side"; }
-                else if (Anomaly == AnomalyType.ROC_GEAR_HS_ROTS) { return "Gearbox HS Rot. Side"; }
-                else if (Anomaly == AnomalyType.ROC_GEAR_IM_GENS) { return "Gearbox IMS Gen. Side"; }
-                else if (Anomaly == AnomalyType.ROC_GEAR_IM_ROTS) { return "Gearbox IMS Rot. Side"; }
-                else if (Anomaly == AnomalyType.ROC_GEAR_OIL) { return "Gearbox Oil"; }
-                else if (Anomaly == AnomalyType.ROC_GNNY_G) { return "Generator G-Bearing"; }
-                else if (Anomaly == AnomalyType.ROC_GNNY_R) { return "Generator R-Bearing"; }
-                else if (Anomaly == AnomalyType.ROC_GNNY_RPM) { return "Generator RPMs"; }
+                if (Anomaly == AnomalySource.NO_ANOMALY) { return "No anomaly"; }
+                else if (Anomaly == AnomalySource.BEARING) { return "Main bearing"; }
+                else if (Anomaly == AnomalySource.BEARING_GS) { return "Main bearing: gear side"; }
+                else if (Anomaly == AnomalySource.BEARING_HS) { return "Main bearing: hub side"; }
+                else if (Anomaly == AnomalySource.GEAR_HS_GEN) { return "Gear bearing HS-Gen"; }
+                else if (Anomaly == AnomalySource.GEAR_HS_ROT) { return "Gear bearing HS-Rot"; }
+                else if (Anomaly == AnomalySource.GEAR_IM_GEN) { return "Gear bearing IMS-Gen"; }
+                else if (Anomaly == AnomalySource.GEAR_IM_ROT) { return "Gear bearing IMS-Rot"; }
+                else if (Anomaly == AnomalySource.GEAR_OIL) { return "Gear oil"; }
+                else if (Anomaly == AnomalySource.GENNY_G) { return "Generator bearing NDE"; }
+                else if (Anomaly == AnomalySource.GENNY_R) { return "Generator bearing DE"; }
+                else if (Anomaly == AnomalySource.GENNY_RPM) { return "Generator RPMs"; }
                 else { return "Unknown"; }
             }
         }
 
-        public AnomalyType Anomaly { get { return _anomaly; } set { _anomaly = value; } }
+        public AnomalySource Anomaly { get { return _anomaly; } set { _anomaly = value; } }
         public EventAssoct AssocEv { get { return _assocEv; } set { _assocEv = value; } }
         public EventSource ESource { get { return _eSource; } set { _eSource = value; } }
         public EvtDuration EvtDrtn { get { return _evtDrtn; } set { _evtDrtn = value; } }

@@ -21,7 +21,11 @@ namespace scada_analyst
         private TimeSpan _scadaSeprtr = new TimeSpan(0, 10, 0);
 
         private ScadaData.TurbineData _fleetMeans = new ScadaData.TurbineData();
-        
+
+        private ScadaData.ScadaSample.GearBox _gbox = new ScadaData.ScadaSample.GearBox();
+        private ScadaData.ScadaSample.Generator _genr = new ScadaData.ScadaSample.Generator();
+        private ScadaData.ScadaSample.MainBearing _mbrg = new ScadaData.ScadaSample.MainBearing();
+
         private List<EventData> _allWtrEvts = new List<EventData>();
         private List<EventData> _loSpEvents = new List<EventData>();
         private List<EventData> _hiSpEvents = new List<EventData>();
@@ -414,17 +418,17 @@ namespace scada_analyst
         {
             List<AnalyticLimit> _newLimits = new List<AnalyticLimit>();
 
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox oil Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS generator side Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS rotor side Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS generator side Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS rotor side Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 1000));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-bearing Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-bearing Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 20));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.OilTemp.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.HsGen.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.HsRot.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.ImsGen.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.ImsRot.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, _genr.RPMs.Description, 0, 1000));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, _genr.BearingG.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, _genr.BearingR.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, _mbrg.Main.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, _mbrg.Gs.Description, 0, 20));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, _mbrg.Hs.Description, 0, 20));
 
             return _newLimits;
         }
@@ -438,8 +442,7 @@ namespace scada_analyst
             for (int i = 1; i < eventData.Count; i++)
             {
                 // every timestep must check what the previous one had as its value
-
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("oil"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.OilTemp.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr && 
                     Math.Abs(eventData[i].Gearbox.OilTemp.Mean - eventData[i - 1].Gearbox.OilTemp.Mean) > _rateChange[index].MaxVars)
@@ -457,15 +460,14 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_OIL));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_OIL));
                 }
             }
 
             for (int i = 1; i < eventData.Count; i++)
             {
                 // every timestep must check what the previous one had as its value
-
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs generator side"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.HsGen.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Gearbox.HsGen.Mean - eventData[i - 1].Gearbox.HsGen.Mean) > _rateChange[index].MaxVars)
@@ -483,15 +485,14 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_HS_GENS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_HS_GEN));
                 }
             }
 
             for (int i = 1; i < eventData.Count; i++)
             {
                 // every timestep must check what the previous one had as its value
-
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs rotor side"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.HsRot.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Gearbox.HsRot.Mean - eventData[i - 1].Gearbox.HsRot.Mean) > _rateChange[index].MaxVars)
@@ -509,15 +510,14 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_HS_ROTS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_HS_ROT));
                 }
             }
 
             for (int i = 1; i < eventData.Count; i++)
             {
                 // every timestep must check what the previous one had as its value
-
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims generator side"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.ImsGen.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Gearbox.ImsGen.Mean - eventData[i - 1].Gearbox.ImsGen.Mean) > _rateChange[index].MaxVars)
@@ -535,15 +535,14 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_IM_GENS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_IM_GEN));
                 }
             }
 
             for (int i = 1; i < eventData.Count; i++)
             {
                 // every timestep must check what the previous one had as its value
-
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims rotor side"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.ImsRot.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Gearbox.ImsRot.Mean - eventData[i - 1].Gearbox.ImsRot.Mean) > _rateChange[index].MaxVars)
@@ -561,7 +560,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GEAR_IM_ROTS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_IM_ROT));
                 }
             }
 
@@ -573,7 +572,7 @@ namespace scada_analyst
             {
                 // every timestep must check what the previous one had as its value
 
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName == _genr.RPMs.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Genny.RPMs.Mean - eventData[i - 1].Genny.RPMs.Mean) > _rateChange[index].MaxVars)
@@ -591,7 +590,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GNNY_RPM));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GENNY_RPM));
                 }
             }
 
@@ -599,7 +598,7 @@ namespace scada_analyst
             {
                 // every timestep must check what the previous one had as its value
 
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("g-bearing"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName == _genr.BearingG.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Genny.BearingG.Mean - eventData[i - 1].Genny.BearingG.Mean) > _rateChange[index].MaxVars)
@@ -617,7 +616,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GNNY_G));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GENNY_G));
                 }
             }
 
@@ -625,7 +624,7 @@ namespace scada_analyst
             {
                 // every timestep must check what the previous one had as its value
 
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("r-bearing"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName == _genr.BearingR.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Genny.BearingR.Mean - eventData[i - 1].Genny.BearingR.Mean) > _rateChange[index].MaxVars)
@@ -643,7 +642,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_GNNY_R));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GENNY_R));
                 }
             }
 
@@ -655,7 +654,7 @@ namespace scada_analyst
             {
                 // every timestep must check what the previous one had as its value
 
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("bearing"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName == _mbrg.Main.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].MainBear.Main.Mean - eventData[i - 1].MainBear.Main.Mean) > _rateChange[index].MaxVars)
@@ -673,7 +672,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_BEAR));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.BEARING));
                 }
             }
 
@@ -681,7 +680,7 @@ namespace scada_analyst
             {
                 // every timestep must check what the previous one had as its value
 
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("hs"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName == _mbrg.Gs.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].MainBear.Hs.Mean - eventData[i - 1].MainBear.Hs.Mean) > _rateChange[index].MaxVars)
@@ -699,7 +698,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_BEAR_HS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.BEARING_GS));
                 }
             }
 
@@ -707,7 +706,7 @@ namespace scada_analyst
             {
                 // every timestep must check what the previous one had as its value
 
-                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("gs"));
+                int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName == _mbrg.Hs.Description);
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].MainBear.Gs.Mean - eventData[i - 1].MainBear.Gs.Mean) > _rateChange[index].MaxVars)
@@ -725,7 +724,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.ROC_BEAR_GS));
+                    _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.BEARING_HS));
                 }
             }
 
@@ -760,17 +759,17 @@ namespace scada_analyst
         {
             List<AnalyticLimit> _newLimits = new List<AnalyticLimit>();
 
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "Gearbox Oil Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS Generator Side Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "HS Rotor Side Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS Generator Side Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, "IMS Rotor Side Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "Generator RPMs", 0, 1600));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "G-Bearing Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, "R-Bearing Temp", 0, 70));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "Bearing Temp", 0, 50));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "HS Temp", 0, 50));
-            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, "GS Temp", 0, 50));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.OilTemp.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.HsGen.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.HsRot.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.ImsGen.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GEARBOX, _gbox.ImsRot.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, _genr.RPMs.Description, 0, 1600));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, _genr.BearingG.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.GENERATOR, _genr.BearingR.Description, 0, 70));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, _mbrg.Main.Description, 0, 50));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, _mbrg.Gs.Description, 0, 50));
+            _newLimits.Add(new AnalyticLimit(AnalyticLimit.Equipment.MAIN_BEAR, _mbrg.Hs.Description, 0, 50));
 
             return _newLimits;
         }
@@ -779,74 +778,11 @@ namespace scada_analyst
         {
             _thresEvnts.Clear();
 
-            //try
-            //{
-            //    if (eventData.Count > 0)
-            //    {
-            //        #region Gearbox
-
-            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Oils.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("oil")),
-            //            EventData.AnomalyType.THRS_GEAR_OIL);
-
-            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Hs.Gens.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs generator side")),
-            //            EventData.AnomalyType.THRS_GEAR_HS_GENS);
-
-            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Hs.Rots.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs rotor side")),
-            //            EventData.AnomalyType.THRS_GEAR_HS_ROTS);
-
-            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Ims.Gens.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims generator side")),
-            //            EventData.AnomalyType.THRS_GEAR_IM_GENS);
-
-            //        GetThresholdEvents(eventData, eventData[0].Gearbox.Ims.Rots.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims rotor side")),
-            //            EventData.AnomalyType.THRS_GEAR_IM_ROTS);
-
-            //        #endregion
-
-            //        #region Generator
-
-            //        GetThresholdEvents(eventData, eventData[0].Genny.bearingG.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("g-bearing")),
-            //            EventData.AnomalyType.THRS_GNNY_G);
-
-            //        GetThresholdEvents(eventData, eventData[0].Genny.bearingR.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("r-bearing")),
-            //            EventData.AnomalyType.THRS_GNNY_R);
-
-            //        GetThresholdEvents(eventData, eventData[0].Genny.Rpms.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm")),
-            //            EventData.AnomalyType.THRS_GNNY_RPM);
-
-            //        #endregion
-
-            //        #region Main Bearing
-
-            //        GetThresholdEvents(eventData, eventData[0].MainBear.Standards.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("bearing")),
-            //            EventData.AnomalyType.THRS_BEAR);
-
-            //        GetThresholdEvents(eventData, eventData[0].MainBear.Gs.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("gs")),
-            //            EventData.AnomalyType.THRS_BEAR_GS);
-
-            //        GetThresholdEvents(eventData, eventData[0].MainBear.Hs.Mean,
-            //            _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("hs")),
-            //            EventData.AnomalyType.THRS_BEAR_HS);
-
-            //        #endregion
-            //    }
-            //}
-            //catch { }
-
             #region Gearbox
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("oil"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.OilTemp.Description);
 
                 if (eventData[i].Gearbox.OilTemp.Mean > _thresholds[index].MaxVars)
                 {
@@ -863,13 +799,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_OIL));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_OIL));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs generator side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.HsGen.Description);
 
                 if (eventData[i].Gearbox.HsGen.Mean > _thresholds[index].MaxVars)
                 {
@@ -886,13 +822,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_HS_GENS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_HS_GEN));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("hs rotor side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.HsRot.Description);
 
                 if (eventData[i].Gearbox.HsRot.Mean > _thresholds[index].MaxVars)
                 {
@@ -909,13 +845,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_HS_ROTS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_HS_ROT));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims generator side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.ImsGen.Description);
 
                 if (eventData[i].Gearbox.ImsGen.Mean > _thresholds[index].MaxVars)
                 {
@@ -932,13 +868,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_IM_GENS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_IM_GEN));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName.ToLower().Contains("ims rotor side"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.ImsRot.Description);
 
                 if (eventData[i].Gearbox.ImsRot.Mean > _thresholds[index].MaxVars)
                 {
@@ -955,7 +891,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_IM_ROTS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_IM_ROT));
                 }
             }
 
@@ -965,7 +901,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName == _genr.RPMs.Description);
 
                 if (eventData[i].Genny.RPMs.Mean > _thresholds[index].MaxVars)
                 {
@@ -982,13 +918,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GNNY_RPM));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GENNY_RPM));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("g-bearing"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName == _genr.BearingG.Description);
 
                 if (eventData[i].Genny.BearingG.Mean > _thresholds[index].MaxVars)
                 {
@@ -1005,13 +941,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GNNY_G));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GENNY_G));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("r-bearing"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName == _genr.BearingR.Description);
 
                 if (eventData[i].Genny.BearingR.Mean > _thresholds[index].MaxVars)
                 {
@@ -1028,7 +964,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GNNY_R));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GENNY_R));
                 }
             }
 
@@ -1038,7 +974,7 @@ namespace scada_analyst
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("bearing"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName == _mbrg.Main.Description);
 
                 if (eventData[i].MainBear.Main.Mean > _thresholds[index].MaxVars)
                 {
@@ -1055,13 +991,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_BEAR));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.BEARING));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("hs"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName == _mbrg.Gs.Description);
 
                 if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxVars)
                 {
@@ -1078,13 +1014,13 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_BEAR_HS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.BEARING_GS));
                 }
             }
 
             for (int i = 0; i < eventData.Count; i++)
             {
-                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName.ToLower().Contains("gs"));
+                int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.MAIN_BEAR && x.VarName == _mbrg.Hs.Description);
 
                 if (eventData[i].MainBear.Hs.Mean > _thresholds[index].MaxVars)
                 {
@@ -1101,7 +1037,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_BEAR_GS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.BEARING_HS));
                 }
             }
 
@@ -1109,7 +1045,7 @@ namespace scada_analyst
         }
 
         private void GetThresholdEvents(List<ScadaData.ScadaSample> eventData, int input, double variable, int index, 
-            EventData.AnomalyType type)
+            EventData.AnomalySource type)
         {
             // try to build one comprehensive method
 
@@ -1135,7 +1071,7 @@ namespace scada_analyst
                         thisEvent.Add(eventData[j]);
                     }
 
-                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalyType.THRS_GEAR_IM_ROTS));
+                    _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_IM_ROT));
                 }
             }
         }
@@ -1998,6 +1934,8 @@ namespace scada_analyst
 
             #endregion
 
+            #region Constructor
+
             public AnalyticLimit(Equipment type, string variable, double minimum, double maximum)
             {
                 _maxVars = maximum;
@@ -2005,6 +1943,8 @@ namespace scada_analyst
                 _varName = variable;
                 _type = type;
             }
+
+            #endregion 
 
             public enum Equipment
             {
@@ -2035,6 +1975,8 @@ namespace scada_analyst
 
             #endregion
 
+            #region Constructor
+
             public Distances() { }
 
             public Distances(int from, int to, double distance)
@@ -2043,6 +1985,8 @@ namespace scada_analyst
                 _to = to;
                 _interval = distance;
             }
+
+            #endregion
 
             #region Properties
 
@@ -2070,6 +2014,8 @@ namespace scada_analyst
 
             #endregion
 
+            #region Constructor
+
             public StructureSmry(Structure thisAsset, List<EventData> loWindEvents, List<EventData> hiWindEvents,
                 List<EventData> noPowrEvents, List<EventData> hiPowrEvents)
             {
@@ -2087,6 +2033,8 @@ namespace scada_analyst
                     _noPower = new EventsCounter(this.UnitID, scada_analyst.EventData.PwrProdType.NO_PWR, noPowrEvents);
                 }
             }
+
+            #endregion 
 
             #region Support Classes
 

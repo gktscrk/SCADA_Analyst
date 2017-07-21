@@ -952,8 +952,6 @@
                     <TabControl.Resources>
                         <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
                             <Setter Property="Metro:ControlsHelper.HeaderFontSize" Value="12" />
-                            <!--<Setter Property="Metro:TabControlHelper.UnderlineBrush" Value="Azure" />
-                        <Setter Property="Metro:TabControlHelper.Underlined" Value="TabItems" />-->
                         </Style>
                     </TabControl.Resources>
 
@@ -1439,18 +1437,14 @@
                                         <VirtualizingStackPanel/>
                                     </ItemsPanelTemplate>
                                 </ListView.ItemsPanel>
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
 
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
-                                        <GridViewColumn Header="Variable Name" Width="200" >
+                                        <GridViewColumn Header="Variable Name" Width="260" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding VarName, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding VarName, Mode=TwoWay}"
+                                                               HorizontalAlignment="Left" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1561,18 +1555,14 @@
                                         <VirtualizingStackPanel/>
                                     </ItemsPanelTemplate>
                                 </ListView.ItemsPanel>
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
 
                                 <ListView.View>
                                     <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}" >
-                                        <GridViewColumn Header="Variable Name" Width="200" >
+                                        <GridViewColumn Header="Variable Name" Width="260" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding VarName, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding VarName, Mode=TwoWay}"
+                                                               HorizontalAlignment="Left" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
