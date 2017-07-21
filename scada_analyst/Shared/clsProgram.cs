@@ -15,6 +15,8 @@ namespace scada_analyst.Shared
             #region Version 1.600 - Proceeding after Romax
 
             ProgramVersion v1600 = new ProgramVersion(1600, new DateTime(2017, 07, 212));
+            v1600.AddChange("");
+            v1600.AddChange("User-defined event selection now includes exactly the time period chosen.");
             v1600.AddChange("New empty sample is added in where separation between samples is greater than that of the input data.");
             v1600.AddChange("Fixed the specific event investigation date choosing.");
             results.Add(v1600);
