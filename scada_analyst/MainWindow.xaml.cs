@@ -339,9 +339,11 @@ namespace scada_analyst
             // bring up a messagebox to show the user the time and value of the datapoint they
             // clicked on
 
-            string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
+            // deactivated this as the present method with a hoverable looks better and is easier to understand
 
-            LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
+            //string time = Int32.TryParse(point.X.ToString(), out int theta) ? Labels[(int)point.X] : "N/A";
+
+            //LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
         }
 
         private void ChartShowSeries(string input, bool _previousWeekIncluded)
@@ -350,8 +352,18 @@ namespace scada_analyst
             {
                 // create an empty container for graphing to choose which source for the data is required
                 ObservableCollection<ScadaData.ScadaSample> _graphingData = new ObservableCollection<ScadaData.ScadaSample>();
+                ObservableCollection<ScadaData.ScadaSample> _avgGraphingData = new ObservableCollection<ScadaData.ScadaSample>();
 
-                if (_previousWeekIncluded) { _graphingData = WeekEventDataVw; } else { _graphingData = ThisEventDataVw; }
+                if (_previousWeekIncluded)
+                {
+                    _graphingData = WeekEventDataVw;
+                    _avgGraphingData = AvgWeekEventDataVw;
+                }
+                else
+                {
+                    _graphingData = ThisEventDataVw;
+                    _avgGraphingData = AvgThisEventDataVw;
+                }
 
                 LChart_Basic.Series.Clear();
 
@@ -383,30 +395,21 @@ namespace scada_analyst
                         priGraph.Title = _gbox.HsGen.Description;
                         var1 = Math.Round(_graphingData[i].Gearbox.HsGen.Mean, 1);
 
-                        if (_averagesComputed)
-                        {
-                            var2 = Math.Round(_graphingData[i].Gearbox.HsRot.Mean, 1);
-                        }
+                        if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.HsGen.Mean, 1); }
                     }
                     else if (input == _eventDetailsSelection[2])
                     {
                         priGraph.Title = _genr.BearingG.Description;
                         var1 = Math.Round(_graphingData[i].Genny.BearingG.Mean, 1);
 
-                        if (_averagesComputed)
-                        {
-                            var2 = Math.Round(_graphingData[i].Genny.BearingR.Mean, 1);
-                        }
+                        if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.BearingG.Mean, 1); }
                     }
                     else if (input == _eventDetailsSelection[3])
                     {
                         priGraph.Title = _mbrg.Main.Description;
                         var1 = Math.Round(_graphingData[i].MainBear.Main.Mean, 1);
 
-                        if (_averagesComputed)
-                        {
-                            var2 = Math.Round(_graphingData[i].MainBear.Hs.Mean, 1);
-                        }
+                        if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].MainBear.Main.Mean, 1); }
                     }
 
                     times.Add(_graphingData[i].TimeStamp.ToString("dd/MMM/yy HH:mm"));
@@ -1249,6 +1252,7 @@ namespace scada_analyst
 
                 await Task.Run(() => _scadaFile = _analyser.FleetStats(_scadaFile, progress));
 
+                _averagesComputed = true;
                 ProgressBarInvisible();
             }
             catch (CancelLoadingException) { }
@@ -2034,7 +2038,7 @@ namespace scada_analyst
                     thisEv = new EventData(thisList, EventData.AnomalySource.USERDEFINED);
                 }
 
-                _analyser.EventData(_scadaFile, thisEv);
+                _analyser.EventData(_scadaFile, thisEv, _averagesComputed);
 
                 // assign the created dataset lists to their global variables as proprties
 
@@ -2318,19 +2322,37 @@ namespace scada_analyst
         public ObservableCollection<ScadaData.ScadaSample> ThisEventDataVw
         {
             get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.ThisEvScada); }
-            set { _analyser.ThisEvScada = value.ToList(); }
+            set { ThisEventDataVw = value; }
         }
 
         public ObservableCollection<ScadaData.ScadaSample> WeekEventDataVw
         {
             get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.WeekHistory); }
-            set { _analyser.WeekHistory = value.ToList(); }
+            set { WeekEventDataVw = value; }
         }
 
         public ObservableCollection<ScadaData.ScadaSample> HistEventDataVw
         {
             get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.HistEventData); }
-            set { _analyser.HistEventData = value.ToList(); }
+            set { HistEventDataVw = value; }
+        }
+
+        public ObservableCollection<ScadaData.ScadaSample> AvgThisEventDataVw
+        {
+            get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.AvgThisEvScada); }
+            set { AvgThisEventDataVw = value; }
+        }
+
+        public ObservableCollection<ScadaData.ScadaSample> AvgWeekEventDataVw
+        {
+            get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.AvgWeekHistory); }
+            set { AvgWeekEventDataVw = value; }
+        }
+
+        public ObservableCollection<ScadaData.ScadaSample> AvgHistEventDataVw
+        {
+            get { return new ObservableCollection<ScadaData.ScadaSample>(_analyser.AvgHistEventData); }
+            set { AvgHistEventDataVw = value; }
         }
 
         #endregion

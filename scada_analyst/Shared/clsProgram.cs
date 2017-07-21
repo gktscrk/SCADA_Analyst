@@ -10,94 +10,96 @@ namespace scada_analyst.Shared
         {
             List<ProgramVersion> results = new List<ProgramVersion>(25);
 
-            #region Version 1.600 - Proceeding after Romax
+            #region Version 3.000 - Proceeding after Romax
 
-            ProgramVersion v1600 = new ProgramVersion(1600, new DateTime(2017, 07, 212));
-            v1600.AddChange("Meteorology export checks for data at different heights and only exports what has been loaded.");
-            v1600.AddChange("Meteorology loading updated to bring into accordance with possible data at different heights.");
-            v1600.AddChange("Descriptions for what different equipment fields stand for are included programmatically.");
-            v1600.AddChange("Correct names are used for variables throughout.");
-            v1600.AddChange("User-defined event selection now includes exactly the time period chosen.");
-            v1600.AddChange("New empty sample is added in where separation between samples is greater than that of the input data.");
-            v1600.AddChange("Fixed the specific event investigation date choosing.");
-            results.Add(v1600);
+            ProgramVersion v3000 = new ProgramVersion(3000, new DateTime(2017, 07, 212));
+            v3000.AddChange("The graphing function now brings up the variable selected and the fleetwise average of the same variable.");
+            v3000.AddChange("Fixed average value calculations for power and nacelle temperatures.");
+            v3000.AddChange("Meteorology export checks for data at different heights and only exports what has been loaded.");
+            v3000.AddChange("Meteorology loading updated to bring into accordance with possible data at different heights.");
+            v3000.AddChange("Descriptions for what different equipment fields stand for are included programmatically.");
+            v3000.AddChange("Correct names are used for variables throughout.");
+            v3000.AddChange("User-defined event selection now includes exactly the time period chosen.");
+            v3000.AddChange("New empty sample is added in where separation between samples is greater than that of the input data.");
+            v3000.AddChange("Fixed the specific event investigation date choosing.");
+            results.Add(v3000);
 
             #endregion
 
-            #region Version 1.400 - Updates during Stay with Romax in Nottingham
+            #region Version 2.000 - Updates during Stay with Romax in Nottingham
 
-            ProgramVersion v1506 = new ProgramVersion(1506, new DateTime(2017, 07, 20));
-            v1506.AddChange("The detailed event investigation now only shows that exact time in the graphs and tables while the specific event investigation highlights the full week previous as well.");
-            results.Add(v1506);
+            ProgramVersion v2410 = new ProgramVersion(2410, new DateTime(2017, 07, 20));
+            v2410.AddChange("The detailed event investigation now only shows that exact time in the graphs and tables while the specific event investigation highlights the full week previous as well.");
+            results.Add(v2410);
 
-            ProgramVersion v1505 = new ProgramVersion(1505, new DateTime(2017, 07, 20));
-            v1505.AddChange("Can only load one turbine at a time.");
-            results.Add(v1505);
+            ProgramVersion v2400 = new ProgramVersion(2400, new DateTime(2017, 07, 20));
+            v2400.AddChange("Can only load one turbine at a time.");
+            results.Add(v2400);
 
-            ProgramVersion v1504 = new ProgramVersion(1504, new DateTime(2017, 07, 20));
-            v1504.AddChange("Cannot select turbines which are no longer loaded in the user-defined event selection options.");
-            results.Add(v1504);
+            ProgramVersion v2300 = new ProgramVersion(2300, new DateTime(2017, 07, 20));
+            v2300.AddChange("Cannot select turbines which are no longer loaded in the user-defined event selection options.");
+            results.Add(v2300);
 
-            ProgramVersion v1503 = new ProgramVersion(1503, new DateTime(2017, 07, 20));
-            v1503.AddChange("Can remove several assets at once.");
-            results.Add(v1503);
+            ProgramVersion v2230 = new ProgramVersion(2230, new DateTime(2017, 07, 20));
+            v2230.AddChange("Can remove several assets at once.");
+            results.Add(v2230);
 
-            ProgramVersion v1502 = new ProgramVersion(1502, new DateTime(2017, 07, 20));
-            v1502.AddChange("Cannot load file again which is already loaded.");
-            v1502.AddChange("Fixed event display to clear previous information.");
-            results.Add(v1502);
+            ProgramVersion v2220 = new ProgramVersion(2220, new DateTime(2017, 07, 20));
+            v2220.AddChange("Cannot load file again which is already loaded.");
+            v2220.AddChange("Fixed event display to clear previous information.");
+            results.Add(v2220);
 
-            ProgramVersion v1501 = new ProgramVersion(1501, new DateTime(2017, 07, 20));
-            v1501.AddChange("Graph counter takes into account length of event.");
-            results.Add(v1501);
+            ProgramVersion v2210 = new ProgramVersion(2210, new DateTime(2017, 07, 20));
+            v2210.AddChange("Graph counter takes into account length of event.");
+            results.Add(v2210);
 
-            ProgramVersion v1500 = new ProgramVersion(1500, new DateTime(2017, 07, 19));
-            v1500.AddChange("Changed meteorology data loading to fit in with SCADA data.");
-            v1500.AddChange("Events summary now counts events properly.");
-            v1500.AddChange("Option to check what files have been loaded is added.");
-            v1500.AddChange("User can remove all events associated with a specific asset ID.");
-            v1500.AddChange("A user-detailed time period can be investigated.");
-            results.Add(v1500);
+            ProgramVersion v2200 = new ProgramVersion(2200, new DateTime(2017, 07, 19));
+            v2200.AddChange("Changed meteorology data loading to fit in with SCADA data.");
+            v2200.AddChange("Events summary now counts events properly.");
+            v2200.AddChange("Option to check what files have been loaded is added.");
+            v2200.AddChange("User can remove all events associated with a specific asset ID.");
+            v2200.AddChange("A user-detailed time period can be investigated.");
+            results.Add(v2200);
 
-            ProgramVersion v1408 = new ProgramVersion(1408, new DateTime(2017, 07, 19));
-            v1408.AddChange("Fixed asset overview list as Station ID.");
-            results.Add(v1408);
+            ProgramVersion v2110 = new ProgramVersion(2110, new DateTime(2017, 07, 19));
+            v2110.AddChange("Fixed asset overview list as Station ID.");
+            results.Add(v2110);
 
-            ProgramVersion v1407 = new ProgramVersion(1407, new DateTime(2017, 07, 19));
-            v1407.AddChange("Fixed events counter problems.");
-            results.Add(v1407);
+            ProgramVersion v2101 = new ProgramVersion(2101, new DateTime(2017, 07, 19));
+            v2101.AddChange("Fixed events counter problems.");
+            results.Add(v2101);
 
-            ProgramVersion v1406 = new ProgramVersion(1406, new DateTime(2017, 07, 19));
-            v1406.AddChange("Averages calculation includes the nacelle and the power output.");
-            v1406.AddChange("New listview for showing general overview of event stats.");
-            v1406.AddChange("Loaded assets sorts by ID.");
-            results.Add(v1406);
+            ProgramVersion v2100 = new ProgramVersion(2100, new DateTime(2017, 07, 19));
+            v2100.AddChange("Averages calculation includes the nacelle and the power output.");
+            v2100.AddChange("New listview for showing general overview of event stats.");
+            v2100.AddChange("Loaded assets sorts by ID.");
+            results.Add(v2100);
 
-            ProgramVersion v1405 = new ProgramVersion(1405, new DateTime(2017, 07, 19));
-            v1405.AddChange("Remove events possible for multiple events at a time in the low power production area.");
-            results.Add(v1405);
+            ProgramVersion v2050 = new ProgramVersion(2050, new DateTime(2017, 07, 19));
+            v2050.AddChange("Remove events possible for multiple events at a time in the low power production area.");
+            results.Add(v2050);
 
-            ProgramVersion v1404 = new ProgramVersion(1404, new DateTime(2017, 07, 19));
-            v1404.AddChange("Loading SCADA data the turbine ID checks both Asset ID and Station ID to see which one to use.");
-            results.Add(v1404);
+            ProgramVersion v2040 = new ProgramVersion(2040, new DateTime(2017, 07, 19));
+            v2040.AddChange("Loading SCADA data the turbine ID checks both Asset ID and Station ID to see which one to use.");
+            results.Add(v2040);
 
-            ProgramVersion v1403 = new ProgramVersion(1403, new DateTime(2017, 07, 19));
-            v1403.AddChange("All errors should come up as a similar black screen and fade in.");
-            results.Add(v1403);
+            ProgramVersion v2030 = new ProgramVersion(2030, new DateTime(2017, 07, 19));
+            v2030.AddChange("All errors should come up as a similar black screen and fade in.");
+            results.Add(v2030);
 
-            ProgramVersion v1402 = new ProgramVersion(1402, new DateTime(2017, 07, 19));
-            v1402.AddChange("Can pick date format for input files.");
-            results.Add(v1402);
+            ProgramVersion v2020 = new ProgramVersion(2020, new DateTime(2017, 07, 19));
+            v2020.AddChange("Can pick date format for input files.");
+            results.Add(v2020);
 
-            ProgramVersion v1401 = new ProgramVersion(1401, new DateTime(2017, 07, 19));
-            v1401.AddChange("Can use Station ID to load data.");
-            results.Add(v1401);
+            ProgramVersion v2010 = new ProgramVersion(2010, new DateTime(2017, 07, 19));
+            v2010.AddChange("Can use Station ID to load data.");
+            results.Add(v2010);
 
-            ProgramVersion v1400 = new ProgramVersion(1400, new DateTime(2017, 07, 19));
-            v1400.AddChange("Added option to view max power value at max threshold crossover.");
-            v1400.AddChange("Added option to view RPM change over the rate of change period.");
-            v1400.AddChange("Fixed change fault status option workings.");
-            results.Add(v1400);
+            ProgramVersion v2000 = new ProgramVersion(2000, new DateTime(2017, 07, 19));
+            v2000.AddChange("Added option to view max power value at max threshold crossover.");
+            v2000.AddChange("Added option to view RPM change over the rate of change period.");
+            v2000.AddChange("Fixed change fault status option workings.");
+            results.Add(v2000);
 
             #endregion
 

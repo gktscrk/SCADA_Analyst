@@ -968,7 +968,8 @@
                             <lvc:CartesianChart Grid.Column="0" Grid.Row="0" Margin="5,5,5,5"
                                     HorizontalAlignment="Center" DisableAnimations="True"
                                     x:Name="LChart_Basic" MinWidth="600" DataClick="Chart_OnData_Click"
-                                    Hoverable="False" DataTooltip="{x:Null}" >
+                                    Hoverable="False"  > 
+                                <!--This can be used to take away the tooltip: DataTooltip="{x:Null}"-->
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Position="LeftBottom" x:Name="LChart_XAxis" />
                                 </lvc:CartesianChart.AxisX>

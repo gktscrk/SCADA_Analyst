@@ -36,6 +36,9 @@ namespace scada_analyst
         private List<ScadaData.ScadaSample> _eventScadaOnly = new List<ScadaData.ScadaSample>();
         private List<ScadaData.ScadaSample> _weekBeforeInfo = new List<ScadaData.ScadaSample>();
         private List<ScadaData.ScadaSample> _fullHistory = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> _avgEventScadaOnly = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> _avgWeekBeforeInfo = new List<ScadaData.ScadaSample>();
+        private List<ScadaData.ScadaSample> _avgFullHistory = new List<ScadaData.ScadaSample>();
 
         private List<EventData> _thresEvnts = new List<EventData>();
         private List<EventData> _rChngEvnts = new List<EventData>();
@@ -1125,50 +1128,65 @@ namespace scada_analyst
 
         #region Event Data Retrieval Tasks
 
-        public void EventData(ScadaData _scadaFile, EventData _thisEvent)
+        public void EventData(ScadaData _scadaFile, EventData _thisEvent, bool _averagesComputed)
         {
-            // public accessor method
-            EventDataRetrieval(_scadaFile, _thisEvent);
+            // get index of the asset and get index of the event time in the asset
+            // the index of the asset to be used below
+            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEvent.SourceAsset);
+
+            // public accessor method: first get generic info, then averages
+            EventDataRetrieval(_scadaFile.WindFarm[assetIndex], _thisEvent, false);
+            if (_averagesComputed) { EventDataRetrieval(_fleetMeans, _thisEvent, true); }            
         }
 
-        private void EventDataRetrieval(ScadaData _scadaFile, EventData _thisEv)
+        private void EventDataRetrieval(ScadaData.TurbineData _turbine, EventData _thisEv, bool _getAverage)
         {
-            _eventScadaOnly.Clear();
-            _weekBeforeInfo.Clear();
-            _fullHistory.Clear();
+            if (_getAverage)
+            {
+                _avgEventScadaOnly.Clear();
+                _avgWeekBeforeInfo.Clear();
+                _avgFullHistory.Clear();
+            }
+            else
+            {
+                _eventScadaOnly.Clear();
+                _weekBeforeInfo.Clear();
+                _fullHistory.Clear();
+            }
 
             // do something part of the method
             // this one needs to take the event details and send it to another listbox plus graph
 
             // thisEvent has the event data only -- for the actual data to display, we'll need to find 
             // the datapoints from the source data
-
-            // get index of the asset and get index of the event time in the asset
-            // the index of the asset to be used below
-            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.SourceAsset);
-
             // the index of the timestamp a week before the event began or otherwise the 
             // first timestamp in the series - long conditional but should work
             TimeSpan stepBack = new TimeSpan(-24 * 7, 0, 0);
-            int weekIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) != -1 ? _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) : 0;
-            int timeIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0]);
+            int weekIndex = _turbine.DataSorted
+                .FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) != -1 ? 
+                _turbine.DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) : 0;
+
+            int timeIndex = _turbine.DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0]);
 
             for (int i = 0; i < _thisEv.EvTimes.Count; i++)
             {
-                _eventScadaOnly.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+                if (_getAverage) { _avgEventScadaOnly.Add(_turbine.DataSorted[timeIndex + i]); }
+                else { _eventScadaOnly.Add(_turbine.DataSorted[timeIndex + i]); }
             }
 
             for (int i = weekIndex; i < (timeIndex + _thisEv.EvTimes.Count); i++)
             {
-                _weekBeforeInfo.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
+                if (_getAverage) { _avgWeekBeforeInfo.Add(_turbine.DataSorted[i]); }
+                else { _weekBeforeInfo.Add(_turbine.DataSorted[i]); }                
             }
 
-            for (int j = 0; j < (timeIndex + _thisEv.EvTimes.Count); j++)
+            for (int i = 0; i < (timeIndex + _thisEv.EvTimes.Count); i++)
             {
-                _fullHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
+                if (_getAverage) { _avgFullHistory.Add(_turbine.DataSorted[i]); }
+                else { _fullHistory.Add(_turbine.DataSorted[i]); }                
             }
         }
-
+        
         #endregion
 
         #region Data Processing
@@ -1537,9 +1555,9 @@ namespace scada_analyst
         
         #region Fleet-wise Means and Difference
 
-        public ScadaData FleetStats(ScadaData scadaFile, IProgress<int> progress)
+        public ScadaData FleetStats(ScadaData _inputData, IProgress<int> progress)
         {
-            ScadaData _scadaFile = new ScadaData(scadaFile);
+            ScadaData _holdingFile = new ScadaData(_inputData);
 
             try
             {
@@ -1547,15 +1565,22 @@ namespace scada_analyst
                 // to the declared variable; create a new turbine data within that
                 _fleetMeans = new ScadaData.TurbineData();
 
-                FleetTotalValues(_scadaFile, progress);
+                // the two methods below get the actual average values and populate the file in this class
+                // lastly these get sorted to prevent trouble
+                FleetTotalValues(_holdingFile, progress);
                 GetFleetAverages(progress, 50);
-                CalculateDeltas(_scadaFile, progress, 55);
+                _fleetMeans.DataSorted = _fleetMeans.Data.OrderBy(o => o.TimeStamp).ToList();
 
-                _scadaFile = SortScada(_scadaFile);
+                // this computes the delta values for all separate samples
+                CalculateDeltas(_holdingFile, progress, 55);
+
+                // re-sorts in case something is amiss
+                _holdingFile = SortScada(_holdingFile);
             }
             catch { }
 
-            return _scadaFile;
+            // we return the scadaFile because we have populated the Delta fields in all relevant areas
+            return _holdingFile;
         }
 
         /// <summary>
@@ -1621,12 +1646,12 @@ namespace scada_analyst
             _fleetMeans.Data[index].AmbTemps.Maxm = a01.Item2;
 
             Tuple<double, double> a02 = IncrementAverage(_fleetMeans.Data[index].Power.Mean, _fleetMeans.Data[index].Power.Maxm, thisSample.Power.Mean);
-            _fleetMeans.Data[index].AmbTemps.Mean = a02.Item1;
-            _fleetMeans.Data[index].AmbTemps.Maxm = a02.Item2;
+            _fleetMeans.Data[index].Power.Mean = a02.Item1;
+            _fleetMeans.Data[index].Power.Maxm = a02.Item2;
 
             Tuple<double, double> a03 = IncrementAverage(_fleetMeans.Data[index].Nacel.Temp.Mean, _fleetMeans.Data[index].Nacel.Temp.Maxm, thisSample.Nacel.Temp.Mean);
-            _fleetMeans.Data[index].AmbTemps.Mean = a03.Item1;
-            _fleetMeans.Data[index].AmbTemps.Maxm = a03.Item2;
+            _fleetMeans.Data[index].Nacel.Temp.Mean = a03.Item1;
+            _fleetMeans.Data[index].Nacel.Temp.Maxm = a03.Item2;
 
             #endregion
 
@@ -1776,12 +1801,12 @@ namespace scada_analyst
                 for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                 {
                     // get index as the first thing
-                    int index = _fleetMeans.Data
-                        .IndexOf(_fleetMeans.Data.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
+                    int index = _fleetMeans.DataSorted
+                        .IndexOf(_fleetMeans.DataSorted.Where(x => x.TimeStamp == scadaFile.WindFarm[i].DataSorted[j].TimeStamp)
                         .FirstOrDefault());
 
                     ScadaData.ScadaSample thisSample = scadaFile.WindFarm[i].DataSorted[j];
-                    ScadaData.ScadaSample flytSample = _fleetMeans.Data[index];
+                    ScadaData.ScadaSample flytSample = _fleetMeans.DataSorted[index];
 
                     // doing the calculation this way round means that a negative difference is equal to a spec value
                     // which is lower than the fleet average, and a positive difference is above the fleet average
@@ -1824,11 +1849,10 @@ namespace scada_analyst
 
         private ScadaData SortScada(ScadaData scadaFile)
         {
+            // note that this needs to work on the Sorted info as already all changes have taken place there
             for (int i = 0; i < scadaFile.WindFarm.Count; i++)
             {
-                scadaFile.WindFarm[i].DataSorted.Clear();
-
-                scadaFile.WindFarm[i].DataSorted = scadaFile.WindFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
+                scadaFile.WindFarm[i].DataSorted = scadaFile.WindFarm[i].DataSorted.OrderBy(o => o.TimeStamp).ToList();
             }
 
             return scadaFile;
@@ -2204,6 +2228,10 @@ namespace scada_analyst
         public List<ScadaData.ScadaSample> ThisEvScada { get { return _eventScadaOnly; } set { _eventScadaOnly = value; } }
         public List<ScadaData.ScadaSample> WeekHistory { get { return _weekBeforeInfo; } set { _weekBeforeInfo = value; } }
         public List<ScadaData.ScadaSample> HistEventData { get { return _fullHistory; } set { _fullHistory = value; } }
+
+        public List<ScadaData.ScadaSample> AvgThisEvScada { get { return _avgEventScadaOnly; } set { _avgEventScadaOnly = value; } }
+        public List<ScadaData.ScadaSample> AvgWeekHistory { get { return _avgWeekBeforeInfo; } set { _avgWeekBeforeInfo = value; } }
+        public List<ScadaData.ScadaSample> AvgHistEventData { get { return _avgFullHistory; } set { _avgFullHistory = value; } }
 
         public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
         public List<Structure> AssetList { get { return _assetList; } set { _assetList = value; } }
