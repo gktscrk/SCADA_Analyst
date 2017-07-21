@@ -1557,7 +1557,6 @@ namespace scada_analyst
                 _yawSys.YawPos.Stdv = GetVals(_yawSys.YawPos.Stdv, data, header.YawSys.YawPos.Stdv);
                 _yawSys.YawPos.Maxm = GetVals(_yawSys.YawPos.Maxm, data, header.YawSys.YawPos.Maxm);
                 _yawSys.YawPos.Minm = GetVals(_yawSys.YawPos.Minm, data, header.YawSys.YawPos.Minm);
-                _yawSys.YawPos.Dirc = _yawSys.YawPos.Mean;
 
                 _genny.RPMs.Mean = GetVals(_genny.RPMs.Mean, data, header.Genny.RPMs.Mean);
                 _genny.RPMs.Stdv = GetVals(_genny.RPMs.Stdv, data, header.Genny.RPMs.Stdv);
@@ -2210,7 +2209,7 @@ namespace scada_analyst
                 #region Variables
 
                 // wtc_NacelPos is recommended when available
-                protected Speed _yawPos = new Speed();
+                protected Direction _yawPos = new Direction();
 
                 #endregion
 
@@ -2227,7 +2226,7 @@ namespace scada_analyst
 
                 #region Properties
 
-                public Speed YawPos { get { return _yawPos; } set { _yawPos = value; } }
+                public Direction YawPos { get { return _yawPos; } set { _yawPos = value; } }
 
                 #endregion
             }

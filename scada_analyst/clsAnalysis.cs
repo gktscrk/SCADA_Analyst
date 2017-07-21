@@ -266,42 +266,85 @@ namespace scada_analyst
                     {
                         for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
                         {
-                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean < CutIn &&
-                                meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean >= 0)
+                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                             {
-                                List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
-                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
-
-                                for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Metres10.Mean < CutIn &&
+                                    meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Metres10.Mean >= 0)
                                 {
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
+                                    List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
 
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean > CutIn) { j = k - 1; break; }
-                                    else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+                                    for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                    {
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Metres10.Mean > CutIn) { j = k - 1; break; }
+                                        else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
+                                        thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                    }
+
+                                    _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
+                                    _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
                                 }
+                                else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Metres10.Mean > CutOut)
+                                {
+                                    List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
 
-                                _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
-                                _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
+                                    for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                    {
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
+
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Metres10.Mean < CutOut) { j = k - 1; break; }
+                                        else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
+                                        thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                    }
+
+                                    _hiSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.HI_SPD));
+                                    _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
+                                }
                             }
-                            else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Mean > CutOut)
+                            else
                             {
-                                List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
-                                thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
-
-                                for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.MetresRt.Mean < CutIn &&
+                                    meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.MetresRt.Mean >= 0)
                                 {
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
+                                    List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
 
-                                    if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Mean < CutOut) { j = k - 1; break; }
-                                    else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+                                    for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                    {
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.MetresRt.Mean > CutIn) { j = k - 1; break; }
+                                        else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
+                                        thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                    }
+
+                                    _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
+                                    _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
                                 }
+                                else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.MetresRt.Mean > CutOut)
+                                {
+                                    List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
+                                    thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
 
-                                _hiSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.HI_SPD));
-                                _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
+                                    for (int k = j + 1; k < meteoFile.MetMasts[i].MetDataSorted.Count; k++)
+                                    {
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
+
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.MetresRt.Mean < CutOut) { j = k - 1; break; }
+                                        else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
+
+                                        thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
+                                    }
+
+                                    _hiSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.HI_SPD));
+                                    _allWtrEvts.Add(_hiSpEvents[_hiSpEvents.Count - 1]);
+                                }
                             }
 
                             count++;

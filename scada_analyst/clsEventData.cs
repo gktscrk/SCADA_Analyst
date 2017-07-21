@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using scada_analyst.Shared;
 
@@ -52,17 +50,35 @@ namespace scada_analyst
 
             for (int i = 0; i < data.Count; i++)
             {
-                if (input == WeatherType.LO_SPD)
+                if (data[i].WSpdR.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                 {
-                    if (i == 0) { _extrmSpeed = data[i].WSpdR.Mean; }
+                    if (input == WeatherType.LO_SPD)
+                    {
+                        if (i == 0) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
 
-                    if (data[i].WSpdR.Mean < _extrmSpeed) { _extrmSpeed = data[i].WSpdR.Mean; }
+                        if (data[i].WSpdR.Metres10.Mean < _extrmSpeed) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+                    }
+                    else if (input == WeatherType.HI_SPD)
+                    {
+                        if (i == 0) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+
+                        if (data[i].WSpdR.Metres10.Mean > _extrmSpeed) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+                    }
                 }
-                else if (input == WeatherType.HI_SPD)
+                else
                 {
-                    if (i == 0) { _extrmSpeed = data[i].WSpdR.Mean; }
+                    if (input == WeatherType.LO_SPD)
+                    {
+                        if (i == 0) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
 
-                    if (data[i].WSpdR.Mean > _extrmSpeed) { _extrmSpeed = data[i].WSpdR.Mean; }
+                        if (data[i].WSpdR.MetresRt.Mean < _extrmSpeed) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+                    }
+                    else if (input == WeatherType.HI_SPD)
+                    {
+                        if (i == 0) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+
+                        if (data[i].WSpdR.MetresRt.Mean > _extrmSpeed) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+                    }
                 }
 
                 EvTimes.Add(data[i].TimeStamp);
@@ -478,6 +494,8 @@ namespace scada_analyst
         {
             get { if (IsFault) { return "Yes"; } else { return "No"; } }
         }
+
+        public string SourceString { get { return _eSource == EventSource.METMAST ? "MetMast" : _eSource == EventSource.TURBINE ? "Turbine" : "Unknown"; } set { SourceString = value; } }
 
         public string TriggerVar
         {

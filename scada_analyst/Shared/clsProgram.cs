@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace scada_analyst.Shared
 {
@@ -15,7 +13,8 @@ namespace scada_analyst.Shared
             #region Version 1.600 - Proceeding after Romax
 
             ProgramVersion v1600 = new ProgramVersion(1600, new DateTime(2017, 07, 212));
-            v1600.AddChange("");
+            v1600.AddChange("Meteorology export checks for data at different heights and only exports what has been loaded.");
+            v1600.AddChange("Meteorology loading updated to bring into accordance with possible data at different heights.");
             v1600.AddChange("Descriptions for what different equipment fields stand for are included programmatically.");
             v1600.AddChange("Correct names are used for variables throughout.");
             v1600.AddChange("User-defined event selection now includes exactly the time period chosen.");

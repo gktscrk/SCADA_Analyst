@@ -92,9 +92,9 @@ namespace scada_analyst.Shared
         public int UnitID { get { return _unitID; } set { _unitID = value; } }
 
         public string PositionsLoadedDisplay { get { return PositionsLoaded == true ? "Added" : "None"; } set { PositionsLoadedDisplay = value; } }
-        public string TypeString {  get { return _type == Types.METMAST ? "MetMast" : _type == Types.TURBINE ? "Turbine" : "Unknown"; } set { TypeString = value; } }
         public string PrevailingWindString { get { return _prevailingWindString; } set { _prevailingWindString = value; } }
-
+        public string TypeString {  get { return _type == Types.METMAST ? "MetMast" : _type == Types.TURBINE ? "Turbine" : "Unknown"; } set { TypeString = value; } }
+        
         public List<DateTime> InclSamples { get { return _inclSamples; } set { _inclSamples = value; } }
 
         public GridPosition Position {  get { return _position; } set { _position = value; } }
@@ -201,6 +201,15 @@ namespace scada_analyst.Shared
 
     public class Current : Phased { }
 
+    public class Direction : Stats
+    {
+        #region Properties
+
+        public string DStr { get { return Common.BearingStringConversion((float)_mean); } set { DStr = value; } }
+
+        #endregion
+    }
+
     public class Frequency : Stats
     {
         #region Variables
@@ -258,23 +267,7 @@ namespace scada_analyst.Shared
 
     public class Pressure : Stats { }
     public class Revolutions : Stats { }
-
-    public class Speed : Stats
-    {
-        #region Variables
-
-        private double _direction = double.NaN;
-
-        #endregion
-
-        #region Properties
-
-        public double Dirc { get { return _direction; } set { _direction = value; } }
-        public string DStr { get { return Common.BearingStringConversion((float)_direction); } set { DStr = value; } }
-
-        #endregion
-    }
-
+    public class Speed : Stats { }
     public class Temperature : Stats { }
     public class Voltage : Phased { }
 

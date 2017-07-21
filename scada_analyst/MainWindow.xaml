@@ -649,7 +649,7 @@
                                         <GridViewColumn Header="Type" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding ESource, Mode=OneWay}" />
+                                                    <Label Content="{Binding SourceString, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -717,7 +717,7 @@
                                         <GridViewColumn Header="Type" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding ESource, Mode=OneWay}" />
+                                                    <Label Content="{Binding SourceString, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
