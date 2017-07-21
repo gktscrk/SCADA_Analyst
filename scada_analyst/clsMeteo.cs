@@ -308,7 +308,7 @@ namespace scada_analyst
                 Type = Types.METMAST;
 
                 metData.Add(new MeteoSample(splits, header, _dateFormat));
-                InclDtTm.Add(metData[metData.Count - 1].TimeStamp);
+                InclSamples.Add(metData[metData.Count - 1].TimeStamp);
 
                 if (UnitID == -1 && metData.Count > 0)
                 {
@@ -320,7 +320,7 @@ namespace scada_analyst
             {
                 DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat);
 
-                if (InclDtTm.Contains(thisTime))
+                if (InclSamples.Contains(thisTime))
                 {
                     int index = metData.FindIndex(x => x.TimeStamp == thisTime);
 
@@ -330,7 +330,7 @@ namespace scada_analyst
                 {
                     metData.Add(new MeteoSample(splits, header, _dateFormat));
 
-                    InclDtTm.Add(thisTime);
+                    InclSamples.Add(thisTime);
                 }
             }
 

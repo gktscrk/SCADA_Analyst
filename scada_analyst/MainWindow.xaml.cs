@@ -1671,7 +1671,7 @@ namespace scada_analyst
 
                 // find index and change the fault status at that index 
                 // this also needs to check the event is from the same asset to be certain we are editing the correct one
-                int index = _analyser.NoPwEvents.FindIndex(x => x.FromAsset == _event.FromAsset && x.Start == _event.Start);
+                int index = _analyser.NoPwEvents.FindIndex(x => x.SourceAsset == _event.SourceAsset && x.Start == _event.Start);
 
                 _analyser.NoPwEvents[index].IsFault = result;
             }
@@ -2086,7 +2086,7 @@ namespace scada_analyst
                     EventData _event = (EventData)selectedItem;
 
                     // find index and removeat that index but make certain it is the right asset we're removing from
-                    int index = _analyser.NoPwEvents.FindIndex(x => x.FromAsset == _event.FromAsset && x.Start == _event.Start);
+                    int index = _analyser.NoPwEvents.FindIndex(x => x.SourceAsset == _event.SourceAsset && x.Start == _event.Start);
                     _analyser.NoPwEvents.RemoveAt(index);
                 }
 
@@ -2103,7 +2103,7 @@ namespace scada_analyst
                 // create a reverse loop to go through and remove if asset IDs match
                 for (int i = _analyser.NoPwEvents.Count - 1; i >= 0; i--)
                 {
-                    if (_analyser.NoPwEvents[i].FromAsset == _event.FromAsset)
+                    if (_analyser.NoPwEvents[i].SourceAsset == _event.SourceAsset)
                     {
                         _analyser.NoPwEvents.RemoveAt(i);
                     }

@@ -239,8 +239,10 @@
                           Width="200" SelectionChanged="Comb_DisplaySummary_SelectionChanged"/>
 
                 <Button Grid.Column="3" Grid.Row="0" Margin="5,5,5,5" Name="Btn_DurationFilter"                             
-                        HorizontalContentAlignment="Center" MinWidth="80"
-                        Content="{Binding Analyser.DurationString}"
+                        HorizontalContentAlignment="Center" 
+                        VerticalContentAlignment="Center"
+                        MinWidth="80"
+                        Content="{Binding Analyser.DurationString}" FontSize="9"
                         Click="EditDurationFilter" />
                 
                 <Separator Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Margin="5" />
@@ -640,7 +642,7 @@
                                         <GridViewColumn Header="Asset ID" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                                    <Label Content="{Binding SourceAsset, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -708,7 +710,7 @@
                                         <GridViewColumn Header="Asset ID" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                                    <Label Content="{Binding SourceAsset, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -777,7 +779,7 @@
                                         <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                                    <Label Content="{Binding SourceAsset, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -861,7 +863,7 @@
                                         <GridViewColumn Header="Asset ID" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding FromAsset, Mode=OneWay}" />
+                                                    <Label Content="{Binding SourceAsset, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>

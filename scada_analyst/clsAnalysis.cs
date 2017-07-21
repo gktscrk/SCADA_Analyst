@@ -576,7 +576,7 @@ namespace scada_analyst
                 int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm"));
 
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
-                    Math.Abs(eventData[i].Genny.Rpms.Mean - eventData[i - 1].Genny.Rpms.Mean) > _rateChange[index].MaxVars)
+                    Math.Abs(eventData[i].Genny.RPMs.Mean - eventData[i - 1].Genny.RPMs.Mean) > _rateChange[index].MaxVars)
                 {
                     List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                     thisEvent.Add(eventData[i - 1]); thisEvent.Add(eventData[i]);
@@ -585,7 +585,7 @@ namespace scada_analyst
                     {
                         if (eventData[j].SampleSeparation > ScadaSeprtr) { i = j - 1; break; }
 
-                        if (Math.Abs(eventData[j].Genny.Rpms.Mean - eventData[j - 1].Genny.Rpms.Mean) < _rateChange[index].MaxVars) { i = j - 1; break; }
+                        if (Math.Abs(eventData[j].Genny.RPMs.Mean - eventData[j - 1].Genny.RPMs.Mean) < _rateChange[index].MaxVars) { i = j - 1; break; }
                         else if (j == eventData.Count - 1) { i = j; }
 
                         thisEvent.Add(eventData[j]);
@@ -967,7 +967,7 @@ namespace scada_analyst
             {
                 int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GENERATOR && x.VarName.ToLower().Contains("rpm"));
 
-                if (eventData[i].Genny.Rpms.Mean > _thresholds[index].MaxVars)
+                if (eventData[i].Genny.RPMs.Mean > _thresholds[index].MaxVars)
                 {
                     List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                     thisEvent.Add(eventData[i]);
@@ -976,7 +976,7 @@ namespace scada_analyst
                     {
                         if (eventData[j].SampleSeparation > ScadaSeprtr) { i = j - 1; break; }
 
-                        if (eventData[j].Genny.Rpms.Mean < _thresholds[index].MaxVars) { i = j - 1; break; }
+                        if (eventData[j].Genny.RPMs.Mean < _thresholds[index].MaxVars) { i = j - 1; break; }
                         else if (j == eventData.Count - 1) { i = j; }
 
                         thisEvent.Add(eventData[j]);
@@ -1166,7 +1166,7 @@ namespace scada_analyst
 
             // get index of the asset and get index of the event time in the asset
             // the index of the asset to be used below
-            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.FromAsset);
+            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.SourceAsset);
 
             // the index of the timestamp a week before the event began or otherwise the 
             // first timestamp in the series - long conditional but should work
@@ -1372,7 +1372,7 @@ namespace scada_analyst
 
             for (int i = 0; i < currentEvents.Count; i++)
             {
-                Structure asset = _assetList.Where(x => x.UnitID == currentEvents[i].FromAsset).FirstOrDefault();
+                Structure asset = _assetList.Where(x => x.UnitID == currentEvents[i].SourceAsset).FirstOrDefault();
 
                 currentEvents[i].DayTime = scada_analyst.EventData.GetEventDayTime(currentEvents[i], asset);
 
@@ -1602,11 +1602,11 @@ namespace scada_analyst
                 // and for every sample in every windfarm
                 for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                 {                
-                    if (!_fleetMeans.InclDtTm.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
+                    if (!_fleetMeans.InclSamples.Contains(scadaFile.WindFarm[i].DataSorted[j].TimeStamp))
                     {
                         // if the averages' file already does not contain this, we can add a new DateTime to it
                         _fleetMeans.Data.Add(new ScadaData.ScadaSample());
-                        _fleetMeans.InclDtTm.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
+                        _fleetMeans.InclSamples.Add(scadaFile.WindFarm[i].DataSorted[j].TimeStamp);
 
                         _fleetMeans.Data[_fleetMeans.Data.Count - 1].TimeStamp = scadaFile.WindFarm[i].DataSorted[j].TimeStamp;
                     }
@@ -1645,7 +1645,7 @@ namespace scada_analyst
             _fleetMeans.Data[index].AmbTemps.Mean = a02.Item1;
             _fleetMeans.Data[index].AmbTemps.Maxm = a02.Item2;
 
-            Tuple<double, double> a03 = IncrementAverage(_fleetMeans.Data[index].Nacel.Mean, _fleetMeans.Data[index].Nacel.Maxm, thisSample.Nacel.Mean);
+            Tuple<double, double> a03 = IncrementAverage(_fleetMeans.Data[index].Nacel.Tempertr.Mean, _fleetMeans.Data[index].Nacel.Tempertr.Maxm, thisSample.Nacel.Tempertr.Mean);
             _fleetMeans.Data[index].AmbTemps.Mean = a03.Item1;
             _fleetMeans.Data[index].AmbTemps.Maxm = a03.Item2;
 
@@ -1697,9 +1697,9 @@ namespace scada_analyst
             Tuple<double, double> b07 = IncrementAverage(_fleetMeans.Data[index].Genny.G2w1.Mean, _fleetMeans.Data[index].Genny.G2w1.Maxm, thisSample.Genny.G2w1.Mean);
             _fleetMeans.Data[index].Genny.G2w1.Mean = b07.Item1;
             _fleetMeans.Data[index].Genny.G2w1.Maxm = b07.Item2;
-            Tuple<double, double> b08 = IncrementAverage(_fleetMeans.Data[index].Genny.Rpms.Mean, _fleetMeans.Data[index].Genny.Rpms.Maxm, thisSample.Genny.Rpms.Mean);
-            _fleetMeans.Data[index].Genny.Rpms.Mean = b08.Item1;
-            _fleetMeans.Data[index].Genny.Rpms.Maxm = b08.Item2;
+            Tuple<double, double> b08 = IncrementAverage(_fleetMeans.Data[index].Genny.RPMs.Mean, _fleetMeans.Data[index].Genny.RPMs.Maxm, thisSample.Genny.RPMs.Mean);
+            _fleetMeans.Data[index].Genny.RPMs.Mean = b08.Item1;
+            _fleetMeans.Data[index].Genny.RPMs.Maxm = b08.Item2;
 
             #endregion
 
@@ -1746,7 +1746,7 @@ namespace scada_analyst
             {
                 _fleetMeans.Data[i].AmbTemps.Mean = _fleetMeans.Data[i].AmbTemps.Mean / _fleetMeans.Data[i].AmbTemps.Maxm;
                 _fleetMeans.Data[i].Powers.Mean = _fleetMeans.Data[i].Powers.Mean / _fleetMeans.Data[i].Powers.Maxm;
-                _fleetMeans.Data[i].Nacel.Mean = _fleetMeans.Data[i].Nacel.Mean / _fleetMeans.Data[i].Nacel.Maxm;
+                _fleetMeans.Data[i].Nacel.Tempertr.Mean = _fleetMeans.Data[i].Nacel.Tempertr.Mean / _fleetMeans.Data[i].Nacel.Tempertr.Maxm;
 
                 _fleetMeans.Data[i].Gearbox.Oils.Mean = _fleetMeans.Data[i].Gearbox.Oils.Mean / _fleetMeans.Data[i].Gearbox.Oils.Maxm;
                 _fleetMeans.Data[i].Gearbox.Hs.Gens.Mean = _fleetMeans.Data[i].Gearbox.Hs.Gens.Mean / _fleetMeans.Data[i].Gearbox.Hs.Gens.Maxm;
@@ -1756,7 +1756,7 @@ namespace scada_analyst
 
                 _fleetMeans.Data[i].Genny.BearingG.Mean = _fleetMeans.Data[i].Genny.BearingG.Mean / _fleetMeans.Data[i].Genny.BearingG.Maxm;
                 _fleetMeans.Data[i].Genny.BearingR.Mean = _fleetMeans.Data[i].Genny.BearingR.Mean / _fleetMeans.Data[i].Genny.BearingR.Maxm;
-                _fleetMeans.Data[i].Genny.Rpms.Mean = _fleetMeans.Data[i].Genny.Rpms.Mean / _fleetMeans.Data[i].Genny.Rpms.Maxm;
+                _fleetMeans.Data[i].Genny.RPMs.Mean = _fleetMeans.Data[i].Genny.RPMs.Mean / _fleetMeans.Data[i].Genny.RPMs.Maxm;
                 _fleetMeans.Data[i].Genny.G1u1.Mean = _fleetMeans.Data[i].Genny.G1u1.Mean / _fleetMeans.Data[i].Genny.G1u1.Maxm;
                 _fleetMeans.Data[i].Genny.G1v1.Mean = _fleetMeans.Data[i].Genny.G1v1.Mean / _fleetMeans.Data[i].Genny.G1v1.Maxm;
                 _fleetMeans.Data[i].Genny.G1w1.Mean = _fleetMeans.Data[i].Genny.G1w1.Mean / _fleetMeans.Data[i].Genny.G1w1.Maxm;
@@ -1808,7 +1808,7 @@ namespace scada_analyst
                     // which is lower than the fleet average, and a positive difference is above the fleet average
                     thisSample.AmbTemps.Dlta = thisSample.AmbTemps.Mean - flytSample.AmbTemps.Mean;
                     thisSample.Powers.Dlta = thisSample.Powers.Mean - flytSample.Powers.Mean;
-                    thisSample.Nacel.Dlta = thisSample.Nacel.Mean - flytSample.Nacel.Mean;
+                    thisSample.Nacel.Tempertr.Dlta = thisSample.Nacel.Tempertr.Mean - flytSample.Nacel.Tempertr.Mean;
 
                     thisSample.Gearbox.Oils.Dlta = thisSample.Gearbox.Oils.Mean - flytSample.Gearbox.Oils.Mean;
                     thisSample.Gearbox.Hs.Gens.Dlta = thisSample.Gearbox.Hs.Gens.Mean - flytSample.Gearbox.Hs.Gens.Mean;
@@ -1818,7 +1818,7 @@ namespace scada_analyst
 
                     thisSample.Genny.BearingG.Dlta = thisSample.Genny.BearingG.Mean - flytSample.Genny.BearingG.Mean;
                     thisSample.Genny.BearingR.Dlta = thisSample.Genny.BearingR.Mean - flytSample.Genny.BearingR.Mean;
-                    thisSample.Genny.Rpms.Dlta = thisSample.Genny.Rpms.Mean - flytSample.Genny.Rpms.Mean;
+                    thisSample.Genny.RPMs.Dlta = thisSample.Genny.RPMs.Mean - flytSample.Genny.RPMs.Mean;
                     thisSample.Genny.G1u1.Dlta = thisSample.Genny.G1u1.Mean - flytSample.Genny.G1u1.Mean;
                     thisSample.Genny.G1v1.Dlta = thisSample.Genny.G1v1.Mean - flytSample.Genny.G1v1.Mean;
                     thisSample.Genny.G1w1.Dlta = thisSample.Genny.G1w1.Mean - flytSample.Genny.G1w1.Mean;
@@ -2129,7 +2129,7 @@ namespace scada_analyst
 
                 private int AssessEvents(int asset, List<EventData> theseEvents, EventData.EvtDuration counter)
                 {
-                    int count = theseEvents.Where(id => id.FromAsset == asset).Count(x => x.EvtDrtn == counter);
+                    int count = theseEvents.Where(id => id.SourceAsset == asset).Count(x => x.EvtDrtn == counter);
 
                     return count;
                 }

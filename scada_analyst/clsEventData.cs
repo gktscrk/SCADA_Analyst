@@ -39,7 +39,7 @@ namespace scada_analyst
         
         public EventData(List<MeteoData.MeteoSample> data, WeatherType input)
         {
-            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
+            SourceAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -73,7 +73,7 @@ namespace scada_analyst
 
         public EventData(List<ScadaData.ScadaSample> data, WeatherType input)
         {
-            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
+            SourceAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -107,7 +107,7 @@ namespace scada_analyst
 
         public EventData(List<ScadaData.ScadaSample> data, PwrProdType input)
         {
-            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
+            SourceAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -139,7 +139,7 @@ namespace scada_analyst
 
         public EventData(List<ScadaData.ScadaSample> data, AnomalyType input)
         {
-            FromAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
+            SourceAsset = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
 
             Start = data[0].TimeStamp;
             Finit = data[data.Count - 1].TimeStamp.Add(_sampleLen);
@@ -149,7 +149,7 @@ namespace scada_analyst
             Type = Types.UNKNOWN;
 
             // Get the change in RPMs between the first and last values
-            _rpmValChng = data[data.Count - 1].Genny.Rpms.Mean - data[0].Genny.Rpms.Mean;
+            _rpmValChng = data[data.Count - 1].Genny.RPMs.Mean - data[0].Genny.RPMs.Mean;
             
             for (int i = 1; i < data.Count; i++)
             {
@@ -239,15 +239,15 @@ namespace scada_analyst
                 }
                 else if (_anomaly == AnomalyType.THRS_GNNY_RPM || _anomaly == AnomalyType.ROC_GNNY_RPM)
                 {
-                    if (i == 1) { _extrmValue = data[0].Genny.Rpms.Mean; _extrmPower = data[0].Powers.Mean; }
+                    if (i == 1) { _extrmValue = data[0].Genny.RPMs.Mean; _extrmPower = data[0].Powers.Mean; }
 
-                    _maxValChng = Math.Abs(data[i].Genny.Rpms.Mean - data[i - 1].Genny.Rpms.Mean) > _maxValChng ? 
-                        Math.Abs(data[i].Genny.Rpms.Mean - data[i - 1].Genny.Rpms.Mean) : _maxValChng;
-                    if (data[i].Genny.Rpms.Mean > _extrmValue) { _extrmValue = data[i].Genny.Rpms.Mean; _extrmPower = data[i].Powers.Mean; }
+                    _maxValChng = Math.Abs(data[i].Genny.RPMs.Mean - data[i - 1].Genny.RPMs.Mean) > _maxValChng ? 
+                        Math.Abs(data[i].Genny.RPMs.Mean - data[i - 1].Genny.RPMs.Mean) : _maxValChng;
+                    if (data[i].Genny.RPMs.Mean > _extrmValue) { _extrmValue = data[i].Genny.RPMs.Mean; _extrmPower = data[i].Powers.Mean; }
                 }
 
                 _avergPower += data[i].Powers.Mean;
-                _meanNclTmp += data[i].Nacel.Mean;
+                _meanNclTmp += data[i].Nacel.Tempertr.Mean;
 
                 EvTimes.Add(data[i].TimeStamp);
             }

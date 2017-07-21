@@ -7,18 +7,20 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        private int fromAsset;
+        private int _sourceAsset;
 
-        private DateTime start;
-        private DateTime finit;
-        private TimeSpan durat;
+        private DateTime _start;
+        private DateTime _finit;
+        private TimeSpan _durat;
 
-        private Types type;
+        private Types _type;
 
-        private List<DateTime> evTimes = new List<DateTime>();
+        private List<DateTime> _evTimes = new List<DateTime>();
 
         #endregion
         
+        #region Support Classes
+
         public enum Types
         {
             UNKNOWN,
@@ -26,17 +28,19 @@ namespace scada_analyst.Shared
             WEATHER
         }
 
+        #endregion 
+
         #region Properties
 
-        public int FromAsset { get { return fromAsset; } set { fromAsset = value; } }
+        public int SourceAsset { get { return _sourceAsset; } set { _sourceAsset = value; } }
 
-        public DateTime Start { get { return start; } set { start = value; } }
-        public DateTime Finit { get { return finit; } set { finit = value; } }
-        public TimeSpan Durat { get { return durat; } set { durat = value; } }
+        public DateTime Start { get { return _start; } set { _start = value; } }
+        public DateTime Finit { get { return _finit; } set { _finit = value; } }
+        public TimeSpan Durat { get { return _durat; } set { _durat = value; } }
 
-        public Types Type { get { return type; } set { type = value; } }
+        public Types Type { get { return _type; } set { _type = value; } }
 
-        public List<DateTime> EvTimes { get { return evTimes; } set { evTimes = value; } }
+        public List<DateTime> EvTimes { get { return _evTimes; } set { _evTimes = value; } }
 
         #endregion
     }
@@ -60,17 +64,19 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        private bool positionsLoaded = false;
-        private int unitID = -1;
+        private bool _positionsLoaded = false;
+        private int _unitID = -1;
         private string _prevailingWindString = "";
 
-        private List<DateTime> inclDtTm = new List<DateTime>();
+        private List<DateTime> _inclSamples = new List<DateTime>();
 
-        private GridPosition position;
-        private Types type = Types.UNKNOWN;
+        private GridPosition _position;
+        private Types _type = Types.UNKNOWN;
 
         #endregion
-        
+
+        #region Support Classes
+
         public enum Types
         {
             UNKNOWN,
@@ -78,19 +84,21 @@ namespace scada_analyst.Shared
             METMAST
         }
 
+        #endregion
+
         #region Properties
 
-        public bool PositionsLoaded { get { return positionsLoaded; } set { positionsLoaded = value; } }
-        public int UnitID { get { return unitID; } set { unitID = value; } }
+        public bool PositionsLoaded { get { return _positionsLoaded; } set { _positionsLoaded = value; } }
+        public int UnitID { get { return _unitID; } set { _unitID = value; } }
 
         public string PositionsLoadedDisplay { get { return PositionsLoaded == true ? "Added" : "None"; } set { PositionsLoadedDisplay = value; } }
-        public string TypeString {  get { return type == Types.METMAST ? "MetMast" : type == Types.TURBINE ? "Turbine" : "Unknown"; } set { TypeString = value; } }
+        public string TypeString {  get { return _type == Types.METMAST ? "MetMast" : _type == Types.TURBINE ? "Turbine" : "Unknown"; } set { TypeString = value; } }
         public string PrevailingWindString { get { return _prevailingWindString; } set { _prevailingWindString = value; } }
 
-        public List<DateTime> InclDtTm { get { return inclDtTm; } set { inclDtTm = value; } }
+        public List<DateTime> InclSamples { get { return _inclSamples; } set { _inclSamples = value; } }
 
-        public GridPosition Position {  get { return position; } set { position = value; } }
-        public Types Type { get { return type; } set { type = value; } }
+        public GridPosition Position {  get { return _position; } set { _position = value; } }
+        public Types Type { get { return _type; } set { _type = value; } }
 
         #endregion
     }
@@ -99,14 +107,15 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        private double error = double.NaN;
+        private double _error = double.NaN;
 
-        private int assetID = 0;
-        private int sampleID = 0;
-        private int stationID = 0;
+        private int _assetID = 0;
+        private int _sampleID = 0;
+        private int _stationID = 0;
 
-        private DateTime timeStamp;
-        private TimeSpan deltaTime;
+        private DateTime _timeStamp;
+        private DateTime _timeStampEnd;
+        private TimeSpan _deltaTime;
 
         #endregion
 
@@ -131,14 +140,15 @@ namespace scada_analyst.Shared
 
         #region Properties
 
-        public double Error { get { return error; } set { error = value; } }
+        public double Error { get { return _error; } set { _error = value; } }
 
-        public int AssetID { get { return assetID; } set { assetID = value; } }
-        public int SampleID { get { return sampleID; } set { sampleID = value; } }
-        public int StationID { get { return stationID; } set { stationID = value; } }
+        public int AssetID { get { return _assetID; } set { _assetID = value; } }
+        public int SampleID { get { return _sampleID; } set { _sampleID = value; } }
+        public int StationID { get { return _stationID; } set { _stationID = value; } }
 
-        public DateTime TimeStamp { get { return timeStamp; } set { timeStamp = value; } }
-        public TimeSpan SampleSeparation { get { return deltaTime; } set { deltaTime = value; } }
+        public DateTime TimeStamp { get { return _timeStamp; } set { _timeStamp = value; } }
+        public DateTime TimeStampEnd { get { return _timeStampEnd; } set { _timeStampEnd = value; } }
+        public TimeSpan SampleSeparation { get { return _deltaTime; } set { _deltaTime = value; } }
 
         #endregion
     }
@@ -147,25 +157,27 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        protected double minm = double.NaN;
-        protected double maxm = double.NaN;
-        protected double mean = double.NaN;
-        protected double stdv = double.NaN;
+        private string _description = "";
 
-        protected double dMean = double.NaN;
+        protected double _minm = double.NaN;
+        protected double _maxm = double.NaN;
+        protected double _mean = double.NaN;
+        protected double _stdv = double.NaN;
+
+        protected double _dMean = double.NaN;
 
         #endregion
 
-        public Stats() { }
-
         #region Properties
 
-        public double Minm { get { return minm; } set { minm = value; } }
-        public double Maxm { get { return maxm; } set { maxm = value; } }
-        public double Mean { get { return mean; } set { mean = value; } }
-        public double Stdv { get { return stdv; } set { stdv = value; } }
+        public string Description { get { return _description; } set { _description = value; } }
 
-        public double Dlta { get { return dMean; } set { dMean = value; } }
+        public double Minm { get { return _minm; } set { _minm = value; } }
+        public double Maxm { get { return _maxm; } set { _maxm = value; } }
+        public double Mean { get { return _mean; } set { _mean = value; } }
+        public double Stdv { get { return _stdv; } set { _stdv = value; } }
+
+        public double Dlta { get { return _dMean; } set { _dMean = value; } }
 
         #endregion
     }
@@ -185,4 +197,11 @@ namespace scada_analyst.Shared
 
         #endregion
     }
+
+    public class Humidity : Stats { }
+    public class Frequency : Stats { }
+    public class Pressure : Stats { }
+    public class Revolutions : Stats { }
+    public class Temperature : Stats { }
+
 }

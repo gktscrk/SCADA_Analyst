@@ -413,18 +413,18 @@ namespace scada_analyst
 
                                 #region Nacelle
 
-                                if (exportNacMaxm) { hB.Append("wtc_NacelTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Maxm, 1) + ","); }
-                                if (exportNacMinm) { hB.Append("wtc_NacelTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Minm, 1) + ","); }
-                                if (exportNacMean) { hB.Append("wtc_NacelTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Mean, 1) + ","); }
-                                if (exportNacStdv) { hB.Append("wtc_NacelTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Stdv, 1) + ","); }
+                                if (exportNacMaxm) { hB.Append("wtc_NacelTmp_max" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Tempertr.Maxm, 1) + ","); }
+                                if (exportNacMinm) { hB.Append("wtc_NacelTmp_min" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Tempertr.Minm, 1) + ","); }
+                                if (exportNacMean) { hB.Append("wtc_NacelTmp_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Tempertr.Mean, 1) + ","); }
+                                if (exportNacStdv) { hB.Append("wtc_NacelTmp_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Nacel.Tempertr.Stdv, 1) + ","); }
 
                                 #endregion
 
                                 #region Generator
-                                if (exportGenMaxm) { hB.Append("wtc_GenRpm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Maxm, 1) + ","); }
-                                if (exportGenMinm) { hB.Append("wtc_GenRpm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Minm, 1) + ","); }
-                                if (exportGenMean) { hB.Append("wtc_GenRpm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Mean, 1) + ","); }
-                                if (exportGenStdv) { hB.Append("wtc_GenRpm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Stdv, 1) + ","); }
+                                if (exportGenMaxm) { hB.Append("wtc_GenRpm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.RPMs.Maxm, 1) + ","); }
+                                if (exportGenMinm) { hB.Append("wtc_GenRpm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.RPMs.Minm, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenRpm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.RPMs.Mean, 1) + ","); }
+                                if (exportGenStdv) { hB.Append("wtc_GenRpm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.RPMs.Stdv, 1) + ","); }
 
                                 if (exportGenMaxm) { hB.Append("wtc_GenBeGTm_max" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Maxm, 1) + ","); }
                                 if (exportGenMinm) { hB.Append("wtc_GenBeGTm_min" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Minm, 1) + ","); }
@@ -460,7 +460,7 @@ namespace scada_analyst
                                 if (exportGenMean) { hB.Append("wtc_Gen2W1Tm_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Mean, 1) + ","); }
                                 if (exportGenStdv) { hB.Append("wtc_Gen2W1Tm_stddev" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G2w1.Stdv, 1) + ","); }
 
-                                if (exportGenMean) { hB.Append("wtc_GenRpm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.Rpms.Dlta, 1) + ","); }
+                                if (exportGenMean) { hB.Append("wtc_GenRpm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.RPMs.Dlta, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_GenBeGTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingG.Dlta, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_GenBeRTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.BearingR.Dlta, 1) + ","); }
                                 if (exportGenMean) { hB.Append("wtc_Gen1U1Tm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Genny.G1u1.Dlta, 1) + ","); }
@@ -572,7 +572,7 @@ namespace scada_analyst
                 Type = Types.TURBINE;
 
                 data.Add(new ScadaSample(splits, header, _dateFormat));
-                InclDtTm.Add(data[data.Count - 1].TimeStamp);
+                InclSamples.Add(data[data.Count - 1].TimeStamp);
                 
                 if (UnitID == -1 && data.Count > 0)
                 {
@@ -587,7 +587,7 @@ namespace scada_analyst
                 // this method is used to add data to a turbine
                 DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat);
 
-                if (InclDtTm.Contains(thisTime))
+                if (InclSamples.Contains(thisTime))
                 {
                     int index = data.FindIndex(x => x.TimeStamp == thisTime);
                     data[index].AddDataFields(splits, header, _dateFormat);
@@ -595,7 +595,7 @@ namespace scada_analyst
                 else
                 {
                     data.Add(new ScadaSample(splits, header, _dateFormat));
-                    InclDtTm.Add(data[data.Count - 1].TimeStamp);
+                    InclSamples.Add(data[data.Count - 1].TimeStamp);
                 }
             }
 
@@ -944,10 +944,10 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "naceltmp")
                             {
-                                if (parts[2] == "mean") { Nacel.Mean = i; }
-                                else if (parts[2] == "stddev") { Nacel.Stdv = i; }
-                                else if (parts[2] == "max") { Nacel.Maxm = i; }
-                                else if (parts[2] == "min") { Nacel.Minm = i; }
+                                if (parts[2] == "mean") { Nacel.Tempertr.Mean = i; }
+                                else if (parts[2] == "stddev") { Nacel.Tempertr.Stdv = i; }
+                                else if (parts[2] == "max") { Nacel.Tempertr.Maxm = i; }
+                                else if (parts[2] == "min") { Nacel.Tempertr.Minm = i; }
                             }
                             #endregion
                             #region Turbine File
@@ -961,11 +961,11 @@ namespace scada_analyst
                             }
                             else if (parts[1] == "genrpm")
                             {
-                                if (parts[2] == "mean") { Genny.Rpms.Mean = i; }
-                                else if (parts[2] == "stddev") { Genny.Rpms.Stdv = i; }
-                                else if (parts[2] == "max") { Genny.Rpms.Maxm = i; }
-                                else if (parts[2] == "min") { Genny.Rpms.Minm = i; }
-                                else if (parts[2] == "delta") { Genny.Rpms.Dlta = i; }
+                                if (parts[2] == "mean") { Genny.RPMs.Mean = i; }
+                                else if (parts[2] == "stddev") { Genny.RPMs.Stdv = i; }
+                                else if (parts[2] == "max") { Genny.RPMs.Maxm = i; }
+                                else if (parts[2] == "min") { Genny.RPMs.Minm = i; }
+                                else if (parts[2] == "delta") { Genny.RPMs.Dlta = i; }
                             }
                             else if (parts[1] == "prianemo")
                             {
@@ -1178,10 +1178,10 @@ namespace scada_analyst
                 MainBear.Gs.Dlta = _noValue;
                 MainBear.Hs.Dlta = _noValue;
 
-                Nacel.Mean = _noValue;
-                Nacel.Stdv = _noValue;
-                Nacel.Maxm = _noValue;
-                Nacel.Minm = _noValue;
+                Nacel.Tempertr.Mean = _noValue;
+                Nacel.Tempertr.Stdv = _noValue;
+                Nacel.Tempertr.Maxm = _noValue;
+                Nacel.Tempertr.Minm = _noValue;
 
                 AnemoM.ActWinds.Mean = _noValue;
                 AnemoM.ActWinds.Stdv = _noValue;
@@ -1218,11 +1218,11 @@ namespace scada_analyst
                 YawPostn.Maxm = _noValue;
                 YawPostn.Minm = _noValue;
 
-                Genny.Rpms.Mean = _noValue;
-                Genny.Rpms.Stdv = _noValue;
-                Genny.Rpms.Maxm = _noValue;
-                Genny.Rpms.Minm = _noValue;
-                Genny.Rpms.Dlta = _noValue;
+                Genny.RPMs.Mean = _noValue;
+                Genny.RPMs.Stdv = _noValue;
+                Genny.RPMs.Maxm = _noValue;
+                Genny.RPMs.Minm = _noValue;
+                Genny.RPMs.Dlta = _noValue;
 
                 Towers.Humid.Mean = _noValue;
                 Towers.Humid.Stdv = _noValue;
@@ -1256,20 +1256,18 @@ namespace scada_analyst
 
             private DateTime _timeStampEnd = new DateTime();
 
-            private AmbiTmpr _ambTmp = new AmbiTmpr();
-            private Anemomtr _anemoM = new Anemomtr();
+            private Ambient _ambTmp = new Ambient();
             private Board _board = new Board();
             private Brake _brake = new Brake();
-            private Capactor _capac = new Capactor();
-            private Coolant _coolant = new Coolant();
+            private Capacitor _capac = new Capacitor();
             private Current _current = new Current();
             private DeltaT _deltaT = new DeltaT();
             private Gear _gear = new Gear();
             private GearBox _grbox = new GearBox();
             private Generator _genny = new Generator();
-            private GridFiltr _grdFlt = new GridFiltr();
+            private GridFilter _grdFlt = new GridFilter();
             private Hub _hub = new Hub();
-            private HydOil _hydOil = new HydOil();
+            private HydraulicOil _hydOil = new HydraulicOil();
             private Internal _intrnal = new Internal();
             private MainBearing _mainBear = new MainBearing();
             private Nacelle _nacelle = new Nacelle();
@@ -1278,7 +1276,8 @@ namespace scada_analyst
             private Tower _tower = new Tower();
             private Transformer _trafo = new Transformer();
             private Voltage _voltage = new Voltage();
-            private YawPos _yawPos = new YawPos();
+            private WindInfo _winds = new WindInfo();
+            private YawSystem _yawPos = new YawSystem();
 
             #endregion
 
@@ -1509,10 +1508,10 @@ namespace scada_analyst
                 _mainBear.Gs.Dlta = GetVals(_mainBear.Gs.Dlta, data, header.MainBear.Gs.Dlta);
                 _mainBear.Hs.Dlta = GetVals(_mainBear.Hs.Dlta, data, header.MainBear.Hs.Dlta);
 
-                _nacelle.Mean = GetVals(_nacelle.Mean, data, header.Nacel.Mean);
-                _nacelle.Stdv = GetVals(_nacelle.Stdv, data, header.Nacel.Stdv);
-                _nacelle.Maxm = GetVals(_nacelle.Maxm, data, header.Nacel.Maxm);
-                _nacelle.Minm = GetVals(_nacelle.Minm, data, header.Nacel.Minm);
+                _nacelle.Tempertr.Mean = GetVals(_nacelle.Tempertr.Mean, data, header.Nacel.Tempertr.Mean);
+                _nacelle.Tempertr.Stdv = GetVals(_nacelle.Tempertr.Stdv, data, header.Nacel.Tempertr.Stdv);
+                _nacelle.Tempertr.Maxm = GetVals(_nacelle.Tempertr.Maxm, data, header.Nacel.Tempertr.Maxm);
+                _nacelle.Tempertr.Minm = GetVals(_nacelle.Tempertr.Minm, data, header.Nacel.Tempertr.Minm);
 
                 #endregion
                 #region Turbine File
@@ -1522,35 +1521,35 @@ namespace scada_analyst
                     _timeStampEnd = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }), _dateFormat);
                 }
 
-                _anemoM.ActWinds.Mean = GetVals(_anemoM.ActWinds.Mean, data, header.AnemoM.ActWinds.Mean);
-                _anemoM.ActWinds.Stdv = GetVals(_anemoM.ActWinds.Stdv, data, header.AnemoM.ActWinds.Stdv);
-                _anemoM.ActWinds.Maxm = GetVals(_anemoM.ActWinds.Maxm, data, header.AnemoM.ActWinds.Maxm);
-                _anemoM.ActWinds.Minm = GetVals(_anemoM.ActWinds.Minm, data, header.AnemoM.ActWinds.Minm);
+                _winds.ActWinds.Mean = GetVals(_winds.ActWinds.Mean, data, header.AnemoM.ActWinds.Mean);
+                _winds.ActWinds.Stdv = GetVals(_winds.ActWinds.Stdv, data, header.AnemoM.ActWinds.Stdv);
+                _winds.ActWinds.Maxm = GetVals(_winds.ActWinds.Maxm, data, header.AnemoM.ActWinds.Maxm);
+                _winds.ActWinds.Minm = GetVals(_winds.ActWinds.Minm, data, header.AnemoM.ActWinds.Minm);
 
-                _anemoM.PriAnemo.Mean = GetVals(_anemoM.PriAnemo.Mean, data, header.AnemoM.PriAnemo.Mean);
-                _anemoM.PriAnemo.Stdv = GetVals(_anemoM.PriAnemo.Stdv, data, header.AnemoM.PriAnemo.Stdv);
-                _anemoM.PriAnemo.Maxm = GetVals(_anemoM.PriAnemo.Maxm, data, header.AnemoM.PriAnemo.Maxm);
-                _anemoM.PriAnemo.Minm = GetVals(_anemoM.PriAnemo.Minm, data, header.AnemoM.PriAnemo.Minm);
+                _winds.PriAnemo.Mean = GetVals(_winds.PriAnemo.Mean, data, header.AnemoM.PriAnemo.Mean);
+                _winds.PriAnemo.Stdv = GetVals(_winds.PriAnemo.Stdv, data, header.AnemoM.PriAnemo.Stdv);
+                _winds.PriAnemo.Maxm = GetVals(_winds.PriAnemo.Maxm, data, header.AnemoM.PriAnemo.Maxm);
+                _winds.PriAnemo.Minm = GetVals(_winds.PriAnemo.Minm, data, header.AnemoM.PriAnemo.Minm);
 
-                _anemoM.PriWinds.Mean = GetVals(_anemoM.PriWinds.Mean, data, header.AnemoM.PriWinds.Mean);
-                _anemoM.PriWinds.Stdv = GetVals(_anemoM.PriWinds.Stdv, data, header.AnemoM.PriWinds.Stdv);
-                _anemoM.PriWinds.Maxm = GetVals(_anemoM.PriWinds.Maxm, data, header.AnemoM.PriWinds.Maxm);
-                _anemoM.PriWinds.Minm = GetVals(_anemoM.PriWinds.Minm, data, header.AnemoM.PriWinds.Minm);
+                _winds.PriWinds.Mean = GetVals(_winds.PriWinds.Mean, data, header.AnemoM.PriWinds.Mean);
+                _winds.PriWinds.Stdv = GetVals(_winds.PriWinds.Stdv, data, header.AnemoM.PriWinds.Stdv);
+                _winds.PriWinds.Maxm = GetVals(_winds.PriWinds.Maxm, data, header.AnemoM.PriWinds.Maxm);
+                _winds.PriWinds.Minm = GetVals(_winds.PriWinds.Minm, data, header.AnemoM.PriWinds.Minm);
 
-                _anemoM.SecAnemo.Mean = GetVals(_anemoM.SecAnemo.Mean, data, header.AnemoM.SecAnemo.Mean);
-                _anemoM.SecAnemo.Stdv = GetVals(_anemoM.SecAnemo.Stdv, data, header.AnemoM.SecAnemo.Stdv);
-                _anemoM.SecAnemo.Maxm = GetVals(_anemoM.SecAnemo.Maxm, data, header.AnemoM.SecAnemo.Maxm);
-                _anemoM.SecAnemo.Minm = GetVals(_anemoM.SecAnemo.Minm, data, header.AnemoM.SecAnemo.Minm);
+                _winds.SecAnemo.Mean = GetVals(_winds.SecAnemo.Mean, data, header.AnemoM.SecAnemo.Mean);
+                _winds.SecAnemo.Stdv = GetVals(_winds.SecAnemo.Stdv, data, header.AnemoM.SecAnemo.Stdv);
+                _winds.SecAnemo.Maxm = GetVals(_winds.SecAnemo.Maxm, data, header.AnemoM.SecAnemo.Maxm);
+                _winds.SecAnemo.Minm = GetVals(_winds.SecAnemo.Minm, data, header.AnemoM.SecAnemo.Minm);
 
-                _anemoM.SecWinds.Mean = GetVals(_anemoM.SecWinds.Mean, data, header.AnemoM.SecWinds.Mean);
-                _anemoM.SecWinds.Stdv = GetVals(_anemoM.SecWinds.Stdv, data, header.AnemoM.SecWinds.Stdv);
-                _anemoM.SecWinds.Maxm = GetVals(_anemoM.SecWinds.Maxm, data, header.AnemoM.SecWinds.Maxm);
-                _anemoM.SecWinds.Minm = GetVals(_anemoM.SecWinds.Minm, data, header.AnemoM.SecWinds.Minm);
+                _winds.SecWinds.Mean = GetVals(_winds.SecWinds.Mean, data, header.AnemoM.SecWinds.Mean);
+                _winds.SecWinds.Stdv = GetVals(_winds.SecWinds.Stdv, data, header.AnemoM.SecWinds.Stdv);
+                _winds.SecWinds.Maxm = GetVals(_winds.SecWinds.Maxm, data, header.AnemoM.SecWinds.Maxm);
+                _winds.SecWinds.Minm = GetVals(_winds.SecWinds.Minm, data, header.AnemoM.SecWinds.Minm);
 
-                _anemoM.TerAnemo.Mean = GetVals(_anemoM.TerAnemo.Mean, data, header.AnemoM.TerAnemo.Mean);
-                _anemoM.TerAnemo.Stdv = GetVals(_anemoM.TerAnemo.Stdv, data, header.AnemoM.TerAnemo.Stdv);
-                _anemoM.TerAnemo.Maxm = GetVals(_anemoM.TerAnemo.Maxm, data, header.AnemoM.TerAnemo.Maxm);
-                _anemoM.TerAnemo.Minm = GetVals(_anemoM.TerAnemo.Minm, data, header.AnemoM.TerAnemo.Minm);
+                _winds.TerAnemo.Mean = GetVals(_winds.TerAnemo.Mean, data, header.AnemoM.TerAnemo.Mean);
+                _winds.TerAnemo.Stdv = GetVals(_winds.TerAnemo.Stdv, data, header.AnemoM.TerAnemo.Stdv);
+                _winds.TerAnemo.Maxm = GetVals(_winds.TerAnemo.Maxm, data, header.AnemoM.TerAnemo.Maxm);
+                _winds.TerAnemo.Minm = GetVals(_winds.TerAnemo.Minm, data, header.AnemoM.TerAnemo.Minm);
 
                 _yawPos.Mean = GetVals(_yawPos.Mean, data, header.YawPostn.Mean);
                 _yawPos.Stdv = GetVals(_yawPos.Stdv, data, header.YawPostn.Stdv);
@@ -1558,11 +1557,11 @@ namespace scada_analyst
                 _yawPos.Minm = GetVals(_yawPos.Minm, data, header.YawPostn.Minm);
                 _yawPos.Dirc = _yawPos.Mean;
 
-                _genny.Rpms.Mean = GetVals(_genny.Rpms.Mean, data, header.Genny.Rpms.Mean);
-                _genny.Rpms.Stdv = GetVals(_genny.Rpms.Stdv, data, header.Genny.Rpms.Stdv);
-                _genny.Rpms.Maxm = GetVals(_genny.Rpms.Maxm, data, header.Genny.Rpms.Maxm);
-                _genny.Rpms.Minm = GetVals(_genny.Rpms.Minm, data, header.Genny.Rpms.Minm);
-                _genny.Rpms.Dlta = GetVals(_genny.Rpms.Dlta, data, header.Genny.Rpms.Dlta);
+                _genny.RPMs.Mean = GetVals(_genny.RPMs.Mean, data, header.Genny.RPMs.Mean);
+                _genny.RPMs.Stdv = GetVals(_genny.RPMs.Stdv, data, header.Genny.RPMs.Stdv);
+                _genny.RPMs.Maxm = GetVals(_genny.RPMs.Maxm, data, header.Genny.RPMs.Maxm);
+                _genny.RPMs.Minm = GetVals(_genny.RPMs.Minm, data, header.Genny.RPMs.Minm);
+                _genny.RPMs.Dlta = GetVals(_genny.RPMs.Dlta, data, header.Genny.RPMs.Dlta);
 
                 _tower.Humid.Mean = GetVals(_tower.Humid.Mean, data, header.Towers.Humid.Mean);
                 _tower.Humid.Stdv = GetVals(_tower.Humid.Stdv, data, header.Towers.Humid.Stdv);
@@ -1573,122 +1572,48 @@ namespace scada_analyst
             }
 
             #region Support Classes
-
-            #region Base Variables
-
-            public class Pressure : Stats { }
-            public class Temperature : Stats { }
-
-            #endregion 
-
-            public class AmbiTmpr : Temperature { }
-            public class Board : Temperature { }
-            public class Coolant : Temperature { }
-            public class DeltaT : Temperature { }
-            public class Gear : Pressure { }
-            public class Nacelle : Temperature { }
-            public class YawPos : WindSpeeds { }
-
-            public class Anemomtr
+            
+            public class Ambient : Temperature
             {
-                #region Variables
+                #region Constructor
 
-                protected WindSpeeds actWinds = new WindSpeeds();
-                protected WindSpeeds priAnemo = new WindSpeeds();
-                protected WindSpeeds priWinds = new WindSpeeds();
-                protected WindSpeeds secAnemo = new WindSpeeds();
-                protected WindSpeeds secWinds = new WindSpeeds();
-                protected WindSpeeds terAnemo = new WindSpeeds();
-
-                #endregion
-
-                #region Properties
-
-                public WindSpeeds ActWinds { get { return actWinds; } set { actWinds = value; } }
-                public WindSpeeds PriAnemo { get { return priAnemo; } set { priAnemo = value; } }
-                public WindSpeeds PriWinds { get { return priWinds; } set { priWinds = value; } }
-                public WindSpeeds SecAnemo { get { return secAnemo; } set { secAnemo = value; } }
-                public WindSpeeds SecWinds { get { return secWinds; } set { secWinds = value; } }
-                public WindSpeeds TerAnemo { get { return terAnemo; } set { terAnemo = value; } }
+                public Ambient()
+                {
+                    Description = "Ambient temperature";
+                }
 
                 #endregion
             }
 
-            public class Brake
+            public class Board : Temperature
             {
-                #region Variables
+                #region Constructor
 
-                protected Pressure pressures = new Pressure();
-                protected Gear gears = new Gear();
-                protected Generator generators = new Generator();
-
-                #endregion
-
-                #region Support Classes
-
-                public class Pressure : Stats { }
-
-                public class Gear : Temperature { }
-                public class Generator : Temperature { }
-
-                #endregion
-
-                #region Properties
-
-                public Pressure Pressures { get { return pressures; } set { pressures = value; } }
-                public Gear Gears { get { return gears; } set { gears = value; } }
-                public Generator Generators { get { return generators; } set { generators = value; } }
+                public Board()
+                {
+                    Description = "Board temperature, Grid module";
+                }
 
                 #endregion
             }
 
-            public class Capactor
+            public class DeltaT : Temperature
             {
-                #region Variables
+                #region Constructor
 
-                protected PFM pfm = new PFM();
-                protected PFS1 pfs1 = new PFS1();
-
-                #endregion
-
-                #region Support Classes
-
-                public class PFM : Temperature { }
-                public class PFS1 : Temperature { }
-
-                #endregion
-
-                #region Properties
-
-                public PFM Pfm { get { return pfm; } set { pfm = value; } }
-                public PFS1 Pfs1 { get { return pfs1; } set { pfs1 = value; } }
+                public DeltaT()
+                {
+                    Description = "Temperature in delta modules (tower)";
+                }
 
                 #endregion
             }
 
-            public class Current
+            public class Gear
             {
-                #region Variables
+                #region Constructor
 
-                protected Phr _phr = new Phr();
-                protected Phs _phs = new Phs();
-                protected Pht _pht = new Pht();
 
-                #endregion
-
-                #region Support Classes
-
-                public class Phr : Stats { }
-                public class Phs : Stats { }
-                public class Pht : Stats { }
-
-                #endregion
-
-                #region Properties
-
-                public Phr PhR { get { return _phr; } set { _phr = value; } }
-                public Phs PhS { get { return _phs; } set { _phs = value; } }
-                public Pht PhT { get { return _pht; } set { _pht = value; } }
 
                 #endregion
             }
@@ -1766,77 +1691,287 @@ namespace scada_analyst
                 #endregion 
             }
 
-            public class Generator
+            public class Nacelle
             {
                 #region Variables
 
-                protected G1U1 g1u1 = new G1U1();
-                protected G1V1 g1v1 = new G1V1();
-                protected G1W1 g1w1 = new G1W1();
-                protected G2U1 g2u1 = new G2U1();
-                protected G2V1 g2v1 = new G2V1();
-                protected G2W1 g2w1 = new G2W1();
-                protected BearingsG _bearingG = new BearingsG();
-                protected BearingsR _bearingR = new BearingsR();
-                protected Rpm rpms = new Rpm();
+                private Temperature _ccoolant = new Temperature();
+                private Temperature _temps = new Temperature();
+                private WindSpeeds _position = new WindSpeeds();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class Rpm : Stats { }
-
-                public class G1U1 : Temperature { }
-                public class G1V1 : Temperature { }
-                public class G1W1 : Temperature { }
-
-                public class G2U1 : Temperature { }
-                public class G2V1 : Temperature { }
-                public class G2W1 : Temperature { }
-
-                public class BearingsG : Temperature { }
-                public class BearingsR : Temperature { }
+                public Nacelle()
+                {
+                    _ccoolant.Description = "Nacelle converter coolant temperature";
+                    _temps.Description = "Nacelle temperature";
+                    _position.Description = "Nacelle position";
+                }
 
                 #endregion
 
                 #region Properties
 
-                public G1U1 G1u1 { get { return g1u1; } set { g1u1 = value; } }
-                public G1V1 G1v1 { get { return g1v1; } set { g1v1 = value; } }
-                public G1W1 G1w1 { get { return g1w1; } set { g1w1 = value; } }
-                public G2U1 G2u1 { get { return g2u1; } set { g2u1 = value; } }
-                public G2V1 G2v1 { get { return g2v1; } set { g2v1 = value; } }
-                public G2W1 G2w1 { get { return g2w1; } set { g2w1 = value; } }
-                public BearingsG BearingG { get { return _bearingG; } set { _bearingG = value; } }
-                public BearingsR BearingR { get { return _bearingR; } set { _bearingR = value; } }
-                public Rpm Rpms { get { return rpms; } set { rpms = value; } }
+                public Temperature CCoolant { get { return _ccoolant; } set { _ccoolant = value; } }
+                public Temperature Tempertr { get { return _temps; } set { _temps = value; } }
+                public WindSpeeds Position { get { return _position; } set { _position = value; } }
 
                 #endregion
             }
 
-            public class GridFiltr
+            public class YawSystem : WindSpeeds
+            {
+                // wtc_NacelPos is recommended when available
+
+                #region Constructor
+
+                public YawSystem()
+                {
+                    Description = "Yaw position";
+                }
+
+                #endregion
+            }
+
+            public class WindInfo
             {
                 #region Variables
 
-                protected B1 b1 = new B1();
-                protected B2 b2 = new B2();
-                protected B3 b3 = new B3();
+                protected WindSpeeds actWinds = new WindSpeeds();
+                protected WindSpeeds priAnemo = new WindSpeeds();
+                protected WindSpeeds priWinds = new WindSpeeds();
+                protected WindSpeeds secAnemo = new WindSpeeds();
+                protected WindSpeeds secWinds = new WindSpeeds();
+                protected WindSpeeds terAnemo = new WindSpeeds();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class B1 : Temperature { }
-                public class B2 : Temperature { }
-                public class B3 : Temperature { }
+                public WindInfo()
+                {
+                    actWinds.Description = "Wind speed from active wind sensor";
+                    priAnemo.Description = "Primary anemometer (mechanic)";
+                    priWinds.Description = "Wind speed from primary wind sensor";
+                    secAnemo.Description = "Secondary anemometer (mechanic)";
+                    secWinds.Description = "Wind speed from secondary wind sensor";
+                    terAnemo.Description = "Tertiary anemometer";
+                }
 
                 #endregion
 
                 #region Properties
 
-                public B1 B1s { get { return b1; } set { b1 = value; } }
-                public B2 B2s { get { return b2; } set { b2 = value; } }
-                public B3 B3s { get { return b3; } set { b3 = value; } }
+                public WindSpeeds ActWinds { get { return actWinds; } set { actWinds = value; } }
+                public WindSpeeds PriAnemo { get { return priAnemo; } set { priAnemo = value; } }
+                public WindSpeeds PriWinds { get { return priWinds; } set { priWinds = value; } }
+                public WindSpeeds SecAnemo { get { return secAnemo; } set { secAnemo = value; } }
+                public WindSpeeds SecWinds { get { return secWinds; } set { secWinds = value; } }
+                public WindSpeeds TerAnemo { get { return terAnemo; } set { terAnemo = value; } }
+
+                #endregion
+            }
+
+            public class Brake
+            {
+                #region Variables
+
+                protected Pressure _pres = new Pressure();
+                protected Temperature _gear = new Temperature();
+                protected Temperature _genr = new Temperature();
+
+                #endregion
+
+                #region Constructor
+
+                public Brake()
+                {
+                    _gear.Description = "Brake temperature, GEAR";
+                    _genr.Description = "Brake temperature, GEN";
+                }
+
+                #endregion
+                
+                #region Properties
+
+                public Pressure Pressures { get { return _pres; } set { _pres = value; } }
+                public Temperature Gears { get { return _gear; } set { _gear = value; } }
+                public Temperature Genny { get { return _genr; } set { _genr = value; } }
+
+                #endregion
+            }
+
+            public class Capacitor
+            {
+                #region Variables
+
+                protected Temperature pfm = new Temperature();
+                protected Temperature pfs1 = new Temperature();
+
+                #endregion
+
+                #region Constructor
+
+                public Capacitor()
+                {
+                    pfm.Description = "Temperature at capacitors on the master unit";
+                    pfs1.Description = "Temperature at capacitors on the slave unit 1";
+                }
+
+                #endregion
+
+                #region Properties
+
+                public Temperature Pfm { get { return pfm; } set { pfm = value; } }
+                public Temperature Pfs1 { get { return pfs1; } set { pfs1 = value; } }
+
+                #endregion
+            }
+
+            public class Current
+            {
+                #region Variables
+
+                protected Temperature _phr = new Temperature();
+                protected Temperature _phs = new Temperature();
+                protected Temperature _pht = new Temperature();
+
+                #endregion
+
+                #region Constructor
+
+                public Current()
+                {
+                    _phr.Description = "Current, phase R";
+                    _phs.Description = "Current, phase S";
+                    _pht.Description = "Current, phase T";
+                }
+
+                #endregion
+
+                #region Properties
+
+                public Temperature PhR { get { return _phr; } set { _phr = value; } }
+                public Temperature PhS { get { return _phs; } set { _phs = value; } }
+                public Temperature PhT { get { return _pht; } set { _pht = value; } }
+
+                #endregion
+            }
+
+            public class Voltage
+            {
+                #region Variables
+
+                protected PhR phr = new PhR();
+                protected PhS phs = new PhS();
+                protected PhT pht = new PhT();
+
+                #endregion
+
+                #region Support Classes
+
+                public class PhR : Stats { }
+                public class PhS : Stats { }
+                public class PhT : Stats { }
+
+                #endregion
+
+                #region Properties
+
+                public PhR phR { get { return phr; } set { phr = value; } }
+                public PhS phS { get { return phs; } set { phs = value; } }
+                public PhT phT { get { return pht; } set { pht = value; } }
+
+                #endregion
+            }
+
+            public class Generator
+            {
+                #region Variables
+
+                protected Temperature _g1u1 = new Temperature();
+                protected Temperature _g1v1 = new Temperature();
+                protected Temperature _g1w1 = new Temperature();
+                protected Temperature _g2u1 = new Temperature();
+                protected Temperature _g2v1 = new Temperature();
+                protected Temperature _g2w1 = new Temperature();
+
+                protected Revolutions _rpms = new Revolutions();
+
+                protected Temperature _bearingG = new Temperature();
+                protected Temperature _bearingR = new Temperature();
+                protected Temperature _bearingIt = new Temperature();
+                protected Temperature _bearingOt = new Temperature();
+
+                #endregion
+
+                #region Constructor
+
+                public Generator()
+                {
+                    _g1u1.Description = "Generator temperature, 1 U1";
+                    _g1v1.Description = "Generator temperature, 1 V1";
+                    _g1w1.Description = "Generator temperature, 1 W1";
+                    _g2u1.Description = "Generator temperature, 2 U1";
+                    _g2v1.Description = "Generator temperature, 2 V1";
+                    _g2w1.Description = "Generator temperature, 2 W1";
+
+                    _rpms.Description = "Generator RPM";
+
+                    _bearingG.Description = "Generator bearing temperature, NDE";
+                    _bearingR.Description = "Generator bearing temperature, DE";
+                }        
+
+                #endregion
+
+                #region Properties
+
+                public Temperature G1u1 { get { return _g1u1; } set { _g1u1 = value; } }
+                public Temperature G1v1 { get { return _g1v1; } set { _g1v1 = value; } }
+                public Temperature G1w1 { get { return _g1w1; } set { _g1w1 = value; } }
+                public Temperature G2u1 { get { return _g2u1; } set { _g2u1 = value; } }
+                public Temperature G2v1 { get { return _g2v1; } set { _g2v1 = value; } }
+                public Temperature G2w1 { get { return _g2w1; } set { _g2w1 = value; } }
+
+                public Temperature BearingG { get { return _bearingG; } set { _bearingG = value; } }
+                public Temperature BearingR { get { return _bearingR; } set { _bearingR = value; } }
+
+                public Temperature BearingIt { get { return _bearingIt; } set { _bearingIt = value; } }
+                public Temperature BearingOt { get { return _bearingOt; } set { _bearingOt = value; } }
+
+                public Revolutions RPMs { get { return _rpms; } set { _rpms = value; } }
+
+                #endregion
+            }
+
+            public class GridFilter
+            {
+                #region Variables
+
+                protected Temperature _b1 = new Temperature();
+                protected Temperature _b2 = new Temperature();
+                protected Temperature _b3 = new Temperature();
+
+                #endregion
+
+                #region Constructor
+
+                public GridFilter()
+                {
+                    _b1.Description = "Grid filter B1 temperature";
+                    _b2.Description = "Grid filter B2 temperature";
+                    _b3.Description = "Grid filter B3 temperature";
+                }
+
+                #endregion
+
+                #region Properties
+
+                public Temperature B1s { get { return _b1; } set { _b1 = value; } }
+                public Temperature B2s { get { return _b2; } set { _b2 = value; } }
+                public Temperature B3s { get { return _b3; } set { _b3 = value; } }
 
                 #endregion
             }
@@ -1882,26 +2017,29 @@ namespace scada_analyst
                 #endregion
             }
 
-            public class HydOil
+            public class HydraulicOil
             {
                 #region Variables
 
-                protected Pressure pressures = new Pressure();
-                protected Temperature temp = new Temperature();
+                protected Pressure _pres = new Pressure();
+                protected Temperature _temp = new Temperature();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class Pressure : Stats { }
-                public class Temperature : Stats { }
+                public HydraulicOil()
+                {
+                    _pres.Description = "Hydraulic oil pressure measured at pump station";
+                    _temp.Description = "Temperature in hydraulic oil";
+                }
 
                 #endregion
 
                 #region Properties
 
-                public Pressure Pressures { get { return pressures; } set { pressures = value; } }
-                public Temperature Temp { get { return temp; } set { temp = value; } }
+                public Pressure Pressures { get { return _pres; } set { _pres = value; } }
+                public Temperature Temp { get { return _temp; } set { _temp = value; } }
 
                 #endregion
             }
@@ -1910,25 +2048,28 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected IO1 io1 = new IO1();
-                protected IO2 io2 = new IO2();
-                protected IO3 io3 = new IO3();
+                protected Temperature _io1 = new Temperature();
+                protected Temperature _io2 = new Temperature();
+                protected Temperature _io3 = new Temperature();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class IO1 : Temperature { }
-                public class IO2 : Temperature { }
-                public class IO3 : Temperature { }
+                public Internal()
+                {
+                    _io1.Description = "Internal temperature at IO module 1";
+                    _io2.Description = "Internal temperature at IO module 2";
+                    _io3.Description = "Internal temperature at IO module 3";
+                }
 
                 #endregion
 
                 #region Properties
 
-                public IO1 Io1 { get { return io1; } set { io1 = value; } }
-                public IO2 Io2 { get { return io2; } set { io2 = value; } }
-                public IO3 Io3 { get { return io3; } set { io3 = value; } }
+                public Temperature Io1 { get { return _io1; } set { _io1 = value; } }
+                public Temperature Io2 { get { return _io2; } set { _io2 = value; } }
+                public Temperature Io3 { get { return _io3; } set { _io3 = value; } }
 
                 #endregion
             }
@@ -1937,26 +2078,30 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected Mains _main = new Mains();
-                protected Gss _g = new Gss();
-                protected Hss _h = new Hss();
+                protected Temperature _main = new Temperature();
+                protected Temperature _gs = new Temperature();
+                protected Temperature _hs = new Temperature();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class Mains : Temperature { }
+                public MainBearing()
+                {
+                    _main.Description = "Main bearing temperature measurement";
 
-                public class Gss : Temperature { }
-                public class Hss : Temperature { }
+                    // below only exist if the turbine has two main bearings
+                    _gs.Description = "Temperature of main bearing near the gear";
+                    _hs.Description = "Temperature of main bearing near the hub";
+                }
 
                 #endregion
 
                 #region Properties
 
-                public Mains Main { get { return _main; } set { _main = value; } }
-                public Gss Gs { get { return _g; } set { _g = value; } }
-                public Hss Hs { get { return _h; } set { _h = value; } }
+                public Temperature Main { get { return _main; } set { _main = value; } }
+                public Temperature Gs { get { return _gs; } set { _gs = value; } }
+                public Temperature Hs { get { return _hs; } set { _hs = value; } }
 
                 #endregion
             }
@@ -2052,25 +2197,28 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected U u = new U();
-                protected V v = new V();
-                protected W w = new W();
+                protected Temperature _u = new Temperature();
+                protected Temperature _v = new Temperature();
+                protected Temperature _w = new Temperature();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class U : Temperature { }
-                public class V : Temperature { }
-                public class W : Temperature { }
+                public Reactor()
+                {
+                    _u.Description = "Main reactor U temperature";
+                    _v.Description = "Main reactor V temperature";
+                    _w.Description = "Main reactor W temperature";
+                }
 
                 #endregion
 
                 #region Properties
 
-                public U Us { get { return u; } set { u = value; } }
-                public V Vs { get { return v; } set { v = value; } }
-                public W Ws { get { return w; } set { w = value; } }
+                public Temperature Us { get { return _u; } set { _u = value; } }
+                public Temperature Vs { get { return _v; } set { _v = value; } }
+                public Temperature Ws { get { return _w; } set { _w = value; } }
 
                 #endregion
             }
@@ -2079,22 +2227,25 @@ namespace scada_analyst
             {
                 #region Variables
 
-                protected Humidity humid = new Humidity();
-                protected Frequenc freqs = new Frequenc();
+                protected Humidity _humid = new Humidity();
+                protected Frequency _freqs = new Frequency();
 
                 #endregion
 
-                #region Support Classes
+                #region Constructor
 
-                public class Humidity : Stats { }
-                public class Frequenc : Stats { }
-
+                public Tower()
+                {
+                    _humid.Description = "Humidity in tower (%)";
+                    _freqs.Description = "Tower frequency detected by GS1 (Hz)";
+                }
+            
                 #endregion
 
                 #region Properties
 
-                public Humidity Humid { get { return humid; } set { humid = value; } }
-                public Frequenc Freqs { get { return freqs; } set { freqs = value; } }
+                public Humidity Humid { get { return _humid; } set { _humid = value; } }
+                public Frequency Freqs { get { return _freqs; } set { _freqs = value; } }
 
                 #endregion
             }
@@ -2138,37 +2289,11 @@ namespace scada_analyst
                 #endregion
             }
 
-            public class Voltage
-            {
-                #region Variables
-
-                protected PhR phr = new PhR();
-                protected PhS phs = new PhS();
-                protected PhT pht = new PhT();
-
-                #endregion
-
-                #region Support Classes
-
-                public class PhR : Stats { }
-                public class PhS : Stats { }
-                public class PhT : Stats { }
-
-                #endregion
-
-                #region Properties
-
-                public PhR phR { get { return phr; } set { phr = value; } }
-                public PhS phS { get { return phs; } set { phs = value; } }
-                public PhT phT { get { return pht; } set { pht = value; } }
-
-                #endregion
-            }
-
             public enum TurbineMake
             {
+                UNKNOWN,
                 SIEMENS_2_3MW,
-                UNK
+                SIEMENS_3_6MW
             }
 
             #endregion
@@ -2176,23 +2301,20 @@ namespace scada_analyst
             #region Properties
 
             public bool HasData { get { return _hasData; } set { _hasData = value; } }
-
-            public DateTime TimeStampEnd {  get { return _timeStampEnd; } set { _timeStampEnd = value; } }
-
-            public AmbiTmpr AmbTemps { get { return _ambTmp; } set { _ambTmp = value; } }
-            public Anemomtr AnemoM { get { return _anemoM; } set { _anemoM = value; } }
+            
+            public Ambient AmbTemps { get { return _ambTmp; } set { _ambTmp = value; } }
+            public WindInfo AnemoM { get { return _winds; } set { _winds = value; } }
             public Board Boards { get { return _board; } set { _board = value; } }
             public Brake Brakes { get { return _brake; } set { _brake = value; } }
-            public Capactor Capac { get { return _capac; } set { _capac = value; } }
-            public Coolant Coolants { get { return _coolant; } set { _coolant = value; } }
+            public Capacitor Capac { get { return _capac; } set { _capac = value; } }
             public Current Currents { get { return _current; } set { _current = value; } }
             public DeltaT DeltaTs { get { return _deltaT; } set { _deltaT = value; } }
             public Gear Gears { get { return _gear; } set { _gear = value; } }
             public GearBox Gearbox { get { return _grbox; } set { _grbox = value; } }
             public Generator Genny { get { return _genny; } set { _genny = value; } }
-            public GridFiltr GridFilt { get { return _grdFlt; } set { _grdFlt = value; } }
+            public GridFilter GridFilt { get { return _grdFlt; } set { _grdFlt = value; } }
             public Hub Hubs { get { return _hub; } set { _hub = value; } }
-            public HydOil HydOils { get { return _hydOil; } set { _hydOil = value; } }
+            public HydraulicOil HydOils { get { return _hydOil; } set { _hydOil = value; } }
             public Internal Intern { get { return _intrnal; } set { _intrnal = value; } }
             public MainBearing MainBear { get { return _mainBear; } set { _mainBear = value; } }
             public Nacelle Nacel { get { return _nacelle; } set { _nacelle = value; } }
@@ -2201,7 +2323,7 @@ namespace scada_analyst
             public Tower Towers { get { return _tower; } set { _tower = value; } }
             public Transformer Transf { get { return _trafo; } set { _trafo = value; } }
             public Voltage Voltages { get { return _voltage; } set { _voltage = value; } }
-            public YawPos YawPostn { get { return _yawPos; } set { _yawPos = value; } }
+            public YawSystem YawPostn { get { return _yawPos; } set { _yawPos = value; } }
 
             #endregion
         }
