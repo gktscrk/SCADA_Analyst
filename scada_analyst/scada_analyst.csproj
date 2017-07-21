@@ -129,8 +129,8 @@
     <Compile Include="Shared\Window_CalendarChooser.xaml.cs">
       <DependentUpon>Window_CalendarChooser.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Shared\Window_DateOptions.xaml.cs">
-      <DependentUpon>Window_DateOptions.xaml</DependentUpon>
+    <Compile Include="Shared\Window_LoadingOptions.xaml.cs">
+      <DependentUpon>Window_LoadingOptions.xaml</DependentUpon>
     </Compile>
     <Compile Include="Shared\Window_NumberOne.xaml.cs">
       <DependentUpon>Window_NumberOne.xaml</DependentUpon>
@@ -184,7 +184,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Shared\Window_DateOptions.xaml">
+    <Page Include="Shared\Window_LoadingOptions.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

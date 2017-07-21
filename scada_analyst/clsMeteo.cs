@@ -187,7 +187,7 @@ namespace scada_analyst
             {
                 for (int j = 1; j < metMasts[i].MetDataSorted.Count; j++)
                 {
-                    metMasts[i].MetDataSorted[j].DeltaTime = metMasts[i].MetDataSorted[j].TimeStamp - metMasts[i].MetDataSorted[j - 1].TimeStamp;
+                    metMasts[i].MetDataSorted[j].SampleSeparation = metMasts[i].MetDataSorted[j].TimeStamp - metMasts[i].MetDataSorted[j - 1].TimeStamp;
                 }
             }
         }

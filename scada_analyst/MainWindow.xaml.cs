@@ -75,6 +75,7 @@ namespace scada_analyst
         private DateTime _dataExportEndTm = new DateTime();
         private DateTime _eventExplrStart = new DateTime();
         private DateTime _eventExplrEndTm = new DateTime();
+        private TimeSpan _inputSeparation = new TimeSpan(0, 10, 0);
 
         private Analysis _analyser = new Analysis();
         private GeoData _geoFile;
@@ -144,9 +145,13 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void DateFormatClick(object sender, RoutedEventArgs e)
         {
-            Window_DateOptions dO = new Window_DateOptions(this, _dateFormat);
+            Window_LoadingOptions dO = new Window_LoadingOptions(this, _dateFormat, _inputSeparation);
 
-            if (dO.ShowDialog().Value) { _dateFormat = dO.Format; }
+            if (dO.ShowDialog().Value)
+            {
+                _dateFormat = dO.Format;
+                _inputSeparation = dO.SampleSeparation;
+            }
         }
 
         /// <summary>
@@ -473,7 +478,23 @@ namespace scada_analyst
             {
                 DateTime tempDate = Common.StringToDateTime(startCal.TextBox_Calendar.Text, Common.DateFormat.DMY);
 
-                _eventExplrStart = tempDate < _eventExplrEndTm ? tempDate : _eventExplrEndTm;
+                // this is currently a suboptimal method as it should also take into account
+                // what the specific start and end times are for the specific turbine
+                if (tempDate < _eventExplrEndTm)
+                {
+                    if (tempDate > _dataExportStart)
+                    {
+                        _eventExplrStart = tempDate;
+                    }
+                    else
+                    {
+                        _eventExplrStart = _dataExportStart;
+                    }
+                }
+                else
+                {
+                    _eventExplrStart = _eventExplrEndTm.AddHours(-6);
+                }
 
                 LBL_DetailedStartTime.Content = _eventExplrStart.ToString();
             }
@@ -487,7 +508,23 @@ namespace scada_analyst
             {
                 DateTime tempDate = Common.StringToDateTime(endCal.TextBox_Calendar.Text, Common.DateFormat.DMY);
 
-                _eventExplrEndTm = tempDate > _eventExplrStart ? tempDate : _eventExplrStart.AddHours(6);
+                // this is currently a suboptimal method as it should also take into account
+                // what the specific start and end times are for the specific turbine
+                if (tempDate > _eventExplrStart)
+                {
+                    if (tempDate < _dataExportEndTm)
+                    {
+                        _eventExplrEndTm = tempDate;
+                    }
+                    else
+                    {
+                        _eventExplrEndTm = _dataExportEndTm;
+                    }
+                }
+                else
+                {
+                    _eventExplrEndTm = _eventExplrStart.AddHours(6);                
+                }
 
                 LBL_DetailedEndTime.Content = _eventExplrEndTm.ToString();
             }
@@ -1041,7 +1078,8 @@ namespace scada_analyst
         /// <param name="isLoaded"></param>
         /// <param name="progress"></param>
         /// <returns></returns>
-        private async Task LoadScadaData(ScadaData existingData, string[] filenames, int _singleTurbineLoading, IProgress<int> progress)
+        private async Task LoadScadaData(ScadaData existingData, string[] filenames, int _singleTurbineLoading, TimeSpan _separation, 
+            IProgress<int> progress)
         {
             try
             {
@@ -1049,7 +1087,7 @@ namespace scada_analyst
 
                 await Task.Run(() =>
                 {
-                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, _singleTurbineLoading, progress);
+                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, _singleTurbineLoading, _separation, progress);
                     _loadedFiles.AddRange(filenames);
                 });
 
@@ -1095,7 +1133,7 @@ namespace scada_analyst
                     ProgressBarVisible();
 
                     await Task.Run(() =>
-                        LoadScadaData(_scadaFile, openFileDialog.FileNames, _singleTurbineLoading, progress), token);
+                        LoadScadaData(_scadaFile, openFileDialog.FileNames, _singleTurbineLoading, _inputSeparation, progress), token);
 
                     ProgressBarInvisible();
                     PopulateOverview();

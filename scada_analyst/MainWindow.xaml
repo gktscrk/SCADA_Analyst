@@ -33,7 +33,7 @@
         <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" IsMainMenu="True" 
               Name="Prime_Menu" >
             <MenuItem Header="_File" >
-                <MenuItem Header="_Change Input Data Date Format" Click="DateFormatClick" />
+                <MenuItem Header="_Loading Options" Click="DateFormatClick" />
                 <MenuItem Header="_Check Loaded Files" Click="LoadedFilesClick" />
                 <Separator />
                 <MenuItem Header="_About" Click="AboutClick" />
@@ -606,7 +606,8 @@
                             <Separator Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="3" Margin="5" />
 
                             <Button Grid.Column="2" Grid.Row="5" Margin="5" Content="Explore Event"
-                                    Name="BTN_Explore" Click="ExploreDetailedEvent" />
+                                    Name="BTN_Explore" Click="ExploreDetailedEvent" 
+                                    Style="{StaticResource AccentedSquareButtonStyle}"/>
 
                         </Grid>
                     </TabItem>

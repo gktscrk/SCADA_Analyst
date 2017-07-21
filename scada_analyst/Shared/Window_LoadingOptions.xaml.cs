@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+
 using MahApps.Metro.Controls;
 
 using scada_analyst.Shared;
@@ -6,13 +8,13 @@ using scada_analyst.Shared;
 namespace scada_analyst.Controls
 {
     /// <summary>
-    /// Interaction logic for Window_DateOptions.xaml
+    /// Interaction logic for Window_LoadingOptions.xaml
     /// </summary>
-    public partial class Window_DateOptions : MetroWindow
+    public partial class Window_LoadingOptions : MetroWindow
     {
         #region Constructor
 
-        public Window_DateOptions(MetroWindow owner, Common.DateFormat format)
+        public Window_LoadingOptions(MetroWindow owner, Common.DateFormat format, TimeSpan sampleLength)
         {
             InitializeComponent();
 
@@ -20,6 +22,8 @@ namespace scada_analyst.Controls
             else if (format == Common.DateFormat.MDY) { RBox_MDY.IsChecked = true; }
             else if (format == Common.DateFormat.YMD) { RBox_YMD.IsChecked = true; }
             else if (format == Common.DateFormat.YDM) { RBox_YDM.IsChecked = true; }
+
+            NBox_FileTimeStep.NumericValue = sampleLength.TotalMinutes;
         }
 
         #endregion 
@@ -30,6 +34,11 @@ namespace scada_analyst.Controls
         }
 
         #region Properties
+
+        public TimeSpan SampleSeparation
+        {
+            get { return new TimeSpan(0, (int)NBox_FileTimeStep.NumericValue, 0); }
+        }
 
         public Common.DateFormat Format
         {

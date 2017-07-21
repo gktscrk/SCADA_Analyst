@@ -14,6 +14,7 @@ namespace scada_analyst
 
         private string outputName;
 
+        private TimeSpan _systemSampleSeparation = new TimeSpan();
         private ScadaHeader fileHeader = new ScadaHeader();
 
         // a list for including the asset IDs for all loaded turbines
@@ -26,10 +27,6 @@ namespace scada_analyst
         #region Constructor
 
         public ScadaData() { }
-
-        #endregion
-
-        #region Load Data
 
         /// <summary>
         /// This method creates a copy of an existing instance of a ScadaData class
@@ -53,8 +50,16 @@ namespace scada_analyst
             }
         }
 
-        public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress)
+        #endregion
+
+        #region Load Data
+
+        public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, 
+            int _singleTurbineLoading, TimeSpan _sampleLength, IProgress<int> progress)
         {
+            // map the global sample separation to this loading procedure
+            _systemSampleSeparation = _sampleLength;
+
             for (int i = filenames.Length - 1; i >= 0; i--)
             {
                 if (loadedFiles.Contains(filenames[i]))
@@ -63,30 +68,40 @@ namespace scada_analyst
                 }
             }
 
-            LoadAndSort(filenames, _dateFormat, _sTL, progress);
+            LoadAndSort(filenames, _dateFormat, _singleTurbineLoading, progress);
         }
 
-        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, IProgress<int> progress)
         {
-            LoadFiles(filenames, _dateFormat, _sTL, progress);
+            // load files
+            LoadFiles(filenames, _dateFormat, _singleTurbineLoading, progress);
 
+            // rearrange files by timestamps
             SortScada();
-            PopulateTimeDif();
-            GetBearings();
-            
+            // add the sample separation field values
+            CalculateSampleTimeDifferences();
+
+            // if we want to pad these files, do this here: 
+            // padding == adding datapoints to where there previously were none
+            // all values will be NaN
+            PadSamples();
+
+            // some final calculations need to be done for the windfarm itself
             _windFarm = _windFarm.OrderBy(o => o.UnitID).ToList();
+            GetBearings();
         }
         
-        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress)
+        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 FileName.Add(filenames[i]);
-                LoadScada(filenames[i], _dateFormat, _sTL, progress, filenames.Length, i);
+                LoadScada(filenames[i], _dateFormat, _singleTurbineLoading, progress, filenames.Length, i);
             }
         }
 
-        private void LoadScada(string filename, Common.DateFormat _dateFormat, int _sTL, IProgress<int> progress, int numberOfFiles = 1, int i = 0)
+        private void LoadScada(string filename, Common.DateFormat _dateFormat, int _singleTurbineLoading, 
+            IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(filename))
             {
@@ -143,7 +158,7 @@ namespace scada_analyst
 
                             // organise loading so it would check which ones have already
                             // been loaded; work around the ones have have been and add data there
-                            if (_sTL == -1)
+                            if (_singleTurbineLoading == -1)
                             {
                                 if (_inclTrbn.Contains(thisAsset))
                                 {
@@ -158,7 +173,7 @@ namespace scada_analyst
                             }
                             else
                             {
-                                if (thisAsset == _sTL)
+                                if (thisAsset == _singleTurbineLoading)
                                 {
                                     if (_inclTrbn.Contains(thisAsset))
                                     {
@@ -172,8 +187,6 @@ namespace scada_analyst
                                     }
                                 }
                             }
-
-                            
                         }
 
                         count++;
@@ -204,25 +217,20 @@ namespace scada_analyst
             }
         }
 
-        private void PopulateTimeDif()
+        private void CalculateSampleTimeDifferences()
         {
+            // gets all of the inter-sample time differences for the dataset
+
+            // reference point is the next sample, so first one will have no value
             for (int i = 0; i < _windFarm.Count; i++)
             {
                 for (int j = 1; j < _windFarm[i].DataSorted.Count; j++)
                 {
-                    _windFarm[i].DataSorted[j].DeltaTime = _windFarm[i].DataSorted[j].TimeStamp - _windFarm[i].DataSorted[j - 1].TimeStamp;
+                    _windFarm[i].DataSorted[j].SampleSeparation = _windFarm[i].DataSorted[j].TimeStamp - _windFarm[i].DataSorted[j - 1].TimeStamp;
                 }
             }
         }
 
-        private void SortScada()
-        {
-            for (int i = 0; i < _windFarm.Count; i++)
-            {
-                _windFarm[i].DataSorted = _windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
-            }
-        }
-        
         private void GetBearings()
         {
             for (int i = 0; i < _windFarm.Count; i++)
@@ -233,6 +241,39 @@ namespace scada_analyst
             }
         }
 
+        private void PadSamples()
+        {
+            // will add an empty no data sample everywhere where the length of the sample separation
+            // is too great
+            for (int i = 0; i < _windFarm.Count; i++)
+            {
+                for (int j = 0; j < _windFarm[i].DataSorted.Count; j++)
+                {
+                    if (_windFarm[i].DataSorted[j].SampleSeparation > _systemSampleSeparation)
+                    {
+                        int counter = (int)(_windFarm[i].DataSorted[j].SampleSeparation.TotalMinutes / _systemSampleSeparation.TotalMinutes);
+
+                        for (int k = 1; k < counter; k++)
+                        {
+                            _windFarm[i].DataSorted.Add(new ScadaSample(_windFarm[i].DataSorted[j], 
+                                _windFarm[i].DataSorted[j].TimeStamp.AddMinutes(-k * _systemSampleSeparation.TotalMinutes), false));
+                        }
+                    }
+                }
+            }
+
+            SortScada();
+        }
+
+        private void SortScada()
+        {
+            // sorts the data by the timestamp
+            for (int i = 0; i < _windFarm.Count; i++)
+            {
+                _windFarm[i].DataSorted = _windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
+            }
+        }
+        
         #endregion 
 
         #region Export Data
@@ -501,8 +542,7 @@ namespace scada_analyst
 
         public class TurbineData : BaseStructure
         {
-            // this class represents a full wind turbine which includes a set of 
-            // turbines which all have sets of data
+            // this class represents a single turbine with its list of data
 
             #region Variables
 
@@ -511,10 +551,15 @@ namespace scada_analyst
 
             #endregion
 
+            #region Constructor
+
             public TurbineData() { }
 
             public TurbineData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat)
             {
+                // this is the first sample for a turbine which is only used once, all future loading
+                // goes into the other method for every turbine
+
                 Type = Types.TURBINE;
 
                 data.Add(new ScadaSample(splits, header, _dateFormat));
@@ -525,22 +570,23 @@ namespace scada_analyst
                     UnitID = data[0].AssetID != 0 ? data[0].AssetID : data[0].StationID;
                 }
             }
-                        
+
+            #endregion
+
             public void AddData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat)
             {
+                // this method is used to add data to a turbine
                 DateTime thisTime = Common.StringToDateTime(Common.GetSplits(splits[header.TimesCol], new char[] { ' ' }), _dateFormat);
 
                 if (InclDtTm.Contains(thisTime))
                 {
                     int index = data.FindIndex(x => x.TimeStamp == thisTime);
-
                     data[index].AddDataFields(splits, header, _dateFormat);
                 }
                 else
                 {
                     data.Add(new ScadaSample(splits, header, _dateFormat));
-                    
-                    InclDtTm.Add(thisTime);
+                    InclDtTm.Add(data[data.Count - 1].TimeStamp);
                 }
             }
 
@@ -559,227 +605,29 @@ namespace scada_analyst
             // the actual data itself
 
             // this will be initialised to begin with, and after that will be maintained for
-            // the duration of loading the file            
+            // the duration of loading the file as it contains all information pertaining to that file
 
-            #region Variabes
+            #region Variables
+
+            // the noValue flag is used to make all column headers which should not be included be ignored
+            private int _noValue = -1;
 
             private int curTimeCol = -1;
-            private int noVal = -1;
             private int assetCol = -1, sampleCol = -1, stationCol = -1, timeCol = -1;
 
             #endregion
+
+            #region Constructor
 
             public ScadaHeader() { }
 
             public ScadaHeader(string header)
             {
-                HeaderNoValues();
-
+                NullAllHeaderValues();
                 HeaderSeparation(header);
             }
 
-            private void HeaderNoValues()
-            {
-                Powers.Mean = noVal;
-                Powers.Stdv = noVal;
-                Powers.Maxm = noVal;
-                Powers.Minm = noVal;
-
-                Powers.GridFreq.Mean = noVal;
-                Powers.GridFreq.Stdv = noVal;
-                Powers.GridFreq.Maxm = noVal;
-                Powers.GridFreq.Minm = noVal;
-
-                Powers.PowrFact.Mean = noVal;
-                Powers.PowrFact.Stdv = noVal;
-                Powers.PowrFact.Maxm = noVal;
-                Powers.PowrFact.Minm = noVal;
-
-                Powers.Reactives.Mean = noVal;
-                Powers.Reactives.Stdv = noVal;
-                Powers.Reactives.Maxm = noVal;
-                Powers.Reactives.Minm = noVal;
-
-                Currents.PhR.Mean = noVal;
-                Currents.PhR.Stdv = noVal;
-                Currents.PhR.Maxm = noVal;
-                Currents.PhR.Minm = noVal;
-
-                Currents.PhS.Mean = noVal;
-                Currents.PhS.Stdv = noVal;
-                Currents.PhS.Maxm = noVal;
-                Currents.PhS.Minm = noVal;
-
-                Currents.PhT.Mean = noVal;
-                Currents.PhT.Stdv = noVal;
-                Currents.PhT.Maxm = noVal;
-                Currents.PhT.Minm = noVal;
-
-                Voltages.phR.Mean = noVal;
-                Voltages.phR.Stdv = noVal;
-                Voltages.phR.Maxm = noVal;
-                Voltages.phR.Minm = noVal;
-
-                Voltages.phS.Mean = noVal;
-                Voltages.phS.Stdv = noVal;
-                Voltages.phS.Maxm = noVal;
-                Voltages.phS.Minm = noVal;
-
-                Voltages.phT.Mean = noVal;
-                Voltages.phT.Stdv = noVal;
-                Voltages.phT.Maxm = noVal;
-                Voltages.phT.Minm = noVal;
-
-                Genny.G1u1.Mean = noVal;
-                Genny.G1u1.Stdv = noVal;
-                Genny.G1u1.Maxm = noVal;
-                Genny.G1u1.Minm = noVal;
-                Genny.G1v1.Mean = noVal;
-                Genny.G1v1.Stdv = noVal;
-                Genny.G1v1.Maxm = noVal;
-                Genny.G1v1.Minm = noVal;
-                Genny.G1w1.Mean = noVal;
-                Genny.G1w1.Stdv = noVal;
-                Genny.G1w1.Maxm = noVal;
-                Genny.G1w1.Minm = noVal;
-
-                Genny.G2u1.Mean = noVal;
-                Genny.G2u1.Stdv = noVal;
-                Genny.G2u1.Maxm = noVal;
-                Genny.G2u1.Minm = noVal;
-                Genny.G2v1.Mean = noVal;
-                Genny.G2v1.Stdv = noVal;
-                Genny.G2v1.Maxm = noVal;
-                Genny.G2v1.Minm = noVal;
-                Genny.G2w1.Mean = noVal;
-                Genny.G2w1.Stdv = noVal;
-                Genny.G2w1.Maxm = noVal;
-                Genny.G2w1.Minm = noVal;
-
-                Genny.G1u1.Dlta = noVal;
-                Genny.G1v1.Dlta = noVal;
-                Genny.G1w1.Dlta = noVal;
-                Genny.G2u1.Dlta = noVal;
-                Genny.G2v1.Dlta = noVal;
-                Genny.G2w1.Dlta = noVal;
-
-                AmbTemps.Mean = noVal;
-                AmbTemps.Dlta = noVal;
-                AmbTemps.Stdv = noVal;
-                AmbTemps.Maxm = noVal;
-                AmbTemps.Minm = noVal;
-                DeltaTs.Mean = noVal;
-                DeltaTs.Stdv = noVal;
-                DeltaTs.Maxm = noVal;
-                DeltaTs.Minm = noVal;
-
-                Gearbox.Hs.Gens.Mean = noVal;
-                Gearbox.Hs.Gens.Stdv = noVal;
-                Gearbox.Hs.Gens.Maxm = noVal;
-                Gearbox.Hs.Gens.Minm = noVal;
-                Gearbox.Hs.Rots.Mean = noVal;
-                Gearbox.Hs.Rots.Stdv = noVal;
-                Gearbox.Hs.Rots.Maxm = noVal;
-                Gearbox.Hs.Rots.Minm = noVal;
-                Gearbox.Ims.Gens.Mean = noVal;
-                Gearbox.Ims.Gens.Stdv = noVal;
-                Gearbox.Ims.Gens.Maxm = noVal;
-                Gearbox.Ims.Gens.Minm = noVal;
-                Gearbox.Ims.Rots.Mean = noVal;
-                Gearbox.Ims.Rots.Stdv = noVal;
-                Gearbox.Ims.Rots.Maxm = noVal;
-                Gearbox.Ims.Rots.Minm = noVal;
-
-                Gearbox.Ims.Gens.Dlta = noVal;
-                Gearbox.Ims.Rots.Dlta = noVal;
-                Gearbox.Hs.Gens.Dlta = noVal;
-                Gearbox.Hs.Rots.Dlta = noVal;
-
-                Gearbox.Oils.Mean = noVal;
-                Gearbox.Oils.Stdv = noVal;
-                Gearbox.Oils.Maxm = noVal;
-                Gearbox.Oils.Minm = noVal;
-                Gearbox.Oils.Dlta = noVal;
-
-                Genny.BearingG.Mean = noVal;
-                Genny.BearingG.Stdv = noVal;
-                Genny.BearingG.Maxm = noVal;
-                Genny.BearingG.Minm = noVal;
-                Genny.BearingR.Mean = noVal;
-                Genny.BearingR.Stdv = noVal;
-                Genny.BearingR.Maxm = noVal;
-                Genny.BearingR.Minm = noVal;
-                Genny.BearingG.Dlta = noVal;
-                Genny.BearingR.Dlta = noVal;
-
-                MainBear.Main.Mean = noVal;
-                MainBear.Main.Stdv = noVal;
-                MainBear.Main.Maxm = noVal;
-                MainBear.Main.Minm = noVal;
-                MainBear.Gs.Mean = noVal;
-                MainBear.Gs.Stdv = noVal;
-                MainBear.Gs.Maxm = noVal;
-                MainBear.Gs.Minm = noVal;
-                MainBear.Hs.Mean = noVal;
-                MainBear.Hs.Stdv = noVal;
-                MainBear.Hs.Maxm = noVal;
-                MainBear.Hs.Minm = noVal;
-
-                MainBear.Main.Dlta = noVal;
-                MainBear.Gs.Dlta = noVal;
-                MainBear.Hs.Dlta = noVal;
-
-                Nacel.Mean = noVal;
-                Nacel.Stdv = noVal;
-                Nacel.Maxm = noVal;
-                Nacel.Minm = noVal;
-
-                AnemoM.ActWinds.Mean = noVal;
-                AnemoM.ActWinds.Stdv = noVal;
-                AnemoM.ActWinds.Maxm = noVal;
-                AnemoM.ActWinds.Minm = noVal;
-
-                AnemoM.PriAnemo.Mean = noVal;
-                AnemoM.PriAnemo.Stdv = noVal;
-                AnemoM.PriAnemo.Maxm = noVal;
-                AnemoM.PriAnemo.Minm = noVal;
-
-                AnemoM.PriWinds.Mean = noVal;
-                AnemoM.PriWinds.Stdv = noVal;
-                AnemoM.PriWinds.Maxm = noVal;
-                AnemoM.PriWinds.Minm = noVal;
-
-                AnemoM.SecAnemo.Mean = noVal;
-                AnemoM.SecAnemo.Stdv = noVal;
-                AnemoM.SecAnemo.Maxm = noVal;
-                AnemoM.SecAnemo.Minm = noVal;
-
-                AnemoM.SecWinds.Mean = noVal;
-                AnemoM.SecWinds.Stdv = noVal;
-                AnemoM.SecWinds.Maxm = noVal;
-                AnemoM.SecWinds.Minm = noVal;
-
-                AnemoM.TerAnemo.Mean = noVal;
-                AnemoM.TerAnemo.Stdv = noVal;
-                AnemoM.TerAnemo.Maxm = noVal;
-                AnemoM.TerAnemo.Minm = noVal;
-
-                YawPostn.Mean = noVal;
-                YawPostn.Stdv = noVal;
-                YawPostn.Maxm = noVal;
-                YawPostn.Minm = noVal;
-
-                Genny.Rpms.Mean = noVal;
-                Genny.Rpms.Stdv = noVal;
-                Genny.Rpms.Maxm = noVal;
-                Genny.Rpms.Minm = noVal;
-                Genny.Rpms.Dlta = noVal;
-
-                Towers.Humid.Mean = noVal;
-                Towers.Humid.Stdv = noVal;
-                Towers.Humid.Maxm = noVal;
-                Towers.Humid.Minm = noVal;
-            }
+            #endregion 
 
             private void HeaderSeparation(string headerLine)
             {
@@ -1165,6 +1013,214 @@ namespace scada_analyst
                 }
             }
 
+            private void NullAllHeaderValues()
+            {
+                // in loading, all columns first need to be equal to the noValue so that 
+                // they can be edited afterwards
+
+                Powers.Mean = _noValue;
+                Powers.Stdv = _noValue;
+                Powers.Maxm = _noValue;
+                Powers.Minm = _noValue;
+
+                Powers.GridFreq.Mean = _noValue;
+                Powers.GridFreq.Stdv = _noValue;
+                Powers.GridFreq.Maxm = _noValue;
+                Powers.GridFreq.Minm = _noValue;
+
+                Powers.PowrFact.Mean = _noValue;
+                Powers.PowrFact.Stdv = _noValue;
+                Powers.PowrFact.Maxm = _noValue;
+                Powers.PowrFact.Minm = _noValue;
+
+                Powers.Reactives.Mean = _noValue;
+                Powers.Reactives.Stdv = _noValue;
+                Powers.Reactives.Maxm = _noValue;
+                Powers.Reactives.Minm = _noValue;
+
+                Currents.PhR.Mean = _noValue;
+                Currents.PhR.Stdv = _noValue;
+                Currents.PhR.Maxm = _noValue;
+                Currents.PhR.Minm = _noValue;
+
+                Currents.PhS.Mean = _noValue;
+                Currents.PhS.Stdv = _noValue;
+                Currents.PhS.Maxm = _noValue;
+                Currents.PhS.Minm = _noValue;
+
+                Currents.PhT.Mean = _noValue;
+                Currents.PhT.Stdv = _noValue;
+                Currents.PhT.Maxm = _noValue;
+                Currents.PhT.Minm = _noValue;
+
+                Voltages.phR.Mean = _noValue;
+                Voltages.phR.Stdv = _noValue;
+                Voltages.phR.Maxm = _noValue;
+                Voltages.phR.Minm = _noValue;
+
+                Voltages.phS.Mean = _noValue;
+                Voltages.phS.Stdv = _noValue;
+                Voltages.phS.Maxm = _noValue;
+                Voltages.phS.Minm = _noValue;
+
+                Voltages.phT.Mean = _noValue;
+                Voltages.phT.Stdv = _noValue;
+                Voltages.phT.Maxm = _noValue;
+                Voltages.phT.Minm = _noValue;
+
+                Genny.G1u1.Mean = _noValue;
+                Genny.G1u1.Stdv = _noValue;
+                Genny.G1u1.Maxm = _noValue;
+                Genny.G1u1.Minm = _noValue;
+                Genny.G1v1.Mean = _noValue;
+                Genny.G1v1.Stdv = _noValue;
+                Genny.G1v1.Maxm = _noValue;
+                Genny.G1v1.Minm = _noValue;
+                Genny.G1w1.Mean = _noValue;
+                Genny.G1w1.Stdv = _noValue;
+                Genny.G1w1.Maxm = _noValue;
+                Genny.G1w1.Minm = _noValue;
+
+                Genny.G2u1.Mean = _noValue;
+                Genny.G2u1.Stdv = _noValue;
+                Genny.G2u1.Maxm = _noValue;
+                Genny.G2u1.Minm = _noValue;
+                Genny.G2v1.Mean = _noValue;
+                Genny.G2v1.Stdv = _noValue;
+                Genny.G2v1.Maxm = _noValue;
+                Genny.G2v1.Minm = _noValue;
+                Genny.G2w1.Mean = _noValue;
+                Genny.G2w1.Stdv = _noValue;
+                Genny.G2w1.Maxm = _noValue;
+                Genny.G2w1.Minm = _noValue;
+
+                Genny.G1u1.Dlta = _noValue;
+                Genny.G1v1.Dlta = _noValue;
+                Genny.G1w1.Dlta = _noValue;
+                Genny.G2u1.Dlta = _noValue;
+                Genny.G2v1.Dlta = _noValue;
+                Genny.G2w1.Dlta = _noValue;
+
+                AmbTemps.Mean = _noValue;
+                AmbTemps.Dlta = _noValue;
+                AmbTemps.Stdv = _noValue;
+                AmbTemps.Maxm = _noValue;
+                AmbTemps.Minm = _noValue;
+
+                DeltaTs.Mean = _noValue;
+                DeltaTs.Stdv = _noValue;
+                DeltaTs.Maxm = _noValue;
+                DeltaTs.Minm = _noValue;
+
+                Gearbox.Hs.Gens.Mean = _noValue;
+                Gearbox.Hs.Gens.Stdv = _noValue;
+                Gearbox.Hs.Gens.Maxm = _noValue;
+                Gearbox.Hs.Gens.Minm = _noValue;
+                Gearbox.Hs.Rots.Mean = _noValue;
+                Gearbox.Hs.Rots.Stdv = _noValue;
+                Gearbox.Hs.Rots.Maxm = _noValue;
+                Gearbox.Hs.Rots.Minm = _noValue;
+
+                Gearbox.Ims.Gens.Mean = _noValue;
+                Gearbox.Ims.Gens.Stdv = _noValue;
+                Gearbox.Ims.Gens.Maxm = _noValue;
+                Gearbox.Ims.Gens.Minm = _noValue;
+                Gearbox.Ims.Rots.Mean = _noValue;
+                Gearbox.Ims.Rots.Stdv = _noValue;
+                Gearbox.Ims.Rots.Maxm = _noValue;
+                Gearbox.Ims.Rots.Minm = _noValue;
+
+                Gearbox.Ims.Gens.Dlta = _noValue;
+                Gearbox.Ims.Rots.Dlta = _noValue;
+                Gearbox.Hs.Gens.Dlta = _noValue;
+                Gearbox.Hs.Rots.Dlta = _noValue;
+
+                Gearbox.Oils.Mean = _noValue;
+                Gearbox.Oils.Stdv = _noValue;
+                Gearbox.Oils.Maxm = _noValue;
+                Gearbox.Oils.Minm = _noValue;
+                Gearbox.Oils.Dlta = _noValue;
+
+                Genny.BearingG.Mean = _noValue;
+                Genny.BearingG.Stdv = _noValue;
+                Genny.BearingG.Maxm = _noValue;
+                Genny.BearingG.Minm = _noValue;
+                Genny.BearingR.Mean = _noValue;
+                Genny.BearingR.Stdv = _noValue;
+                Genny.BearingR.Maxm = _noValue;
+                Genny.BearingR.Minm = _noValue;
+                Genny.BearingG.Dlta = _noValue;
+                Genny.BearingR.Dlta = _noValue;
+
+                MainBear.Main.Mean = _noValue;
+                MainBear.Main.Stdv = _noValue;
+                MainBear.Main.Maxm = _noValue;
+                MainBear.Main.Minm = _noValue;
+                MainBear.Gs.Mean = _noValue;
+                MainBear.Gs.Stdv = _noValue;
+                MainBear.Gs.Maxm = _noValue;
+                MainBear.Gs.Minm = _noValue;
+                MainBear.Hs.Mean = _noValue;
+                MainBear.Hs.Stdv = _noValue;
+                MainBear.Hs.Maxm = _noValue;
+                MainBear.Hs.Minm = _noValue;
+
+                MainBear.Main.Dlta = _noValue;
+                MainBear.Gs.Dlta = _noValue;
+                MainBear.Hs.Dlta = _noValue;
+
+                Nacel.Mean = _noValue;
+                Nacel.Stdv = _noValue;
+                Nacel.Maxm = _noValue;
+                Nacel.Minm = _noValue;
+
+                AnemoM.ActWinds.Mean = _noValue;
+                AnemoM.ActWinds.Stdv = _noValue;
+                AnemoM.ActWinds.Maxm = _noValue;
+                AnemoM.ActWinds.Minm = _noValue;
+
+                AnemoM.PriAnemo.Mean = _noValue;
+                AnemoM.PriAnemo.Stdv = _noValue;
+                AnemoM.PriAnemo.Maxm = _noValue;
+                AnemoM.PriAnemo.Minm = _noValue;
+
+                AnemoM.PriWinds.Mean = _noValue;
+                AnemoM.PriWinds.Stdv = _noValue;
+                AnemoM.PriWinds.Maxm = _noValue;
+                AnemoM.PriWinds.Minm = _noValue;
+
+                AnemoM.SecAnemo.Mean = _noValue;
+                AnemoM.SecAnemo.Stdv = _noValue;
+                AnemoM.SecAnemo.Maxm = _noValue;
+                AnemoM.SecAnemo.Minm = _noValue;
+
+                AnemoM.SecWinds.Mean = _noValue;
+                AnemoM.SecWinds.Stdv = _noValue;
+                AnemoM.SecWinds.Maxm = _noValue;
+                AnemoM.SecWinds.Minm = _noValue;
+
+                AnemoM.TerAnemo.Mean = _noValue;
+                AnemoM.TerAnemo.Stdv = _noValue;
+                AnemoM.TerAnemo.Maxm = _noValue;
+                AnemoM.TerAnemo.Minm = _noValue;
+
+                YawPostn.Mean = _noValue;
+                YawPostn.Stdv = _noValue;
+                YawPostn.Maxm = _noValue;
+                YawPostn.Minm = _noValue;
+
+                Genny.Rpms.Mean = _noValue;
+                Genny.Rpms.Stdv = _noValue;
+                Genny.Rpms.Maxm = _noValue;
+                Genny.Rpms.Minm = _noValue;
+                Genny.Rpms.Dlta = _noValue;
+
+                Towers.Humid.Mean = _noValue;
+                Towers.Humid.Stdv = _noValue;
+                Towers.Humid.Maxm = _noValue;
+                Towers.Humid.Minm = _noValue;
+            }
+
             #region Properties
 
             public int AssetCol { get { return assetCol; } set { assetCol = value; } }
@@ -1178,14 +1234,18 @@ namespace scada_analyst
 
         public class ScadaSample : BaseSampleData
         {
-            // this class should be usable as the representation of a turbine, a set of which 
-            // is grouped as a wind farm
+            // this class should be usable as the representation of a sample from a turbine
+            // a set of which is grouped as the data from a turbine
 
             #region Variables
-            
+
+            // the hasData flag will be used to highlight which turbine samples actually have data and 
+            // which are used to fill in the timegaps
+            private bool _hasData = true;
+
             private string[] nullValues = { "\\N" };
 
-            private DateTime _curTime = new DateTime();
+            private DateTime _timeStampEnd = new DateTime();
 
             private AmbiTmpr _ambTmp = new AmbiTmpr();
             private Anemomtr _anemoM = new Anemomtr();
@@ -1213,10 +1273,25 @@ namespace scada_analyst
 
             #endregion
 
+            #region Constructor
+
             public ScadaSample() { }
+
+            public ScadaSample(ScadaSample input, DateTime _thisTime, bool _hasData)
+            {
+                // this should be a fully NaN sample created at a specific time
+                this._hasData = _hasData;
+
+                this.AssetID = input.AssetID;
+                this.StationID = input.StationID;
+
+                this.TimeStamp = _thisTime;
+            }
 
             public ScadaSample(ScadaSample input)
             {
+                // this method should go through all properties but is not referenced right now
+                // should be noted as incomplete for the time being!!!
                 this.TimeStamp = input.TimeStamp;
                 this.AssetID = input.AssetID;
                 this.StationID = input.StationID;
@@ -1233,6 +1308,8 @@ namespace scada_analyst
             {
                 LoadData(data, header, _dateFormat);
             }
+
+            #endregion
 
             public void AddDataFields(string[] data, ScadaHeader header, Common.DateFormat _dateFormat)
             {
@@ -1267,9 +1344,9 @@ namespace scada_analyst
                 _powrInfo.Stdv = GetVals(_powrInfo.Stdv, data, header.Powers.Stdv);
                 _powrInfo.Maxm = GetVals(_powrInfo.Maxm, data, header.Powers.Maxm);
                 _powrInfo.Minm = GetVals(_powrInfo.Minm, data, header.Powers.Minm);
-                _powrInfo.EndVal = GetVals(_powrInfo.EndVal, data, header.Powers.EndValCol); 
-                _powrInfo.QualEndVal = GetVals(_powrInfo.QualEndVal, data, header.Powers.QualEndValCol); 
-                _powrInfo.RgStEndVal = GetVals(_powrInfo.RgStEndVal, data, header.Powers.RgStEndValCol); 
+                _powrInfo.EndVal = GetVals(_powrInfo.EndVal, data, header.Powers.EndValCol);
+                _powrInfo.QualEndVal = GetVals(_powrInfo.QualEndVal, data, header.Powers.QualEndValCol);
+                _powrInfo.RgStEndVal = GetVals(_powrInfo.RgStEndVal, data, header.Powers.RgStEndValCol);
 
                 _powrInfo.GridFreq.Mean = GetVals(_powrInfo.GridFreq.Mean, data, header.Powers.GridFreq.Mean);
                 _powrInfo.GridFreq.Stdv = GetVals(_powrInfo.GridFreq.Stdv, data, header.Powers.GridFreq.Stdv);
@@ -1433,7 +1510,7 @@ namespace scada_analyst
 
                 if (header.CurTimeCol != -1 && !nullValues.Contains(data[header.CurTimeCol]))
                 {
-                    _curTime = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }), _dateFormat);
+                    _timeStampEnd = Common.StringToDateTime(Common.GetSplits(data[header.CurTimeCol], new char[] { ' ' }), _dateFormat);
                 }
 
                 _anemoM.ActWinds.Mean = GetVals(_anemoM.ActWinds.Mean, data, header.AnemoM.ActWinds.Mean);
@@ -1485,7 +1562,7 @@ namespace scada_analyst
 
                 #endregion
             }
-            
+
             #region Support Classes
 
             #region Base Variables
@@ -1515,7 +1592,7 @@ namespace scada_analyst
                 protected WindSpeeds terAnemo = new WindSpeeds();
 
                 #endregion
-                
+
                 #region Properties
 
                 public WindSpeeds ActWinds { get { return actWinds; } set { actWinds = value; } }
@@ -1548,14 +1625,14 @@ namespace scada_analyst
                 #endregion
 
                 #region Properties
-                
+
                 public Pressure Pressures { get { return pressures; } set { pressures = value; } }
                 public Gear Gears { get { return gears; } set { gears = value; } }
                 public Generator Generators { get { return generators; } set { generators = value; } }
 
                 #endregion
             }
-            
+
             public class Capactor
             {
                 #region Variables
@@ -1867,7 +1944,7 @@ namespace scada_analyst
                 #endregion
 
                 #region Properties
-                 
+
                 public Mains Main { get { return _main; } set { _main = value; } }
                 public Gss Gs { get { return _g; } set { _g = value; } }
                 public Hss Hs { get { return _h; } set { _h = value; } }
@@ -1887,7 +1964,7 @@ namespace scada_analyst
                 protected GridFrequency gridFreq = new GridFrequency();
                 protected PowerFactor powrFact = new PowerFactor();
                 protected Reactive reactive = new Reactive();
-                
+
                 #endregion
 
                 #region Support Classes            
@@ -1965,15 +2042,15 @@ namespace scada_analyst
             public class Reactor
             {
                 #region Variables
-                
+
                 protected U u = new U();
                 protected V v = new V();
                 protected W w = new W();
-                
+
                 #endregion
 
                 #region Support Classes
-                
+
                 public class U : Temperature { }
                 public class V : Temperature { }
                 public class W : Temperature { }
@@ -2089,7 +2166,9 @@ namespace scada_analyst
 
             #region Properties
 
-            public DateTime CurTime {  get { return _curTime; } set { _curTime = value; } }
+            public bool HasData { get { return _hasData; } set { _hasData = value; } }
+
+            public DateTime TimeStampEnd {  get { return _timeStampEnd; } set { _timeStampEnd = value; } }
 
             public AmbiTmpr AmbTemps { get { return _ambTmp; } set { _ambTmp = value; } }
             public Anemomtr AnemoM { get { return _anemoM; } set { _anemoM = value; } }

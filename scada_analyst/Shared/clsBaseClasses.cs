@@ -138,7 +138,7 @@ namespace scada_analyst.Shared
         public int StationID { get { return stationID; } set { stationID = value; } }
 
         public DateTime TimeStamp { get { return timeStamp; } set { timeStamp = value; } }
-        public TimeSpan DeltaTime { get { return deltaTime; } set { deltaTime = value; } }
+        public TimeSpan SampleSeparation { get { return deltaTime; } set { deltaTime = value; } }
 
         #endregion
     }
