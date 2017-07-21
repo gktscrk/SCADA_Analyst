@@ -23,7 +23,7 @@ namespace scada_analyst.Shared
 
             #endregion
 
-            #region Version 1.400 - Romax Visit and Results
+            #region Version 1.400 - Updates during Stay with Romax in Nottingham
 
             ProgramVersion v1506 = new ProgramVersion(1506, new DateTime(2017, 07, 20));
             v1506.AddChange("The detailed event investigation now only shows that exact time in the graphs and tables while the specific event investigation highlights the full week previous as well.");

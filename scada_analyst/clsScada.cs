@@ -262,7 +262,7 @@ namespace scada_analyst
                 }
             }
 
-            SortScada();
+            SortSortedScada();
         }
 
         private void SortScada()
@@ -273,8 +273,17 @@ namespace scada_analyst
                 _windFarm[i].DataSorted = _windFarm[i].Data.OrderBy(o => o.TimeStamp).ToList();
             }
         }
-        
-        #endregion 
+
+        private void SortSortedScada()
+        {
+            // sorts the data by the timestamp
+            for (int i = 0; i < _windFarm.Count; i++)
+            {
+                _windFarm[i].DataSorted = _windFarm[i].DataSorted.OrderBy(o => o.TimeStamp).ToList();
+            }
+        }
+
+        #endregion
 
         #region Export Data
 
