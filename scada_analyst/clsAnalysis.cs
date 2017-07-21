@@ -120,7 +120,7 @@ namespace scada_analyst
                     for (int j = 0; j < scadaFile.WindFarm[i].DataSorted.Count; j++)
                     {
                         if (scadaFile.WindFarm[i].DataSorted[j].TimeStamp >= _startTime &&
-                            scadaFile.WindFarm[i].DataSorted[j].TimeStamp < _endTime)
+                            scadaFile.WindFarm[i].DataSorted[j].TimeStamp <= _endTime)
                         {
                             thisEvent.Add(scadaFile.WindFarm[i].DataSorted[j]);
                         }
@@ -1144,6 +1144,54 @@ namespace scada_analyst
 
         #endregion
 
+        #region Event Data Retrieval Tasks
+
+        public void EventData(ScadaData _scadaFile, EventData _thisEvent)
+        {
+            // public accessor method
+            EventDataRetrieval(_scadaFile, _thisEvent);
+        }
+
+        private void EventDataRetrieval(ScadaData _scadaFile, EventData _thisEv)
+        {
+            _eventScadaOnly.Clear();
+            _weekBeforeInfo.Clear();
+            _fullHistory.Clear();
+
+            // do something part of the method
+            // this one needs to take the event details and send it to another listbox plus graph
+
+            // thisEvent has the event data only -- for the actual data to display, we'll need to find 
+            // the datapoints from the source data
+
+            // get index of the asset and get index of the event time in the asset
+            // the index of the asset to be used below
+            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.FromAsset);
+
+            // the index of the timestamp a week before the event began or otherwise the 
+            // first timestamp in the series - long conditional but should work
+            TimeSpan stepBack = new TimeSpan(-24 * 7, 0, 0);
+            int weekIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) != -1 ? _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) : 0;
+            int timeIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0]);
+
+            for (int i = 0; i < _thisEv.EvTimes.Count; i++)
+            {
+                _eventScadaOnly.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
+            }
+
+            for (int i = weekIndex; i < (timeIndex + _thisEv.EvTimes.Count); i++)
+            {
+                _weekBeforeInfo.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
+            }
+
+            for (int j = 0; j < (timeIndex + _thisEv.EvTimes.Count); j++)
+            {
+                _fullHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
+            }
+        }
+
+        #endregion
+
         #region Data Processing
 
         #region Cross-type Event Tasks
@@ -1456,53 +1504,6 @@ namespace scada_analyst
             // keys to check what's going on and which type of comparison we want to go into
             SAME_TURBINE,
             NEARBY_TRBNS
-        }
-
-        #endregion
-
-        #region Event Data Retrieval Tasks
-
-        public void EventData(ScadaData _scadaFile, EventData _thisEvent)
-        {
-            // public accessor method
-            EventDataRetrieval(_scadaFile, _thisEvent);
-        }
-
-        private void EventDataRetrieval(ScadaData _scadaFile, EventData _thisEv)
-        {
-            _eventScadaOnly.Clear();
-            _weekBeforeInfo.Clear();
-            _fullHistory.Clear();
-
-            // do something part of the method
-            // this one needs to take the event details and send it to another listbox plus graph
-
-            // thisEvent has the event data only -- for the actual data to display, we'll need to find 
-            // the datapoints from the source data
-
-            // get index of the asset and get index of the event time in the asset
-            // the index of the asset to be used below
-            int assetIndex = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _thisEv.FromAsset);
-
-            // the index of the timestamp a week before the event began or otherwise the first timestamp in the series - long conditional but should work
-            TimeSpan stepBack = new TimeSpan(-24 * 7, 0, 0);
-            int weekIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) != -1 ? _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0].Add(stepBack)) : 0;
-            int timeIndex = _scadaFile.WindFarm[assetIndex].DataSorted.FindIndex(x => x.TimeStamp == _thisEv.EvTimes[0]);
-
-            for (int i = 0; i < _thisEv.EvTimes.Count; i++)
-            {
-                _eventScadaOnly.Add(_scadaFile.WindFarm[assetIndex].DataSorted[timeIndex + i]);
-            }
-
-            for (int i = weekIndex; i < (timeIndex + _thisEv.EvTimes.Count); i++)
-            {
-                _weekBeforeInfo.Add(_scadaFile.WindFarm[assetIndex].DataSorted[i]);
-            }
-
-            for (int j = 0; j < (timeIndex + _thisEv.EvTimes.Count); j++)
-            {
-                _fullHistory.Add(_scadaFile.WindFarm[assetIndex].DataSorted[j]);
-            }
         }
 
         #endregion

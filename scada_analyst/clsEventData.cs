@@ -153,7 +153,11 @@ namespace scada_analyst
             
             for (int i = 1; i < data.Count; i++)
             {
-                if (_anomaly == AnomalyType.THRS_BEAR || _anomaly == AnomalyType.ROC_BEAR)
+                if (_anomaly == AnomalyType.USERDEFINED)
+                {
+                    if (i == 1) { EvTimes.Add(data[0].TimeStamp); }
+                }
+                else if (_anomaly == AnomalyType.THRS_BEAR || _anomaly == AnomalyType.ROC_BEAR)
                 {
                     if (i == 1) { _extrmValue = data[0].MainBear.Main.Mean; _extrmPower = data[0].Powers.Mean; }
 
@@ -415,6 +419,7 @@ namespace scada_analyst
         public enum AnomalyType
         {
             NOANOMALY,
+            USERDEFINED,
             THRS_BEAR,
             THRS_BEAR_GS,
             THRS_BEAR_HS,

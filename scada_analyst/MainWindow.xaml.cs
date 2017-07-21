@@ -2003,7 +2003,8 @@ namespace scada_analyst
             {
                 EventData thisEv;
 
-                if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
+                if ((LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1) &&
+                    !Tab_DetailTimeFrame.IsSelected)
                 {
                     _usingPreviousWeekForGraphing = true;
 
@@ -2023,7 +2024,7 @@ namespace scada_analyst
                             (_scadaFile, selectedAsset.UnitID, _eventExplrStart, _eventExplrEndTm);
                     }
 
-                    thisEv = new EventData(thisList, EventData.AnomalyType.NOANOMALY);
+                    thisEv = new EventData(thisList, EventData.AnomalyType.USERDEFINED);
                 }
 
                 _analyser.EventData(_scadaFile, thisEv);
