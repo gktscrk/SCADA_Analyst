@@ -182,7 +182,84 @@ namespace scada_analyst.Shared
         #endregion
     }
 
-    public class WindSpeeds : Stats
+    public class Equipment
+    {
+        #region Variables
+
+        private string _name = "";
+
+        #endregion
+
+        #region Properties
+
+        public string Name { get { return _name; } set { _name = value; } }
+
+        #endregion
+    }
+
+    #region Units : Stats Derivatives
+
+    public class Current : Phased { }
+
+    public class Frequency : Stats
+    {
+        #region Variables
+
+        protected double endValue = double.NaN;
+        protected int endValCol = -1;
+
+        #endregion
+
+        #region Properties
+
+        public double EndValue { get { return endValue; } set { endValue = value; } }
+        public int EndValCol { get { return endValCol; } set { endValCol = value; } }
+
+        #endregion
+    }
+
+    public class Humidity : Stats { }
+
+    public class Phased
+    {
+        #region Variables
+
+        protected Stats _phR = new Stats();
+        protected Stats _phS = new Stats();
+        protected Stats _phT = new Stats();
+
+        #endregion
+
+        #region Properties
+
+        public Stats PhR { get { return _phR; } set { _phR = value; } }
+        public Stats PhS { get { return _phS; } set { _phS = value; } }
+        public Stats PhT { get { return _phT; } set { _phT = value; } }
+
+        #endregion
+    }
+
+    public class Power : Stats
+    {
+        #region Variables
+
+        protected double endValue = double.NaN;
+        protected int endValCol = -1;
+
+        #endregion
+
+        #region Properties
+
+        public double EndValue { get { return endValue; } set { endValue = value; } }
+        public int EndValCol { get { return endValCol; } set { endValCol = value; } }
+
+        #endregion
+    }
+
+    public class Pressure : Stats { }
+    public class Revolutions : Stats { }
+
+    public class Speed : Stats
     {
         #region Variables
 
@@ -198,10 +275,8 @@ namespace scada_analyst.Shared
         #endregion
     }
 
-    public class Humidity : Stats { }
-    public class Frequency : Stats { }
-    public class Pressure : Stats { }
-    public class Revolutions : Stats { }
     public class Temperature : Stats { }
+    public class Voltage : Phased { }
 
+    #endregion 
 }

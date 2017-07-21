@@ -383,10 +383,10 @@ namespace scada_analyst
                     if (input == _eventDetailsSelection[1])
                     {
                         priGraph.Title = "HS Gens.";
-                        var1 = Math.Round(_graphingData[i].Gearbox.Hs.Gens.Mean, 1);
+                        var1 = Math.Round(_graphingData[i].Gearbox.HsGen.Mean, 1);
 
                         secGraph.Title = "HS Rots.";
-                        var2 = Math.Round(_graphingData[i].Gearbox.Hs.Rots.Mean, 1);
+                        var2 = Math.Round(_graphingData[i].Gearbox.HsRot.Mean, 1);
                     }
                     else if (input == _eventDetailsSelection[2])
                     {

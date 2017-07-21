@@ -86,7 +86,7 @@ namespace scada_analyst.Controls
 
             for (int i = 0; i < thisEvent.Count; i++)
             {
-                list.Add(new DateTimePoint(thisEvent[i].TimeStamp, thisEvent[i].Gearbox.Hs.Gens.Mean));
+                list.Add(new DateTimePoint(thisEvent[i].TimeStamp, thisEvent[i].Gearbox.HsGen.Mean));
             }
 
             Formatter = x => new DateTime((long)x).ToString("dd-MM-yyyy HH:mm");

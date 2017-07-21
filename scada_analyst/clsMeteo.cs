@@ -510,7 +510,7 @@ namespace scada_analyst
 
             public class Humidity : Stats { }
             public class Tempratr : Stats { }
-            public class WndSpRtr : WindSpeeds { }
+            public class WndSpRtr : Speed { }
 
             #endregion
 

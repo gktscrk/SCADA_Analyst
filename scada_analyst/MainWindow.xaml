@@ -1003,21 +1003,21 @@
                                         <GridViewColumn Header="Wind Speed" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding AnemoM.ActWinds.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Anemo.ActWinds.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Power Prod" Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Powers.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Power.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ Power Prod" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Powers.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Power.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1038,14 +1038,14 @@
                                         <GridViewColumn Header="Nacelle Temp" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Nacel.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Nacel.Temp.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ Nacelle Temp" Width="90" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Nacel.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Nacel.Temp.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1094,70 +1094,70 @@
                                         <GridViewColumn Header="HS Gen." Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Hs.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.HsGen.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ HS Gen." Width="70" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Hs.Gens.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.HsGen.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="HS Rot." Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Hs.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.HsRot.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ HS Rot." Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Hs.Rots.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.HsRot.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="IMS Gen." Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Ims.Gens.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.ImsGen.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ IMS Gen." Width="65" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Ims.Gens.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.ImsGen.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="IMS Rot." Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Ims.Rots.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.ImsRot.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ IMS Rot." Width="60" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Ims.Rots.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.ImsRot.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Gearbox Oil" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Oils.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.OilTemp.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ Gearbox Oil" Width="80" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Gearbox.Oils.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Gearbox.OilTemp.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -1206,14 +1206,14 @@
                                         <GridViewColumn Header="RPM" Width="55" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Genny.Rpms.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Genny.RPMs.Mean, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
                                         <GridViewColumn Header="Δ RPM" Width="55" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Genny.Rpms.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
+                                                    <TextBlock Text="{Binding Genny.RPMs.Dlta, StringFormat={}{0:0.0}, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
