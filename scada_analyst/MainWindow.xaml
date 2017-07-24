@@ -220,10 +220,9 @@
         <GroupBox Grid.Column="0" Grid.Row="2" Margin="15,5,5,5" Name="GBox_EventsOverview" >
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -231,21 +230,22 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0,3,0" Width="200"
+                <Label Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Padding="3,0,3,0"
                        HorizontalAlignment="Left"                        
                        VerticalAlignment="Top" VerticalContentAlignment="Center"
                        FontSize="15" FontWeight="Bold" Name="Lbl_TabDescription" />
 
                 <ComboBox Grid.Column="0" Grid.Row="0" Margin="5,5,5,5" Name="Comb_SummaryChoose"
-                          Width="200" SelectionChanged="Comb_DisplaySummary_SelectionChanged"/>
+                          SelectionChanged="Comb_DisplaySummary_SelectionChanged"/>
 
                 <Label Grid.Column="1" Grid.Row="0" Margin="5" Padding="3,0" Content="Choose Year:"
-                       HorizontalContentAlignment="Right" Name="LBL_YearChooser" />
+                       HorizontalContentAlignment="Right" Name="LBL_YearChooser"
+                       VerticalContentAlignment="Center"/>
 
-                <ComboBox Grid.Column="2" Grid.Row="0" Margin="5" Name="Combo_YearChooser" MinWidth="100"
+                <ComboBox Grid.Column="2" Grid.Row="0" Margin="5" Name="Combo_YearChooser"
                           SelectionChanged="Combo_YearChooser_SelectionChanged"/>
 
-                <Button Grid.Column="3" Grid.Row="0" Margin="5,5,5,5" Name="Btn_DurationFilter"                             
+                <Button Grid.Column="2" Grid.Row="0" Margin="5,5,5,5" Name="Btn_DurationFilter"                             
                         HorizontalContentAlignment="Center" 
                         VerticalContentAlignment="Center"
                         MinWidth="80"
@@ -254,7 +254,7 @@
                 
                 <Separator Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Margin="5" />
                 
-                <TabControl Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Margin="0"
+                <TabControl Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Margin="0"
                     DataContext="{StaticResource tabVM}" >
 
                     <TabControl.ItemContainerStyle>
@@ -274,7 +274,7 @@
                             </Grid.RowDefinitions>
 
                             <ListView Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="5,5,5,5"
-                                  Name="LView_CapacityFactor"
+                                  Name="LView_CapacityFactor" ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                   VerticalAlignment="Top" HorizontalAlignment="Left"
                                   ScrollViewer.CanContentScroll="True" >
                                 <ListView.ItemsPanel>
@@ -303,15 +303,264 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Overall" Width="60" >
+                                        <GridViewColumn Header="Total" Width="50" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding Capacity.FullStr, Mode=OneWay}" />
+                                                    <Label Content="{Binding Capacity.FullStr, Mode=OneWay}"
+                                                           Padding="3,0"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="January" Width="60" x:Name="Column_Capacity_Jan" />
+                                        <GridViewColumn Header="Year" Width="50" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Overall, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jan" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Jan, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Feb" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Feb, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Mar" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Mar, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Apr" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Apr, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="May" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.May, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jun" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Jun, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jul" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Jul, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Aug" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Aug, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Sep" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Sep, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Oct" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Oct, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Nov" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Nov, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Dec" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding CapaInfo.Dec, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
 
+                            <ListView Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="5,5,5,5"
+                                  Name="LView_Bearings" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                  ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
+                                        <GridViewColumn Header="Asset ID" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding UnitID, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Type" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding TypeString, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Total" Width="50" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding Bearings.FullStr, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Year" Width="50" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Overall, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jan" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Jan, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Feb" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Feb, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Mar" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Mar, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Apr" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Apr, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="May" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.May, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jun" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Jun, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jul" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Jul, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Aug" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Aug, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Sep" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Sep, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Oct" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Oct, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Nov" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Nov, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Dec" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding BearInfo.Dec, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
                                     </GridView>
                                 </ListView.View>
                             </ListView>

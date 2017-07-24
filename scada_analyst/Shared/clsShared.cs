@@ -150,6 +150,84 @@ namespace scada_analyst.Shared
             return direction;
         }
 
+        public static string BearingStringConversionShort(float bearing)
+        {
+            string direction = "";
+
+            bearing = bearing % 360;
+
+            if (bearing < 11.25)
+            {
+                direction = "N";
+            }
+            else if (bearing < 33.75)
+            {
+                direction = "NNE";
+            }
+            else if (bearing < 56.25)
+            {
+                direction = "NE";
+            }
+            else if (bearing < 78.75)
+            {
+                direction = "ENE";
+            }
+            else if (bearing < 101.25)
+            {
+                direction = "E";
+            }
+            else if (bearing < 123.75)
+            {
+                direction = "ESE";
+            }
+            else if (bearing < 146.25)
+            {
+                direction = "SE";
+            }
+            else if (bearing < 168.75)
+            {
+                direction = "SSE";
+            }
+            else if (bearing < 191.25)
+            {
+                direction = "S";
+            }
+            else if (bearing < 213.75)
+            {
+                direction = "SSW";
+            }
+            else if (bearing < 236.25)
+            {
+                direction = "SW";
+            }
+            else if (bearing < 258.75)
+            {
+                direction = "WSW";
+            }
+            else if (bearing < 281.25)
+            {
+                direction = "W";
+            }
+            else if (bearing < 303.75)
+            {
+                direction = "WNW";
+            }
+            else if (bearing < 326.25)
+            {
+                direction = "NW";
+            }
+            else if (bearing < 348.75)
+            {
+                direction = "NNW";
+            }
+            else
+            {
+                direction = "N";
+            }
+
+            return direction;
+        }
+
         public static double CalculateDistance(GridPosition pos1, GridPosition pos2)
         {
             return CalculateDistance(pos1.Easting, pos1.Northing, pos2.Easting, pos2.Northing);

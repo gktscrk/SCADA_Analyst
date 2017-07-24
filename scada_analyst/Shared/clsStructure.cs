@@ -25,7 +25,7 @@ namespace scada_analyst.Shared
             Type = input.Type;
             Bearings = input.Bearings;
 
-            CheckDataSeriesTimes(input);
+            CheckDataSeriesTimesAndProperties(input);
         }
 
         private Structure(ScadaData.TurbineData input)
@@ -34,24 +34,28 @@ namespace scada_analyst.Shared
             PositionsLoaded = input.PositionsLoaded;
             UnitID = input.UnitID;
             Type = input.Type;
-            Bearings = input.Bearings;
-            Capacity = input.Capacity;
 
-            CheckDataSeriesTimes(input);
+            CheckDataSeriesTimesAndProperties(input);
         }
 
         #endregion
 
-        public void CheckDataSeriesTimes(MeteoData.MetMastData input)
+        public void CheckDataSeriesTimesAndProperties(MeteoData.MetMastData input)
         {
             startTime = input.MetDataSorted[0].TimeStamp;
             endTime = input.MetDataSorted[input.MetDataSorted.Count - 1].TimeStamp;
+
+            Bearings = input.Bearings;
+            Capacity = input.Capacity;
         }
 
-        public void CheckDataSeriesTimes(ScadaData.TurbineData input)
+        public void CheckDataSeriesTimesAndProperties(ScadaData.TurbineData input)
         {
             startTime = input.DataSorted[0].TimeStamp;
             endTime = input.DataSorted[input.DataSorted.Count - 1].TimeStamp;
+
+            Bearings = input.Bearings;
+            Capacity = input.Capacity;
         }
 
         private DateTime GetFirstOrLast(List<DateTime> times, bool getFirst)

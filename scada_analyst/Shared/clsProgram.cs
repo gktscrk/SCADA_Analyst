@@ -13,6 +13,7 @@ namespace scada_analyst.Shared
             #region Version 3.000 - Proceeding after Romax
 
             ProgramVersion v3100 = new ProgramVersion(3100, new DateTime(2017, 07, 24));
+            v3100.AddChange("Capacities and bearings are highlighted over time in a respective table.");
             v3100.AddChange("New method of bearing calculations breaks these down by month and year.");
             v3100.AddChange("Capacity factors are calculated based on generated power values.");
             v3100.AddChange("Fixed meteorology file writing error.");

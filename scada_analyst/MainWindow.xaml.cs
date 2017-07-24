@@ -834,8 +834,10 @@ namespace scada_analyst
                 {
                     LBL_YearChooser.Visibility = Visibility.Visible;
                     Combo_YearChooser.Visibility = Visibility.Visible;
+                    LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Visible;
 
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -845,7 +847,10 @@ namespace scada_analyst
                 {
                     LBL_YearChooser.Visibility = Visibility.Visible;
                     Combo_YearChooser.Visibility = Visibility.Visible;
+                    LView_Bearings.Visibility = Visibility.Visible;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
+
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -855,7 +860,10 @@ namespace scada_analyst
                 {
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
+
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
                     LView_EventsSumPwrNone.Visibility = Visibility.Visible;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -865,7 +873,10 @@ namespace scada_analyst
                 {
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
+
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -875,7 +886,10 @@ namespace scada_analyst
                 {
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
+
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Visible;
@@ -885,7 +899,10 @@ namespace scada_analyst
                 {
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
+
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -894,7 +911,7 @@ namespace scada_analyst
             }
         }
 
-        private void MetaSummary()
+        private void MetaSummary(int _year)
         {
             //
             // Tuple Structure
@@ -905,20 +922,32 @@ namespace scada_analyst
             //
 
             LView_CapacityFactor.ItemsSource = null;
+            LView_Bearings.ItemsSource = null;
 
             // this brings up a list of all the data in that year, but to be fair we also need to know all the possible
             // years beforehand
             ObservableCollection<Analysis.StructureSmry> _general =
-                new ObservableCollection<Analysis.StructureSmry>(_analyser.GeneralSummary(0, BaseStructure.MetaDataSetup.Mode.BEARINGS));
+                new ObservableCollection<Analysis.StructureSmry>(_analyser.GeneralSummary(_year));
 
             // all of these reference a different aspect of _sumEvents
             LView_CapacityFactor.ItemsSource = _general;
+            LView_Bearings.ItemsSource = _general;
         }
 
         private void Combo_YearChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // first get all of the years for which we have data
-            
+            if (Combo_YearChooser.SelectedIndex != -1)
+            {
+                MetaSummary((int)Combo_YearChooser.SelectedItem);
+            }
+        }
+
+        void CreateLoadedYearsListForComboBox()
+        {
+            Combo_YearChooser.ItemsSource = _scadaFile.Years;
+            Combo_YearChooser.SelectedValue = _scadaFile.Years;
+            Combo_YearChooser.Items.Refresh();
         }
 
         #endregion
@@ -1909,10 +1938,11 @@ namespace scada_analyst
         {
             DataSummary();
             EventsSummary();
-            ComboBoxInformationList();
+            CreateLoadedAssetsListForComboBox();
+            CreateLoadedYearsListForComboBox();
         }
 
-        void ComboBoxInformationList()
+        void CreateLoadedAssetsListForComboBox()
         {
             // this method displays the right set of turbines for the 
             // combobox that controls a user-defined event selection
@@ -2054,7 +2084,7 @@ namespace scada_analyst
                         int index = _analyser.AssetList.IndexOf
                             (_analyser.AssetList.Where(x => x.UnitID == _meteoFile.MetMasts[i].UnitID).FirstOrDefault());
 
-                        _analyser.AssetList[index].CheckDataSeriesTimes(_meteoFile.MetMasts[i]);
+                        _analyser.AssetList[index].CheckDataSeriesTimesAndProperties(_meteoFile.MetMasts[i]);
                     }
                 }
             }
@@ -2074,7 +2104,7 @@ namespace scada_analyst
                         int index = _analyser.AssetList.IndexOf
                             (_analyser.AssetList.Where(x => x.UnitID == _scadaFile.WindFarm[i].UnitID).FirstOrDefault());
 
-                        _analyser.AssetList[index].CheckDataSeriesTimes(_scadaFile.WindFarm[i]);
+                        _analyser.AssetList[index].CheckDataSeriesTimesAndProperties(_scadaFile.WindFarm[i]);
                     }
                 }
             }
@@ -2304,13 +2334,13 @@ namespace scada_analyst
                     {
                         int index = _meteoFile.MetMasts.FindIndex(x => x.UnitID == _struc.UnitID);
                         _meteoFile.MetMasts.RemoveAt(index);
-                        _meteoFile.InclMetm.Remove(_struc.UnitID);
+                        _meteoFile.Included.Remove(_struc.UnitID);
                     }
                     else if (_struc.Type == BaseStructure.Types.TURBINE)
                     {
                         int index = _scadaFile.WindFarm.FindIndex(x => x.UnitID == _struc.UnitID);
                         _scadaFile.WindFarm.RemoveAt(index);
-                        _scadaFile.InclTrbn.Remove(_struc.UnitID);
+                        _scadaFile.Included.Remove(_struc.UnitID);
                     }
 
                     loadedAsset.Remove(_struc.UnitID);

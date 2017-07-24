@@ -50,14 +50,22 @@ namespace scada_analyst.Shared
     {
         #region Variables
 
-        private List<string> _fileName = new List<string>();
+        // a list for including the asset IDs for all loaded turbines
+        private List<int> _included = new List<int>();
+        private List<int> _years = new List<int>();
 
-        #endregion
+        // a list for all loaded filenames
+        private List<string> _fileName = new List<string>();
         
+        #endregion
+
         #region Properties
 
-        public List<string> FileName { get { return _fileName; } set { _fileName = value; } }
+        public List<int> Included { get { return _included; } set { _included = value; } }
+        public List<int> Years { get { return _years; } set { _years = value; } }
 
+        public List<string> FileName { get { return _fileName; } set { _fileName = value; } }
+        
         #endregion
     }
 
@@ -150,11 +158,11 @@ namespace scada_analyst.Shared
                     }
                     else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                     {
-                        _fullStr = _input.MetDataSorted.GroupBy(v => v.Dircs.Metres10.DStr).OrderByDescending(g => g.Count()).First().Key;
+                        _fullStr = _input.MetDataSorted.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
                     else
                     {
-                        _fullStr = _input.MetDataSorted.GroupBy(v => v.Dircs.MetresRt.DStr).OrderByDescending(g => g.Count()).First().Key;
+                        _fullStr = _input.MetDataSorted.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
                 }
             }
@@ -229,7 +237,7 @@ namespace scada_analyst.Shared
                 if (_mode == Mode.BEARINGS)
                 {
                     // simply need the mode of all of the strings                        
-                    _fullStr = _input.DataSorted.GroupBy(v => v.YawSys.YawPos.DStr).OrderByDescending(g => g.Count()).First().Key;
+                    _fullStr = _input.DataSorted.GroupBy(v => v.YawSys.YawPos.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                 }
                 else if (_mode == Mode.CAPACITY)
                 {
@@ -286,7 +294,7 @@ namespace scada_analyst.Shared
                         // conditional to check if the month is the same as the previous one
                         if (_thisMonth != _prevMonth)
                         {
-                            string mode = _monthData.GroupBy(v => v.YawSys.YawPos.DStr).OrderByDescending(g => g.Count()).First().Key;
+                            string mode = _monthData.GroupBy(v => v.YawSys.YawPos.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             // if calculated, add it to the Tuple and reset relevant counters
                             _values.Add(new Tuple<int, double, string>(_prevMonth, double.NaN, mode));
 
@@ -302,7 +310,7 @@ namespace scada_analyst.Shared
                         // so this check is necessary in case the last samples are not of a different month
                         if (i == _yearlyData.Count - 1)
                         {
-                            string mode = _monthData.GroupBy(v => v.YawSys.YawPos.DStr).OrderByDescending(g => g.Count()).First().Key;
+                            string mode = _monthData.GroupBy(v => v.YawSys.YawPos.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             // if calculated, add it to the Tuple and reset relevant counters
                             _values.Add(new Tuple<int, double, string>(_prevMonth, double.NaN, mode));
                         }
@@ -312,11 +320,11 @@ namespace scada_analyst.Shared
                     if (_yearlyData.Count == 1)
                     {
                         _values.Add(new Tuple<int, double, string>
-                            (_yearlyData[0].TimeStamp.Month, double.NaN, _yearlyData[0].YawSys.YawPos.DStr));
+                            (_yearlyData[0].TimeStamp.Month, double.NaN, _yearlyData[0].YawSys.YawPos.DStrShort));
                     }
 
                     // calculation of the yearly values - looking for the mode
-                    _yearStr = _yearlyData.GroupBy(v => v.YawSys.YawPos.DStr).OrderByDescending(g => g.Count()).First().Key;
+                    _yearStr = _yearlyData.GroupBy(v => v.YawSys.YawPos.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                 }
 
                 public Year(List<MeteoData.MeteoSample> _yearlyData, MeteoData.MeteoHeader _meteoHeader)
@@ -350,11 +358,11 @@ namespace scada_analyst.Shared
                             }
                             else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                             {
-                                mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStr).OrderByDescending(g => g.Count()).First().Key;
+                                mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
                             else
                             {
-                                mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStr).OrderByDescending(g => g.Count()).First().Key;
+                                mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
 
                             // if calculated, add it to the Tuple and reset relevant counters
@@ -380,11 +388,11 @@ namespace scada_analyst.Shared
                             }
                             else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                             {
-                                mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStr).OrderByDescending(g => g.Count()).First().Key;
+                                mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
                             else
                             {
-                                mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStr).OrderByDescending(g => g.Count()).First().Key;
+                                mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
 
                             // if calculated, add it to the Tuple and reset relevant counters
@@ -403,11 +411,11 @@ namespace scada_analyst.Shared
                         }
                         else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                         {
-                            mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStr).OrderByDescending(g => g.Count()).First().Key;
+                            mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                         }
                         else
                         {
-                            mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStr).OrderByDescending(g => g.Count()).First().Key;
+                            mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                         }
 
                         _values.Add(new Tuple<int, double, string>
@@ -421,11 +429,11 @@ namespace scada_analyst.Shared
                     }
                     else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                     {
-                        _yearStr = _yearlyData.GroupBy(v => v.Dircs.Metres10.DStr).OrderByDescending(g => g.Count()).First().Key;
+                        _yearStr = _yearlyData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
                     else
                     {
-                        _yearStr = _yearlyData.GroupBy(v => v.Dircs.MetresRt.DStr).OrderByDescending(g => g.Count()).First().Key;
+                        _yearStr = _yearlyData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
                 }
 
@@ -684,6 +692,7 @@ namespace scada_analyst.Shared
         #region Properties
 
         public string DStr { get { return Common.BearingStringConversion((float)_mean); } set { DStr = value; } }
+        public string DStrShort { get { return Common.BearingStringConversionShort((float)_mean); } set { DStrShort = value; } }
 
         #endregion
     }

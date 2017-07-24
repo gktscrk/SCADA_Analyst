@@ -16,10 +16,7 @@ namespace scada_analyst
 
         private TimeSpan _systemSampleSeparation = new TimeSpan();
         private ScadaHeader fileHeader = new ScadaHeader();
-
-        // a list for including the asset IDs for all loaded turbines
-        private List<int> _inclTrbn = new List<int>();
-
+        
         private List<TurbineData> _windFarm = new List<TurbineData>();
 
         #endregion
@@ -39,9 +36,9 @@ namespace scada_analyst
                 _windFarm.Add(_existingInfo.WindFarm[i]);
             }
 
-            for (int i = 0; i < _existingInfo.InclTrbn.Count; i++)
+            for (int i = 0; i < _existingInfo.Included.Count; i++)
             {
-                _inclTrbn.Add(_existingInfo.InclTrbn[i]);
+                Included.Add(_existingInfo.Included[i]);
             }
 
             for (int i = 0; i < _existingInfo.FileName.Count; i++)
@@ -165,30 +162,36 @@ namespace scada_analyst
                             // been loaded; work around the ones have have been and add data there
                             if (_singleTurbineLoading == -1)
                             {
-                                if (_inclTrbn.Contains(thisAsset))
+                                if (Included.Contains(thisAsset))
                                 {
                                     int index = _windFarm.FindIndex(x => x.UnitID == thisAsset);
                                     _windFarm[index].AddData(splits, fileHeader, _dateFormat);
+                                    Years.Add(_windFarm[index].Data[_windFarm[index].Data.Count - 1].TimeStamp.Year);
                                 }
                                 else
                                 {
                                     _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat, _rated));
-                                    _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                    Included.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                    Years.Add(_windFarm[_windFarm.Count - 1].Data[_windFarm[_windFarm.Count - 1].Data.Count - 1].TimeStamp.Year);
                                 }
                             }
                             else
                             {
+                                // if loading only one turbine, the previous conditional is false and program will come in here
+                                // after that if the below conditional is true it will load, and if not it will bypass
                                 if (thisAsset == _singleTurbineLoading)
                                 {
-                                    if (_inclTrbn.Contains(thisAsset))
+                                    if (Included.Contains(thisAsset))
                                     {
                                         int index = _windFarm.FindIndex(x => x.UnitID == thisAsset);
                                         _windFarm[index].AddData(splits, fileHeader, _dateFormat);
+                                        Years.Add(_windFarm[index].Data[_windFarm[index].Data.Count - 1].TimeStamp.Year);
                                     }
                                     else
                                     {
                                         _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat, _rated));
-                                        _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                        Included.Add(_windFarm[_windFarm.Count - 1].UnitID);
+                                        Years.Add(_windFarm[_windFarm.Count - 1].Data[_windFarm[_windFarm.Count - 1].Data.Count - 1].TimeStamp.Year);
                                     }
                                 }
                             }
@@ -205,11 +208,10 @@ namespace scada_analyst
                             }
                         }
                     }
+
+                    Years = Years.Distinct().ToList();
                 }
-                catch (WrongDateTimeException)
-                {
-                    throw;
-                }
+                catch (WrongDateTimeException) { throw; }
                 catch
                 {
                     count++;
@@ -1398,7 +1400,7 @@ namespace scada_analyst
             {
                 if (header.TimesCol != -1)
                 {
-                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }), _dateFormat);
+                    TimeStamp = Common.StringToDateTime(Common.GetSplits(data[header.TimesCol], new char[] { ' ' }), _dateFormat);                    
                 }
 
                 if (header.AssetCol != -1)
@@ -2338,8 +2340,6 @@ namespace scada_analyst
         #region Properties
 
         public ScadaHeader FileHeader { get { return fileHeader; } }
-
-        public List<int> InclTrbn { get { return _inclTrbn; } }
 
         public List<TurbineData> WindFarm { get { return _windFarm; } }
 

@@ -13,9 +13,7 @@ namespace scada_analyst
         #region Variables
 
         private string _outputName;
-
-        private List<int> _inclMetMasts = new List<int>();
-
+        
         private MeteoHeader _meteoHeader = new MeteoHeader();
 
         private List<MetMastData> _metMasts = new List<MetMastData>();
@@ -41,9 +39,9 @@ namespace scada_analyst
                 _metMasts.Add(_existingInfo.MetMasts[i]);
             }
 
-            for (int i = 0; i < _existingInfo.InclMetm.Count; i++)
+            for (int i = 0; i < _existingInfo.Included.Count; i++)
             {
-                _inclMetMasts.Add(_existingInfo.InclMetm[i]);
+                Included.Add(_existingInfo.Included[i]);
             }
 
             for (int i = 0; i < _existingInfo.FileName.Count; i++)
@@ -89,9 +87,10 @@ namespace scada_analyst
         {
             using (StreamReader sR = new StreamReader(filename))
             {
+                int count = 0;
+
                 try
                 {
-                    int count = 0;
                     bool readHeader = false;
 
                     _metMasts = new List<MetMastData>();
@@ -134,15 +133,17 @@ namespace scada_analyst
                             // organise loading so it would check which ones have already
                             // been loaded; then work around the ones have have been
 
-                            if (_inclMetMasts.Contains(thisAsset))
+                            if (Included.Contains(thisAsset))
                             {
                                 int index = _metMasts.FindIndex(x => x.UnitID == thisAsset);
                                 _metMasts[index].AddData(splits, _meteoHeader, _dateFormat);
+                                Years.Add(_metMasts[index].MetData[_metMasts[index].MetData.Count - 1].TimeStamp.Year);
                             }
                             else
                             {
                                 _metMasts.Add(new MetMastData(splits, _meteoHeader, _dateFormat));
-                                _inclMetMasts.Add(_metMasts[_metMasts.Count - 1].UnitID);
+                                Included.Add(_metMasts[_metMasts.Count - 1].UnitID);
+                                Years.Add(_metMasts[_metMasts.Count - 1].MetData[_metMasts[_metMasts.Count - 1].MetData.Count - 1].TimeStamp.Year);
                             }
                         }
 
@@ -156,11 +157,15 @@ namespace scada_analyst
                                  (double)sR.BaseStream.Position * 100 / sR.BaseStream.Length / numberOfFiles));
                             }
                         }
+
+                        Years = Years.Distinct().ToList();
                     }
                 }
+                catch (WrongDateTimeException) { throw; }
                 catch
                 {
-                    throw;
+                    count++;
+                    throw new Exception("Problem with loading was caused by Line " + count + ".");
                 }
                 finally
                 {
@@ -716,9 +721,7 @@ namespace scada_analyst
         #region Properties
 
         public MeteoHeader MetrHeader { get { return _meteoHeader; } }
-
-        public List<int> InclMetm { get { return _inclMetMasts; } }
-
+        
         public List<MetMastData> MetMasts { get { return _metMasts; } }
 
         #endregion

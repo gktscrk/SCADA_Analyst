@@ -2092,6 +2092,9 @@ namespace scada_analyst
                 this.Type = thisAsset.Type;
                 this.UnitID = thisAsset.UnitID;
 
+                this.Bearings = thisAsset.Bearings;
+                this.Capacity = thisAsset.Capacity;
+
                 //the below also needs to take into account the right asset ID only
                 _hiWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.HI_SPD, hiWindEvents);
                 _loWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.LO_SPD, loWindEvents);
@@ -2103,7 +2106,7 @@ namespace scada_analyst
                 }
             }
 
-            public StructureSmry(Structure thisAsset, int _year, MetaDataSetup.Mode _mode)
+            public StructureSmry(Structure thisAsset, int _year)
             {
                 this.Type = thisAsset.Type;
                 this.UnitID = thisAsset.UnitID;
@@ -2111,26 +2114,23 @@ namespace scada_analyst
                 this.Bearings = thisAsset.Bearings;
                 this.Capacity = thisAsset.Capacity;
 
-                if (_mode == MetaDataSetup.Mode.BEARINGS)
+                for (int i = 0; i < Bearings.Years.Count; i++)
                 {
-                    for (int i = 0; i < Bearings.Years.Count; i++)
+                    if (Bearings.Years[i].Years == _year)
                     {
-                        if (Bearings.Years[i].Years == _year)
-                        {
-                            _bearInfo = new MetaDataCounter(Bearings.Years[i].Values);
-                            break;
-                        }
+                        _bearInfo = new MetaDataCounter(Bearings.Years[i].Values);
+                        _bearInfo.Overall = Bearings.Years[i].YearStr;
+                        break;
                     }
                 }
-                else if (_mode == MetaDataSetup.Mode.CAPACITY)
+
+                for (int i = 0; i < Capacity.Years.Count; i++)
                 {
-                    for (int i = 0; i < Capacity.Years.Count; i++)
+                    if (Capacity.Years[i].Years == _year)
                     {
-                        if (Capacity.Years[i].Years == _year)
-                        {
-                            _capaInfo = new MetaDataCounter(Capacity.Years[i].Values);
-                            break;
-                        }
+                        _capaInfo = new MetaDataCounter(Capacity.Years[i].Values);
+                        _capaInfo.Overall = Capacity.Years[i].YearStr;
+                        break;
                     }
                 }
             }
@@ -2215,6 +2215,8 @@ namespace scada_analyst
             {
                 #region Variables
 
+                private string _overall = "";
+
                 private string _jan = "";
                 private string _feb = "";
                 private string _mar = "";
@@ -2237,23 +2239,25 @@ namespace scada_analyst
                     for (int i = 0; i < _input.Count; i++)
                     {
                         if (_input[i].Item1 == 1) { _jan = _input[i].Item3; }
-                        if (_input[i].Item1 == 2) { _feb = _input[i].Item3; }
-                        if (_input[i].Item1 == 3) { _mar = _input[i].Item3; }
-                        if (_input[i].Item1 == 4) { _apr = _input[i].Item3; }
-                        if (_input[i].Item1 == 5) { _may = _input[i].Item3; }
-                        if (_input[i].Item1 == 6) { _jun = _input[i].Item3; }
-                        if (_input[i].Item1 == 7) { _jul = _input[i].Item3; }
-                        if (_input[i].Item1 == 8) { _aug = _input[i].Item3; }
-                        if (_input[i].Item1 == 9) { _sep = _input[i].Item3; }
-                        if (_input[i].Item1 == 10) { _oct = _input[i].Item3; }
-                        if (_input[i].Item1 == 11) { _nov = _input[i].Item3; }
-                        if (_input[i].Item1 == 12) { _dec = _input[i].Item3; }
+                        else if (_input[i].Item1 == 2) { _feb = _input[i].Item3; }
+                        else if (_input[i].Item1 == 3) { _mar = _input[i].Item3; }
+                        else if (_input[i].Item1 == 4) { _apr = _input[i].Item3; }
+                        else if (_input[i].Item1 == 5) { _may = _input[i].Item3; }
+                        else if (_input[i].Item1 == 6) { _jun = _input[i].Item3; }
+                        else if (_input[i].Item1 == 7) { _jul = _input[i].Item3; }
+                        else if (_input[i].Item1 == 8) { _aug = _input[i].Item3; }
+                        else if (_input[i].Item1 == 9) { _sep = _input[i].Item3; }
+                        else if (_input[i].Item1 == 10) { _oct = _input[i].Item3; }
+                        else if (_input[i].Item1 == 11) { _nov = _input[i].Item3; }
+                        else if (_input[i].Item1 == 12) { _dec = _input[i].Item3; }
                     }
                 }
 
                 #endregion
 
                 #region Properties
+
+                public string Overall { get { return _overall; } set { _overall = value; } }
 
                 public string Jan { get { return _jan; } set { _jan = value; } }
                 public string Feb { get { return _feb; } set { _feb = value; } }
@@ -2349,13 +2353,13 @@ namespace scada_analyst
             return _temp;
         }
 
-        public List<StructureSmry> GeneralSummary(int _year, BaseStructure.MetaDataSetup.Mode _mode)
+        public List<StructureSmry> GeneralSummary(int _year)
         {
             List<StructureSmry> _temp = new List<StructureSmry>();
 
             for (int i = 0; i < _assetList.Count; i++)
             {
-                _temp.Add(new StructureSmry(_assetList[i], _year, _mode));
+                _temp.Add(new StructureSmry(_assetList[i], _year));
             }
 
             return _temp;
