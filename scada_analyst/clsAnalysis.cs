@@ -2073,12 +2073,15 @@ namespace scada_analyst
             /// </summary>
 
             #region Variables
-
+                
             private EventsCounter _hiWinds;
             private EventsCounter _loWinds;
             private EventsCounter _noPower;
             private EventsCounter _hiPower;
 
+            private MetaDataCounter _bearInfo;
+            private MetaDataCounter _capaInfo;
+            
             #endregion
 
             #region Constructor
@@ -2089,9 +2092,6 @@ namespace scada_analyst
                 this.Type = thisAsset.Type;
                 this.UnitID = thisAsset.UnitID;
 
-                this.Bearings = thisAsset.Bearings;
-                this.Capacity = thisAsset.Capacity;
-
                 //the below also needs to take into account the right asset ID only
                 _hiWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.HI_SPD, hiWindEvents);
                 _loWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.LO_SPD, loWindEvents);
@@ -2100,6 +2100,38 @@ namespace scada_analyst
                 {
                     _hiPower = new EventsCounter(this.UnitID, scada_analyst.EventData.PwrProdType.HI_PWR, hiPowrEvents);
                     _noPower = new EventsCounter(this.UnitID, scada_analyst.EventData.PwrProdType.NO_PWR, noPowrEvents);
+                }
+            }
+
+            public StructureSmry(Structure thisAsset, int _year, MetaDataSetup.Mode _mode)
+            {
+                this.Type = thisAsset.Type;
+                this.UnitID = thisAsset.UnitID;
+
+                this.Bearings = thisAsset.Bearings;
+                this.Capacity = thisAsset.Capacity;
+
+                if (_mode == MetaDataSetup.Mode.BEARINGS)
+                {
+                    for (int i = 0; i < Bearings.Years.Count; i++)
+                    {
+                        if (Bearings.Years[i].Years == _year)
+                        {
+                            _bearInfo = new MetaDataCounter(Bearings.Years[i].Values);
+                            break;
+                        }
+                    }
+                }
+                else if (_mode == MetaDataSetup.Mode.CAPACITY)
+                {
+                    for (int i = 0; i < Capacity.Years.Count; i++)
+                    {
+                        if (Capacity.Years[i].Years == _year)
+                        {
+                            _capaInfo = new MetaDataCounter(Capacity.Years[i].Values);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -2121,6 +2153,8 @@ namespace scada_analyst
 
                 #endregion
 
+                #region Constructor
+
                 public EventsCounter(int asset, EventData.PwrProdType thisType, List<EventData> theseEvents)
                 {
                     _cntrType = thisType == scada_analyst.EventData.PwrProdType.HI_PWR ? EventType.HI_PWR : EventType.LO_PWR;
@@ -2135,6 +2169,8 @@ namespace scada_analyst
                     AssignCounters(asset, theseEvents);
                 }
 
+                #endregion 
+
                 private void AssignCounters(int asset, List<EventData> theseEvents)
                 {
                     _shortEvs = AssessEvents(asset, theseEvents, scada_analyst.EventData.EvtDuration.SHORT);
@@ -2146,9 +2182,7 @@ namespace scada_analyst
 
                 private int AssessEvents(int asset, List<EventData> theseEvents, EventData.EvtDuration counter)
                 {
-                    int count = theseEvents.Where(id => id.SourceAsset == asset).Count(x => x.EvtDrtn == counter);
-
-                    return count;
+                    return theseEvents.Where(id => id.SourceAsset == asset).Count(x => x.EvtDrtn == counter);
                 }
 
                 #region Support Classes
@@ -2177,6 +2211,66 @@ namespace scada_analyst
                 #endregion
             }
             
+            public class MetaDataCounter : ObservableObject
+            {
+                #region Variables
+
+                private string _jan = "";
+                private string _feb = "";
+                private string _mar = "";
+                private string _apr = "";
+                private string _may = "";
+                private string _jun = "";
+                private string _jul = "";
+                private string _aug = "";
+                private string _sep = "";
+                private string _oct = "";
+                private string _nov = "";
+                private string _dec = "";
+
+                #endregion
+
+                #region Constructor
+
+                public MetaDataCounter(List<Tuple<int,double,string>> _input)
+                {
+                    for (int i = 0; i < _input.Count; i++)
+                    {
+                        if (_input[i].Item1 == 1) { _jan = _input[i].Item3; }
+                        if (_input[i].Item1 == 2) { _feb = _input[i].Item3; }
+                        if (_input[i].Item1 == 3) { _mar = _input[i].Item3; }
+                        if (_input[i].Item1 == 4) { _apr = _input[i].Item3; }
+                        if (_input[i].Item1 == 5) { _may = _input[i].Item3; }
+                        if (_input[i].Item1 == 6) { _jun = _input[i].Item3; }
+                        if (_input[i].Item1 == 7) { _jul = _input[i].Item3; }
+                        if (_input[i].Item1 == 8) { _aug = _input[i].Item3; }
+                        if (_input[i].Item1 == 9) { _sep = _input[i].Item3; }
+                        if (_input[i].Item1 == 10) { _oct = _input[i].Item3; }
+                        if (_input[i].Item1 == 11) { _nov = _input[i].Item3; }
+                        if (_input[i].Item1 == 12) { _dec = _input[i].Item3; }
+                    }
+                }
+
+                #endregion
+
+                #region Properties
+
+                public string Jan { get { return _jan; } set { _jan = value; } }
+                public string Feb { get { return _feb; } set { _feb = value; } }
+                public string Mar { get { return _mar; } set { _mar = value; } }
+                public string Apr { get { return _apr; } set { _apr = value; } }
+                public string May { get { return _may; } set { _may = value; } }
+                public string Jun { get { return _jun; } set { _jun = value; } }
+                public string Jul { get { return _jul; } set { _jul = value; } }
+                public string Aug { get { return _aug; } set { _aug = value; } }
+                public string Sep { get { return _sep; } set { _sep = value; } }
+                public string Oct { get { return _oct; } set { _oct = value; } }
+                public string Nov { get { return _nov; } set { _nov = value; } }
+                public string Dec { get { return _dec; } set { _dec = value; } }
+
+                #endregion
+            }
+
             #endregion
 
             #region Properties
@@ -2185,6 +2279,9 @@ namespace scada_analyst
             public EventsCounter LoWinds { get { return _loWinds; } set { _loWinds = value; } }
             public EventsCounter NoPower { get { return _noPower; } set { _noPower = value; } }
             public EventsCounter HiPower { get { return _hiPower; } set { _hiPower = value; } }
+
+            public MetaDataCounter BearInfo { get { return _bearInfo; } set { _bearInfo = value; } }
+            public MetaDataCounter CapaInfo { get { return _capaInfo; } set { _capaInfo = value; } }
 
             #endregion
         }
@@ -2235,21 +2332,33 @@ namespace scada_analyst
         public List<ScadaData.ScadaSample> AvgWeekHistory { get { return _avgWeekBeforeInfo; } set { _avgWeekBeforeInfo = value; } }
         public List<ScadaData.ScadaSample> AvgHistEventData { get { return _avgFullHistory; } set { _avgFullHistory = value; } }
 
-        public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
-        public List<Structure> AssetList { get { return _assetList; } set { _assetList = value; } }
         public List<AnalyticLimit> Thresholds { get { return _thresholds; } set { _thresholds = value; } }
         public List<AnalyticLimit> RateChange { get { return _rateChange; } set { _rateChange = value; } }
+        public List<Distances> Intervals { get { return _intervals; } set { _intervals = value; } }
+        public List<Structure> AssetList { get { return _assetList; } set { _assetList = value; } }
 
         public List<StructureSmry> Summary()
         {
-            List<StructureSmry> temp = new List<StructureSmry>();
+            List<StructureSmry> _temp = new List<StructureSmry>();
 
             for (int i = 0; i < _assetList.Count; i++)
             {
-                temp.Add(new StructureSmry(_assetList[i], _loSpEvents, _hiSpEvents, _noPwEvents, _hiPwEvents));
+                _temp.Add(new StructureSmry(_assetList[i], _loSpEvents, _hiSpEvents, _noPwEvents, _hiPwEvents));
             }
 
-            return temp;
+            return _temp;
+        }
+
+        public List<StructureSmry> GeneralSummary(int _year, BaseStructure.MetaDataSetup.Mode _mode)
+        {
+            List<StructureSmry> _temp = new List<StructureSmry>();
+
+            for (int i = 0; i < _assetList.Count; i++)
+            {
+                _temp.Add(new StructureSmry(_assetList[i], _year, _mode));
+            }
+
+            return _temp;
         }
 
         #endregion

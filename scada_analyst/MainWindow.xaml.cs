@@ -62,7 +62,7 @@ namespace scada_analyst
         private List<int> loadedAsset = new List<int>();
         private List<string> _loadedFiles = new List<string>();
         private List<string> _eventDetailsSelection = new List<string>();
-        private List<string> _eventSummarySelection = new List<string>();
+        private List<string> _generalOverview = new List<string>();
         private List<string> _variableOptionsChoice = new List<string>();
 
         private CancellationTokenSource _cts;
@@ -162,6 +162,22 @@ namespace scada_analyst
         }
 
         /// <summary>
+        /// Changes the duration of the filter than can be used to remove events from active consideration
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void EditDurationFilter(object sender, RoutedEventArgs e)
+        {
+            Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
+                            "Hours", "Minutes", false, false, _analyser.DuratFilter.TotalHours, _analyser.DuratFilter.Minutes);
+
+            if (getTimeDur.ShowDialog().Value)
+            {
+                _analyser.DuratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
+            }
+        }
+
+        /// <summary>
         /// Method to display all loaded files' filenames
         /// </summary>
         /// <param name="sender"></param>
@@ -182,27 +198,7 @@ namespace scada_analyst
         }
 
         #endregion
-
-        #region Duration Filter Editing
-
-        /// <summary>
-        /// Changes the duration of the filter than can be used to remove events from active consideration
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void EditDurationFilter(object sender, RoutedEventArgs e)
-        {
-            Window_NumberTwo getTimeDur = new Window_NumberTwo(this, "Duration Filter Settings",
-                            "Hours", "Minutes", false, false, _analyser.DuratFilter.TotalHours, _analyser.DuratFilter.Minutes);
-
-            if (getTimeDur.ShowDialog().Value)
-            {
-                _analyser.DuratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
-            }
-        }
-
-        #endregion
-
+        
         #region Clear Data Methods
 
         /// <summary>
@@ -318,6 +314,11 @@ namespace scada_analyst
         }
 
         #endregion
+
+        #region View Manipulation
+        // These should probably belong to a ViewModel if the structuring
+        // was more competent, but right now these control various things to
+        // do with view arrangements and such.
 
         #region Event Details View Manipulation
 
@@ -804,16 +805,18 @@ namespace scada_analyst
         
         #endregion
 
-        #region Event Summary View Manipulation
+        #region General Overview View Manipulation
 
         private void CreateSummaryComboInfo()
         {
-            _eventSummarySelection.Add("No Power Production Events");
-            _eventSummarySelection.Add("High Power Production Events");
-            _eventSummarySelection.Add("Low Wind Speed Events");
-            _eventSummarySelection.Add("High Wind Speed Events");
+            _generalOverview.Add("Capacity Factors");
+            _generalOverview.Add("Wind Direction Info");
+            _generalOverview.Add("No Power Production Events");
+            _generalOverview.Add("High Power Production Events");
+            _generalOverview.Add("Low Wind Speed Events");
+            _generalOverview.Add("High Wind Speed Events");
 
-            Comb_SummaryChoose.ItemsSource = _eventSummarySelection;
+            Comb_SummaryChoose.ItemsSource = _generalOverview;
             Comb_SummaryChoose.SelectedIndex = 0;
         }
 
@@ -824,31 +827,65 @@ namespace scada_analyst
         /// <param name="e"></param>
         private void Comb_DisplaySummary_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // these checks are not the best but allow choosing what needs to be displayed
             if (Comb_SummaryChoose.SelectedIndex != -1)
             {
-                if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[0])
+                if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[0])
                 {
+                    LBL_YearChooser.Visibility = Visibility.Visible;
+                    Combo_YearChooser.Visibility = Visibility.Visible;
+                    LView_CapacityFactor.Visibility = Visibility.Visible;
+
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[1])
+                {
+                    LBL_YearChooser.Visibility = Visibility.Visible;
+                    Combo_YearChooser.Visibility = Visibility.Visible;
+                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[2])
+                {
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Visible;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[1])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[3])
                 {
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[2])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[4])
                 {
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Visible;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == _eventSummarySelection[3])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[5])
                 {
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -856,6 +893,35 @@ namespace scada_analyst
                 }
             }
         }
+
+        private void MetaSummary()
+        {
+            //
+            // Tuple Structure
+            //
+            // _windFarm[i].Capacity.Years[0].Values[0].Item1; -> month
+            // _windFarm[i].Capacity.Years[0].Values[0].Item2; -> value
+            // _windFarm[i].Capacity.Years[0].Values[0].Item3; -> value string
+            //
+
+            LView_CapacityFactor.ItemsSource = null;
+
+            // this brings up a list of all the data in that year, but to be fair we also need to know all the possible
+            // years beforehand
+            ObservableCollection<Analysis.StructureSmry> _general =
+                new ObservableCollection<Analysis.StructureSmry>(_analyser.GeneralSummary(0, BaseStructure.MetaDataSetup.Mode.BEARINGS));
+
+            // all of these reference a different aspect of _sumEvents
+            LView_CapacityFactor.ItemsSource = _general;
+        }
+
+        private void Combo_YearChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // first get all of the years for which we have data
+            
+        }
+
+        #endregion
 
         #endregion
 
@@ -1835,7 +1901,293 @@ namespace scada_analyst
 
         #endregion
 
-        #region Navigation Menu
+        #region Background Methods
+
+        #region Menus & Overviews
+
+        void CreateSummaries()
+        {
+            DataSummary();
+            EventsSummary();
+            ComboBoxInformationList();
+        }
+
+        void ComboBoxInformationList()
+        {
+            // this method displays the right set of turbines for the 
+            // combobox that controls a user-defined event selection
+            Combo_LoadedAssets.ItemsSource = AssetsView;
+            Combo_LoadedAssets.SelectedValue = AssetsView;
+            Combo_LoadedAssets.DisplayMemberPath = "UnitID";
+            Combo_LoadedAssets.SelectedValuePath = "UnitID";
+            Combo_LoadedAssets.Items.Refresh();
+        }
+
+        void DataSummary()
+        {
+            LView_LoadedOverview.ItemsSource = null;
+
+            _overview.Clear();
+            _overview.Add(new DirectoryItem("Events Summary", LoSpdViews.Count + HiSpdViews.Count + NoPowViews.Count + RtdPowView.Count));
+            _overview.Add(new DirectoryItem("Detailed Timeframe"));
+            _overview.Add(new DirectoryItem("Wind Speeds: Low", LoSpdViews.Count));
+            _overview.Add(new DirectoryItem("Wind Speeds: High", HiSpdViews.Count));
+            _overview.Add(new DirectoryItem("Power Prod: None", NoPowViews.Count));
+            _overview.Add(new DirectoryItem(
+                "Power Prod: " + Common.GetStringDecimals(_analyser.RatedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
+
+            LView_LoadedOverview.ItemsSource = _overview;
+        }
+
+        void EventsSummary()
+        {
+            // all of the methods for generating and updating the specific events summaries are here
+            LView_EventsSumPwrNone.ItemsSource = null;
+            LView_EventsSumPwrHigh.ItemsSource = null;
+            LView_EventsSumWndLows.ItemsSource = null;
+            LView_EventsSumWndHigh.ItemsSource = null;
+            
+            ObservableCollection<Analysis.StructureSmry> _sumEvents = new ObservableCollection<Analysis.StructureSmry>(_analyser.Summary());
+
+            // _sumEvents is a list from which every listbox chooses the variables it needs
+            LView_EventsSumPwrNone.ItemsSource = _sumEvents;
+            LView_EventsSumPwrHigh.ItemsSource = _sumEvents;
+            LView_EventsSumWndLows.ItemsSource = _sumEvents;
+            LView_EventsSumWndHigh.ItemsSource = _sumEvents;
+        }
+
+        #endregion
+
+        #region Rates of Change Calculations
+
+        private void ROC_LoseFocus(object sender, RoutedEventArgs e)
+        {
+            CalculateRatesOfChange(this, new RoutedEventArgs());
+        }
+
+        private void ROC_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
+
+            Analysis.AnalyticLimit rocLim = (Analysis.AnalyticLimit)tB.Tag;
+            rocLim.MaxVars = tB.NumericValue;
+
+            CalculateRatesOfChange(this, new RoutedEventArgs());
+        }
+
+        private void CalculateRatesOfChange(object sender, RoutedEventArgs e)
+        {
+            LView_ROCValues.ItemsSource = null;
+
+            if (HistEventDataVw != null) { _analyser.RatesOfChange(_analyser.HistEventData.ToList()); }
+
+            LView_ROCValues.ItemsSource = RateChangeEventsView;
+            LView_ROCValues.Items.Refresh();
+        }
+
+        #endregion
+
+        #region Threshold Calculations
+
+        private void Threshold_LoseFocus(object sender, RoutedEventArgs e)
+        {
+            CalculateThresholds(this, new RoutedEventArgs());
+        }
+
+        private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
+
+            Analysis.AnalyticLimit thresLim = (Analysis.AnalyticLimit)tB.Tag;
+            thresLim.MaxVars = tB.NumericValue;
+            
+            CalculateThresholds(this, new RoutedEventArgs());
+        }
+
+        private void CalculateThresholds(object sender, RoutedEventArgs e)
+        {
+            LView_ThresholdValues.ItemsSource = null;
+
+            if (HistEventDataVw != null) { _analyser.Thresholding(_analyser.HistEventData.ToList()); }
+
+            LView_ThresholdValues.ItemsSource = ThresholdEventsView;
+            LView_ThresholdValues.Items.Refresh();
+        }
+
+        #endregion
+
+        /// <summary>
+        /// This method utilises the event status check, whether we are dealing with a fault or not, and flips it about.
+        /// </summary>
+        /// <param name="result"></param>
+        private void ChangeFaultStatus(bool result)
+        {
+            foreach (object selectedItem in LView_PowrNone.SelectedItems)
+            {
+                EventData _event = (EventData)selectedItem;
+
+                // find index and change the fault status at that index 
+                // this also needs to check the event is from the same asset to be certain we are editing the correct one
+                int index = _analyser.NoPwEvents.FindIndex(x => x.SourceAsset == _event.SourceAsset && x.Start == _event.Start);
+
+                _analyser.NoPwEvents[index].IsFault = result;
+            }
+        }
+
+        /// <summary>
+        /// This method controls the overview box listing based on what has been loaded.
+        /// </summary>
+        private void PopulateOverview()
+        {
+            if (_meteoFile.MetMasts.Count != 0)
+            {
+                for (int i = 0; i < _meteoFile.MetMasts.Count; i++)
+                {
+                    if (!loadedAsset.Contains(_meteoFile.MetMasts[i].UnitID))
+                    {
+                        _analyser.AssetList.Add((Structure)_meteoFile.MetMasts[i]);
+
+                        loadedAsset.Add(_meteoFile.MetMasts[i].UnitID);
+                    }
+                    else
+                    {
+                        int index = _analyser.AssetList.IndexOf
+                            (_analyser.AssetList.Where(x => x.UnitID == _meteoFile.MetMasts[i].UnitID).FirstOrDefault());
+
+                        _analyser.AssetList[index].CheckDataSeriesTimes(_meteoFile.MetMasts[i]);
+                    }
+                }
+            }
+
+            if (_scadaFile.WindFarm.Count != 0)
+            {
+                for (int i = 0; i < _scadaFile.WindFarm.Count; i++)
+                {
+                    if (!loadedAsset.Contains(_scadaFile.WindFarm[i].UnitID))
+                    {
+                        _analyser.AssetList.Add((Structure)_scadaFile.WindFarm[i]);
+
+                        loadedAsset.Add(_scadaFile.WindFarm[i].UnitID);
+                    }
+                    else
+                    {
+                        int index = _analyser.AssetList.IndexOf
+                            (_analyser.AssetList.Where(x => x.UnitID == _scadaFile.WindFarm[i].UnitID).FirstOrDefault());
+
+                        _analyser.AssetList[index].CheckDataSeriesTimes(_scadaFile.WindFarm[i]);
+                    }
+                }
+            }
+
+            // sort the assetview-source before making it the itemssource
+            _analyser.AssetList = _analyser.AssetList.OrderBy(o => o.UnitID).ToList();
+
+            // proceed with a correctly ordered list
+            LView_Overview.ItemsSource = AssetsView;
+            LView_Overview.Items.Refresh();
+
+            LView_Overview.IsEnabled = AssetsView != null && AssetsView.Count > 0 ? true : false;
+
+            if (AssetsView != null && AssetsView.Count > 0)
+            {
+                _dataExportStart = _eventExplrStart = AssetsView[0].StartTime;
+                _dataExportEndTm = _eventExplrEndTm = AssetsView[0].EndTime;
+
+                // i is 1 below because the first values have already been assigned by the above code
+                for (int i = 1; i < AssetsView.Count; i++)
+                {
+                    if (AssetsView[i].StartTime < _dataExportStart) { _dataExportStart = _eventExplrStart = AssetsView[i].StartTime; }
+                    if (AssetsView[i].EndTime > _dataExportEndTm) { _dataExportEndTm = _eventExplrEndTm = AssetsView[i].EndTime; }
+                }
+
+                CreateSummaries();
+            }
+        }
+
+        /// <summary>
+        /// This method refreshs all event views to make certain they are displaying the right info.
+        /// </summary>
+        private void RefreshEvents()
+        {
+            if (NoPowViews.Count != 0)
+            {
+                LView_PowrNone.IsEnabled = true;
+                LView_PowrNone.ItemsSource = NoPowViews;
+                LView_PowrNone.Items.Refresh();
+            }
+
+            if (RtdPowView.Count != 0)
+            {
+                LView_PowrRted.IsEnabled = true;
+                LView_PowrRted.ItemsSource = RtdPowView;
+                LView_PowrRted.Items.Refresh();
+            }
+
+            if (LoSpdViews.Count != 0)
+            {
+                LView_WSpdEvLo.IsEnabled = true;
+                LView_WSpdEvLo.ItemsSource = LoSpdViews;
+                LView_WSpdEvLo.Items.Refresh();
+            }
+
+            if (HiSpdViews.Count != 0)
+            {
+                LView_WSpdEvHi.IsEnabled = true;
+                LView_WSpdEvHi.ItemsSource = HiSpdViews;
+                LView_WSpdEvHi.Items.Refresh();
+            }
+
+            CreateSummaries();
+        }
+        
+        void CancelProgress_Click(object sender, RoutedEventArgs e)
+        {
+            if (_cts != null)
+            {
+                _cts.Cancel();
+                ProgressBarInvisible();
+            }
+        }
+
+        void ProgressBarVisible()
+        {
+            progress_ProgrBar.Visibility = Visibility.Visible;
+            label_ProgressBar.Visibility = Visibility.Visible;
+            cancel_ProgressBar.Visibility = Visibility.Visible;
+            //counter_ProgressBar.Visibility = Visibility.Visible;
+        }
+
+        void ProgressBarInvisible()
+        {
+            progress_ProgrBar.Visibility = Visibility.Collapsed;
+            progress_ProgrBar.Value = 0;
+
+            label_ProgressBar.Visibility = Visibility.Collapsed;
+            label_ProgressBar.Content = "";
+            cancel_ProgressBar.Visibility = Visibility.Collapsed;
+
+            //counter_ProgressBar.Content = "";
+            //counter_ProgressBar.Visibility = Visibility.Collapsed;
+        }
+
+        void OnPropertyChanged(string name)
+        {
+            var changed = PropertyChanged;
+            if (changed != null)
+            {
+                changed(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
+        void UpdateProgress(int value)
+        {
+            label_ProgressBar.Content = value + "%";
+            progress_ProgrBar.Value = value;
+        }
+
+        #endregion
+
+        #region Navigation
 
         private void LView_LoadedOverview_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -1907,274 +2259,7 @@ namespace scada_analyst
 
         #endregion
 
-        #region Background Methods
-
-        #region Thresholds
-
-        private void Threshold_LoseFocus(object sender, RoutedEventArgs e)
-        {
-            CalculateThresholds(this, new RoutedEventArgs());
-        }
-
-        private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
-
-            Analysis.AnalyticLimit thresLim = (Analysis.AnalyticLimit)tB.Tag;
-            thresLim.MaxVars = tB.NumericValue;
-            
-            CalculateThresholds(this, new RoutedEventArgs());
-        }
-
-        private void CalculateThresholds(object sender, RoutedEventArgs e)
-        {
-            LView_ThresholdValues.ItemsSource = null;
-
-            if (HistEventDataVw != null) { _analyser.Thresholding(_analyser.HistEventData.ToList()); }
-
-            LView_ThresholdValues.ItemsSource = ThresholdEventsView;
-            LView_ThresholdValues.Items.Refresh();
-        }
-
-        #endregion
-
-        #region Rates of Changes
-
-        private void ROC_LoseFocus(object sender, RoutedEventArgs e)
-        {
-            CalculateRatesOfChange(this, new RoutedEventArgs());
-        }
-
-        private void ROC_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            Controls.NumericTextBox tB = (Controls.NumericTextBox)sender;
-
-            Analysis.AnalyticLimit rocLim = (Analysis.AnalyticLimit)tB.Tag;
-            rocLim.MaxVars = tB.NumericValue;
-
-            CalculateRatesOfChange(this, new RoutedEventArgs());
-        }
-
-        private void CalculateRatesOfChange(object sender, RoutedEventArgs e)
-        {
-            LView_ROCValues.ItemsSource = null;
-
-            if (HistEventDataVw != null) { _analyser.RatesOfChange(_analyser.HistEventData.ToList()); }
-
-            LView_ROCValues.ItemsSource = RateChangeEventsView;
-            LView_ROCValues.Items.Refresh();
-        }
-
-        #endregion
-
-        private void ChangeFaultStatus(bool result)
-        {
-            foreach (object selectedItem in LView_PowrNone.SelectedItems)
-            {
-                EventData _event = (EventData)selectedItem;
-
-                // find index and change the fault status at that index 
-                // this also needs to check the event is from the same asset to be certain we are editing the correct one
-                int index = _analyser.NoPwEvents.FindIndex(x => x.SourceAsset == _event.SourceAsset && x.Start == _event.Start);
-
-                _analyser.NoPwEvents[index].IsFault = result;
-            }
-        }
-
-        void CancelProgress_Click(object sender, RoutedEventArgs e)
-        {
-            if (_cts != null)
-            {
-                _cts.Cancel();
-                ProgressBarInvisible();
-            }
-        }
-
-        void CreateSummaries()
-        {
-            DataSummary();
-            EventsSummary();
-            ComboBoxInformationList();
-        }
-
-        void ComboBoxInformationList()
-        {
-            Combo_LoadedAssets.ItemsSource = AssetsView;
-            Combo_LoadedAssets.SelectedValue = AssetsView;
-            Combo_LoadedAssets.DisplayMemberPath = "UnitID";
-            Combo_LoadedAssets.SelectedValuePath = "UnitID";
-            Combo_LoadedAssets.Items.Refresh();
-        }
-
-        void DataSummary()
-        {
-            LView_LoadedOverview.ItemsSource = null;
-
-            _overview.Clear();
-            _overview.Add(new DirectoryItem("Events Summary", LoSpdViews.Count + HiSpdViews.Count + NoPowViews.Count + RtdPowView.Count));
-            _overview.Add(new DirectoryItem("Detailed Timeframe"));
-            _overview.Add(new DirectoryItem("Wind Speeds: Low", LoSpdViews.Count));
-            _overview.Add(new DirectoryItem("Wind Speeds: High", HiSpdViews.Count));
-            _overview.Add(new DirectoryItem("Power Prod: None", NoPowViews.Count));
-            _overview.Add(new DirectoryItem(
-                "Power Prod: " + Common.GetStringDecimals(_analyser.RatedPwr / 1000.0, 1) + "MW", RtdPowView.Count));
-
-            LView_LoadedOverview.ItemsSource = _overview;
-        }
-
-        void EventsSummary()
-        {
-            LView_EventsSumPwrNone.ItemsSource = null;
-            LView_EventsSumPwrHigh.ItemsSource = null;
-            LView_EventsSumWndLows.ItemsSource = null;
-            LView_EventsSumWndHigh.ItemsSource = null;
-
-            ObservableCollection<Analysis.StructureSmry> sumEvents = new ObservableCollection<Analysis.StructureSmry>(_analyser.Summary());
-
-            LView_EventsSumPwrNone.ItemsSource = sumEvents;
-            LView_EventsSumPwrHigh.ItemsSource = sumEvents;
-            LView_EventsSumWndLows.ItemsSource = sumEvents;
-            LView_EventsSumWndHigh.ItemsSource = sumEvents;
-        }
-
-        void PopulateOverview()
-        {
-            if (_meteoFile.MetMasts.Count != 0)
-            {
-                for (int i = 0; i < _meteoFile.MetMasts.Count; i++)
-                {
-                    if (!loadedAsset.Contains(_meteoFile.MetMasts[i].UnitID))
-                    {
-                        _analyser.AssetList.Add((Structure)_meteoFile.MetMasts[i]);
-
-                        loadedAsset.Add(_meteoFile.MetMasts[i].UnitID);
-                    }
-                    else
-                    {
-                        int index = _analyser.AssetList.IndexOf
-                            (_analyser.AssetList.Where(x => x.UnitID == _meteoFile.MetMasts[i].UnitID).FirstOrDefault());
-
-                        _analyser.AssetList[index].CheckDataSeriesTimes(_meteoFile.MetMasts[i]);
-                    }
-                }
-            }
-
-            if (_scadaFile.WindFarm.Count != 0)
-            {
-                for (int i = 0; i < _scadaFile.WindFarm.Count; i++)
-                {
-                    if (!loadedAsset.Contains(_scadaFile.WindFarm[i].UnitID))
-                    {
-                        _analyser.AssetList.Add((Structure)_scadaFile.WindFarm[i]);
-
-                        loadedAsset.Add(_scadaFile.WindFarm[i].UnitID);
-                    }
-                    else
-                    {
-                        int index = _analyser.AssetList.IndexOf
-                            (_analyser.AssetList.Where(x => x.UnitID == _scadaFile.WindFarm[i].UnitID).FirstOrDefault());
-
-                        _analyser.AssetList[index].CheckDataSeriesTimes(_scadaFile.WindFarm[i]);
-                    }
-                }
-            }
-
-            // sort the assetview-source before making it the itemssource
-            _analyser.AssetList = _analyser.AssetList.OrderBy(o => o.UnitID).ToList();
-
-            // proceed with a correctly ordered list
-            LView_Overview.ItemsSource = AssetsView;
-            LView_Overview.Items.Refresh();
-
-            LView_Overview.IsEnabled = AssetsView != null && AssetsView.Count > 0 ? true : false;
-
-            if (AssetsView != null && AssetsView.Count > 0)
-            {
-                _dataExportStart = _eventExplrStart = AssetsView[0].StartTime;
-                _dataExportEndTm = _eventExplrEndTm = AssetsView[0].EndTime;
-
-                // i is 1 below because the first values have already been assigned by the above code
-                for (int i = 1; i < AssetsView.Count; i++)
-                {
-                    if (AssetsView[i].StartTime < _dataExportStart) { _dataExportStart = _eventExplrStart = AssetsView[i].StartTime; }
-                    if (AssetsView[i].EndTime > _dataExportEndTm) { _dataExportEndTm = _eventExplrEndTm = AssetsView[i].EndTime; }
-                }
-
-
-                CreateSummaries();
-            }
-        }
-
-        void ProgressBarVisible()
-        {
-            progress_ProgrBar.Visibility = Visibility.Visible;
-            label_ProgressBar.Visibility = Visibility.Visible;
-            cancel_ProgressBar.Visibility = Visibility.Visible;
-            //counter_ProgressBar.Visibility = Visibility.Visible;
-        }
-
-        void ProgressBarInvisible()
-        {
-            progress_ProgrBar.Visibility = Visibility.Collapsed;
-            progress_ProgrBar.Value = 0;
-
-            label_ProgressBar.Visibility = Visibility.Collapsed;
-            label_ProgressBar.Content = "";
-            cancel_ProgressBar.Visibility = Visibility.Collapsed;
-
-            //counter_ProgressBar.Content = "";
-            //counter_ProgressBar.Visibility = Visibility.Collapsed;
-        }
-
-        void RefreshEvents()
-        {
-            if (NoPowViews.Count != 0)
-            {
-                LView_PowrNone.IsEnabled = true;
-                LView_PowrNone.ItemsSource = NoPowViews;
-                LView_PowrNone.Items.Refresh();
-            }
-
-            if (RtdPowView.Count != 0)
-            {
-                LView_PowrRted.IsEnabled = true;
-                LView_PowrRted.ItemsSource = RtdPowView;
-                LView_PowrRted.Items.Refresh();
-            }
-
-            if (LoSpdViews.Count != 0)
-            {
-                LView_WSpdEvLo.IsEnabled = true;
-                LView_WSpdEvLo.ItemsSource = LoSpdViews;
-                LView_WSpdEvLo.Items.Refresh();
-            }
-
-            if (HiSpdViews.Count != 0)
-            {
-                LView_WSpdEvHi.IsEnabled = true;
-                LView_WSpdEvHi.ItemsSource = HiSpdViews;
-                LView_WSpdEvHi.Items.Refresh();
-            }
-
-            CreateSummaries();
-        }
-        
-        void OnPropertyChanged(string name)
-        {
-            var changed = PropertyChanged;
-            if (changed != null)
-            {
-                changed(this, new PropertyChangedEventArgs(name));
-            }
-        }
-
-        void UpdateProgress(int value)
-        {
-            label_ProgressBar.Content = value + "%";
-            progress_ProgrBar.Value = value;
-        }
-
-        #endregion
+        #region ContextMenus
 
         #region Asset List ContextMenu
 
@@ -2470,6 +2555,8 @@ namespace scada_analyst
         {
             await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_HISTORIC);
         }
+
+        #endregion
 
         #endregion 
 
