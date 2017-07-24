@@ -45,6 +45,11 @@ namespace scada_analyst
             {
                 FileName.Add(_existingInfo.FileName[i]);
             }
+
+            for (int i = 0; i < _existingInfo.Years.Count; i++)
+            {
+                Years.Add(_existingInfo.Years[i]);
+            }
         }
 
         #endregion
