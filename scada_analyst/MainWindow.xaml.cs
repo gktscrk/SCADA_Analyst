@@ -687,6 +687,10 @@ namespace scada_analyst
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Collapsed;
+
+                    LView_EventExplorer_Gearbox.SelectedIndex = -1;
+                    LView_EventExplorer_Generator.SelectedIndex = -1;
+                    LView_EventExplorer_MainBear.SelectedIndex = -1;
                 }
                 else
                 {
@@ -694,13 +698,18 @@ namespace scada_analyst
 
                     LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Visible;
-                    
+
+                    LView_EventExplorer_Main.SelectedIndex = -1;
+
                     if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _gbox.Name)
                     {
                         LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
                         LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                         LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                         ChartShowSeries(_gbox.Name, _variable, _graphIncludingPreviousWeek);
+
+                        LView_EventExplorer_Generator.SelectedIndex = -1;
+                        LView_EventExplorer_MainBear.SelectedIndex = -1;
                     }
                     else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _genr.Name)
                     {
@@ -708,6 +717,9 @@ namespace scada_analyst
                         LView_EventExplorer_Generator.Visibility = Visibility.Visible;
                         LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                         ChartShowSeries(_genr.Name, _variable, _graphIncludingPreviousWeek);
+
+                        LView_EventExplorer_Gearbox.SelectedIndex = -1;
+                        LView_EventExplorer_MainBear.SelectedIndex = -1;
                     }
                     else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _mbrg.Name)
                     {
@@ -715,6 +727,9 @@ namespace scada_analyst
                         LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                         LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
                         ChartShowSeries(_mbrg.Name, _variable, _graphIncludingPreviousWeek);
+
+                        LView_EventExplorer_Gearbox.SelectedIndex = -1;
+                        LView_EventExplorer_Generator.SelectedIndex = -1;
                     }
                 }
             }
@@ -1007,6 +1022,11 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void ExportScadaDataAsync(object sender, RoutedEventArgs e)
         {
+            await GenericScadaExportAsync(ScadaData.ExportMode.FULL);
+        }
+
+        private async Task GenericScadaExportAsync(ScadaData.ExportMode _exportMode)
+        {
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
 
@@ -1019,48 +1039,92 @@ namespace scada_analyst
             {
                 if (_scadaFile.WindFarm.Count != 0)
                 {
+                    // set a default file name and filters
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
-                    // set a default file name
                     saveFileDialog.FileName = ".csv";
-                    // set filters
                     saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
 
                     if (saveFileDialog.ShowDialog().Value)
                     {
                         ProgressBarVisible();
 
-                        if (CBox_DateRangeExport.IsChecked)
+                        if (_exportMode == ScadaData.ExportMode.FULL)
                         {
-                            Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", _dataExportStart);
-                            Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", _dataExportEndTm);
-
-                            if (startCal.ShowDialog().Value)
+                            // if normal export mode then go here and check whether dates are relevant
+                            if (CBox_DateRangeExport.IsChecked)
                             {
-                                _dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, Common.DateFormat.DMY);
+                                Window_CalendarChooser startCal = new Window_CalendarChooser(this, "Choose export start date", _dataExportStart);
+                                Window_CalendarChooser endCal = new Window_CalendarChooser(this, "Choose export end date", _dataExportEndTm);
+
+                                if (startCal.ShowDialog().Value)
+                                { _dataExportStart = Common.StringToDateTime(startCal.TextBox_Calendar.Text, Common.DateFormat.DMY); }
+
+                                if (endCal.ShowDialog().Value)
+                                { _dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, Common.DateFormat.DMY); }
                             }
 
-                            if (endCal.ShowDialog().Value)
-                            {
-                                _dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, Common.DateFormat.DMY);
-                            }
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                                exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
+                                exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
+                                exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
+                                exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
+                                exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
+                                exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
+                                exportNacMaxm, exportNacMinm, exportNacMean, exportNacStdv,
+                                -1, _dataExportStart, _dataExportEndTm, true));
                         }
-
-                        await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
-                            exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
-                            exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
-                            exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
-                            exportGBxMaxm, exportGBxMinm, exportGBxMean, exportGBxStdv,
-                            exportGenMaxm, exportGenMinm, exportGenMean, exportGenStdv,
-                            exportMBrMaxm, exportMBrMinm, exportMBrMean, exportMBrStdv,
-                            exportNacMaxm, exportNacMinm, exportNacMean, exportNacStdv,
-                            _dataExportStart, _dataExportEndTm));
+                        else if (_exportMode == ScadaData.ExportMode.EVENT_ONLY)
+                        {
+                            // this export option is for the specific event only but needs different options 
+                            // for various timeframes
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                                false, false, exportPowMean, false,
+                                false, false, exportAmbMean, false,
+                                false, false, exportWSpMean, false,
+                                false, false, exportGBxMean, false,
+                                false, false, exportGenMean, false,
+                                false, false, exportMBrMean, false,
+                                false, false, exportNacMean, false,
+                                ThisEventDataVw[0].AssetID != -1 ? ThisEventDataVw[0].AssetID : ThisEventDataVw[0].StationID,
+                                ThisEventDataVw[0].TimeStamp, ThisEventDataVw[ThisEventDataVw.Count - 1].TimeStamp, false));
+                        }
+                        else if (_exportMode == ScadaData.ExportMode.EVENT_WEEK)
+                        {
+                            // this export option is for the specific event only but needs different options 
+                            // for various timeframes
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                                false, false, exportPowMean, false,
+                                false, false, exportAmbMean, false,
+                                false, false, exportWSpMean, false,
+                                false, false, exportGBxMean, false,
+                                false, false, exportGenMean, false,
+                                false, false, exportMBrMean, false,
+                                false, false, exportNacMean, false,
+                                WeekEventDataVw[0].AssetID != -1 ? WeekEventDataVw[0].AssetID : WeekEventDataVw[0].StationID,
+                                WeekEventDataVw[0].TimeStamp, WeekEventDataVw[ThisEventDataVw.Count - 1].TimeStamp, false));
+                        }
+                        else if (_exportMode == ScadaData.ExportMode.EVENT_HISTORIC)
+                        {
+                            // this export option is for the specific event only but needs different options 
+                            // for various timeframes
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                                false, false, exportPowMean, false,
+                                false, false, exportAmbMean, false,
+                                false, false, exportWSpMean, false,
+                                false, false, exportGBxMean, false,
+                                false, false, exportGenMean, false,
+                                false, false, exportMBrMean, false,
+                                false, false, exportNacMean, false,
+                                HistEventDataVw[0].AssetID != -1 ? HistEventDataVw[0].AssetID : HistEventDataVw[0].StationID,
+                                HistEventDataVw[0].TimeStamp, HistEventDataVw[ThisEventDataVw.Count - 1].TimeStamp, false));
+                        }
 
                         ProgressBarInvisible();
                     }
                 }
                 else
                 {
-                    await this.ShowMessageAsync("Warning!", 
+                    await this.ShowMessageAsync("Warning!",
                         "No data of this type has been loaded yet. Please load data before trying to export.");
                 }
             }
@@ -2342,6 +2406,61 @@ namespace scada_analyst
         }
 
         #endregion
+                
+        #region Event Details List ContextMenu
+
+        private void Lists_EventDetails_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            SetEventDetailsContextMenu();
+        }
+
+        private void SetEventDetailsContextMenu()
+        {
+            ContextMenu menu = new ContextMenu();
+
+            // create new object for easier usage
+            ListView _target = new ListView();
+
+            // check which listview we are dealing with
+            if (LView_EventExplorer_Main.SelectedItems.Count > 0) { _target = LView_EventExplorer_Main; }
+            else if (LView_EventExplorer_Gearbox.SelectedItems.Count > 0) { _target = LView_EventExplorer_Gearbox; }
+            else if (LView_EventExplorer_Generator.SelectedItems.Count > 0) { _target = LView_EventExplorer_Generator; }
+            else if (LView_EventExplorer_MainBear.SelectedItems.Count > 0) { _target = LView_EventExplorer_MainBear; }
+
+            // add relevant menuitems
+            MenuItem exportEventOnly_MenuItem = new MenuItem();
+            exportEventOnly_MenuItem.Header = "Export Event Only";
+            exportEventOnly_MenuItem.Click += ExportEvent_MenuItem_Click;
+            menu.Items.Add(exportEventOnly_MenuItem);
+            MenuItem exportEventWeek_MenuItem = new MenuItem();
+            exportEventWeek_MenuItem.Header = "Export Event and Preceding Week";
+            exportEventWeek_MenuItem.Click += ExportEventWeek_MenuItem_Click;
+            menu.Items.Add(exportEventWeek_MenuItem);
+            MenuItem exportEventHistory_MenuItem = new MenuItem();
+            exportEventHistory_MenuItem.Header = "Export Full Event History";
+            exportEventHistory_MenuItem.Click += ExportEventHistory_MenuItem_Click;
+            menu.Items.Add(exportEventHistory_MenuItem);
+
+            // set the contextmenu for that specific listview
+            _target.ContextMenu = menu;
+        }
+
+        private async void ExportEvent_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_ONLY);
+        }
+
+        private async void ExportEventWeek_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_WEEK);
+        }
+
+        private async void ExportEventHistory_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_HISTORIC);
+        }
+
+        #endregion 
 
         #region Support Classes
 

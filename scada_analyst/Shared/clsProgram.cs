@@ -13,6 +13,7 @@ namespace scada_analyst.Shared
             #region Version 3.000 - Proceeding after Romax
 
             ProgramVersion v3100 = new ProgramVersion(3100, new DateTime(2017, 07, 24));
+            v3100.AddChange("Event data can be exported by right-clicking on the views which detail them.");
             v3100.AddChange("Equipment choice option is hidden while not necessary.");
             v3100.AddChange("User can change which specific variable they are investigating in the event details view.");
             results.Add(v3100);
