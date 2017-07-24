@@ -32,6 +32,8 @@ namespace scada_analyst
 
         private bool _geoLoaded = false, _meteoLoaded = false, _scadaLoaded = false;
         private bool positionsAddedToData = false, eventsAreProcessed = false, eventsMatchedAcrossTypes = false;
+        private bool _rememberPreviousEquipmentState = false;
+        private bool _rememberingStateIsSaved = false;
 
         private static bool mnt_Night = false;
         private static bool mnt_AstDw = false;
@@ -61,6 +63,7 @@ namespace scada_analyst
         private List<string> _loadedFiles = new List<string>();
         private List<string> _eventDetailsSelection = new List<string>();
         private List<string> _eventSummarySelection = new List<string>();
+        private List<string> _variableOptionsChoice = new List<string>();
 
         private CancellationTokenSource _cts;
 
@@ -75,9 +78,9 @@ namespace scada_analyst
         private GeoData _geoFile;
         private MeteoData _meteoFile = new MeteoData();
         private ScadaData _scadaFile = new ScadaData();
-        
+
         private List<DirectoryItem> _overview = new List<DirectoryItem>();
-        
+
         private ScadaData.ScadaSample.GearBox _gbox = new ScadaData.ScadaSample.GearBox();
         private ScadaData.ScadaSample.Generator _genr = new ScadaData.ScadaSample.Generator();
         private ScadaData.ScadaSample.MainBearing _mbrg = new ScadaData.ScadaSample.MainBearing();
@@ -113,13 +116,19 @@ namespace scada_analyst
             LView_PowrNone.IsEnabled = false;
             LView_PowrRted.IsEnabled = false;
 
+            Combo_EventDetailsEquipmentChoice.IsEnabled = false;
+            Combo_EquipmentVariableChoice.IsEnabled = false;
+            Combo_EquipmentVariableChoice.Visibility = Visibility.Collapsed;
+            CBox_DataSetChoice.IsEnabled = false;
+            LBL_EquipmentChoice.IsEnabled = false;
+
             ProgressBarInvisible();
 
             CreateEventDetailsView();
             CreateSummaryComboInfo();
             CreateSummaries();
 
-            LView_LoadedOverview.SelectedIndex = 0;            
+            LView_LoadedOverview.SelectedIndex = 0;
         }
 
         #endregion
@@ -312,6 +321,126 @@ namespace scada_analyst
 
         #region Event Details View Manipulation
 
+        private void CreateEventDetailsView()
+        {
+            // this method creates the event details selection option from which the 
+            // equipment the user wants to look at is chosen
+
+            // clear it in case this method is called again while already in use
+            _eventDetailsSelection.Clear();
+
+            // add necessary variables
+            _eventDetailsSelection.Add("Main Overview");
+            _eventDetailsSelection.Add(_gbox.Name);
+            _eventDetailsSelection.Add(_genr.Name);
+            _eventDetailsSelection.Add(_mbrg.Name);
+
+            // redefine item source and choose first from the list
+            Combo_EventDetailsEquipmentChoice.ItemsSource = _eventDetailsSelection;
+            Combo_EventDetailsEquipmentChoice.Items.Refresh();
+            Combo_EventDetailsEquipmentChoice.SelectedIndex = 0;
+        }
+
+        private void CreateVariableChoice()
+        {
+            // this method details the options that the additional variable-choioce
+            // combobox must show for any specific value of the equipment choice combobox
+
+            // get the string value to do this only once
+            string _equipment = Combo_EventDetailsEquipmentChoice.SelectedItem.ToString();
+
+            // reset these in order to change them at will
+            _variableOptionsChoice.Clear();
+
+            if (_equipment == _eventDetailsSelection[0])
+            {
+                _variableOptionsChoice.Add("");
+            }
+            else if (_equipment == _gbox.Name)
+            {
+                _variableOptionsChoice.Add(_gbox.OilTemp.Description);
+                _variableOptionsChoice.Add(_gbox.HsGen.Description);
+                _variableOptionsChoice.Add(_gbox.HsRot.Description);
+                _variableOptionsChoice.Add(_gbox.ImsGen.Description);
+                _variableOptionsChoice.Add(_gbox.ImsRot.Description);
+            }
+            else if (_equipment == _genr.Name)
+            {
+                _variableOptionsChoice.Add(_genr.RPMs.Description);
+                _variableOptionsChoice.Add(_genr.BearingG.Description);
+                _variableOptionsChoice.Add(_genr.BearingR.Description);
+                _variableOptionsChoice.Add(_genr.G1u1.Description);
+                _variableOptionsChoice.Add(_genr.G1v1.Description);
+                _variableOptionsChoice.Add(_genr.G1w1.Description);
+                _variableOptionsChoice.Add(_genr.G2u1.Description);
+                _variableOptionsChoice.Add(_genr.G2v1.Description);
+                _variableOptionsChoice.Add(_genr.G2w1.Description);
+            }
+            else if (_equipment == _mbrg.Name)
+            {
+                _variableOptionsChoice.Add(_mbrg.Main.Description);
+                _variableOptionsChoice.Add(_mbrg.Gs.Description);
+                _variableOptionsChoice.Add(_mbrg.Hs.Description);
+            }
+
+            // redefine the item sources and choose the first value in the column
+            Combo_EquipmentVariableChoice.ItemsSource = _variableOptionsChoice;
+            Combo_EquipmentVariableChoice.Items.Refresh();
+            Combo_EquipmentVariableChoice.SelectedIndex = 0;
+        }
+
+        private void Tab_EventDetailsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Tab_DetailsInfo.IsSelected)
+            {
+                Combo_EventDetailsEquipmentChoice.Visibility = Visibility.Visible;
+                LBL_EquipmentChoice.Visibility = Visibility.Visible;
+
+                CBox_DataSetChoice.IsChecked = _rememberPreviousEquipmentState;
+                CBox_DataSetChoice.IsEnabled = true;
+                _rememberingStateIsSaved = false;
+            }
+            else
+            {
+                Combo_EventDetailsEquipmentChoice.Visibility = Visibility.Hidden;
+                LBL_EquipmentChoice.Visibility = Visibility.Hidden;
+
+                if (!_rememberingStateIsSaved)
+                {
+                    _rememberPreviousEquipmentState = CBox_DataSetChoice.IsChecked.Value; _rememberingStateIsSaved = true;
+                }
+
+                CBox_DataSetChoice.IsChecked = true;
+                CBox_DataSetChoice.IsEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Checks what equipment is chosen from the menu and changes information displayed based on that.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Combo_EventDetailsEquipmentChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ChooseAndDisplayCorrectGraph();
+        }
+
+        private void ChooseAndDisplayCorrectGraph()
+        {
+            CreateVariableChoice();
+            DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
+        }
+
+        /// <summary>
+        /// This method deals with what happens after the equipment variable specifics are changed in order to change the graph.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Combo_EquipmentVariableChoice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
+        }
+
         private void ChangeListViewDataset(object sender, RoutedEventArgs e)
         {
             // checks whether the dataset choice button has been activated and displays the respective
@@ -346,7 +475,7 @@ namespace scada_analyst
             //LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
         }
 
-        private void ChartShowSeries(string input, bool _previousWeekIncluded)
+        private void ChartShowSeries(string _equipment, string _variable, bool _previousWeekIncluded)
         {
             try
             {
@@ -354,6 +483,8 @@ namespace scada_analyst
                 ObservableCollection<ScadaData.ScadaSample> _graphingData = new ObservableCollection<ScadaData.ScadaSample>();
                 ObservableCollection<ScadaData.ScadaSample> _avgGraphingData = new ObservableCollection<ScadaData.ScadaSample>();
 
+                // choose which type of graph we're doing -- based on whether this is a user-defined
+                // event or a computed event
                 if (_previousWeekIncluded)
                 {
                     _graphingData = WeekEventDataVw;
@@ -365,117 +496,226 @@ namespace scada_analyst
                     _avgGraphingData = AvgThisEventDataVw;
                 }
 
+                // clear all existing series to add our own later on
                 LChart_Basic.Series.Clear();
 
-                List<double> list1 = new List<double>();
-                List<double> list2 = new List<double>();
-                List<string> times = new List<string>();
+                // create the temporary variables for the charts
+                List<double> _list1 = new List<double>();
+                List<double> _list2 = new List<double>();
+                List<string> _times = new List<string>();
+                LineSeries _priGraph = new LineSeries();
+                LineSeries _secGraph = new LineSeries();
 
-                LineSeries priGraph = new LineSeries();
-                LineSeries secGraph = new LineSeries();
-
-                // make automatic counter to suit data length and yet provide utilisable speed
-                int counter = 1;
-                TimeSpan length = _graphingData[_graphingData.Count - 1].TimeStamp - _graphingData[0].TimeStamp;
-
-                if (length < new TimeSpan(3,0,0)) { counter = 1; }
-                else if (length < new TimeSpan(12, 0, 0)) { counter = 3; }
-                else if (length < new TimeSpan(24 * 7, 0, 0)) { counter = 6; }
-                else if (length < new TimeSpan(24 * 30, 0, 0)) { counter = 12; }
-                else if (length < new TimeSpan(24 * 360, 0, 0)) { counter = 60; }
-                else if (length >= new TimeSpan(24 * 360, 0, 0)) { counter = 120; }
-
-                for (int i = 0; i < _graphingData.Count; i += counter)
+                // add a check to whether there is any data loaded
+                if (_graphingData.Count > 0)
                 {
-                    double var1 = double.NaN;
-                    double var2 = double.NaN;
+                    // make automatic counter to suit data length and yet provide utilisable speed
+                    int _counter = 1;
+                    TimeSpan length = _graphingData[_graphingData.Count - 1].TimeStamp - _graphingData[0].TimeStamp;
 
-                    if (input == _eventDetailsSelection[1])
+                    if (length < new TimeSpan(3, 0, 0)) { _counter = 1; }
+                    else if (length < new TimeSpan(12, 0, 0)) { _counter = 3; }
+                    else if (length < new TimeSpan(24 * 7, 0, 0)) { _counter = 6; }
+                    else if (length < new TimeSpan(24 * 30, 0, 0)) { _counter = 12; }
+                    else if (length < new TimeSpan(24 * 360, 0, 0)) { _counter = 60; }
+                    else if (length >= new TimeSpan(24 * 360, 0, 0)) { _counter = 120; }
+
+                    // then, get the datapoints for the graph
+                    for (int i = 0; i < _graphingData.Count; i += _counter)
                     {
-                        priGraph.Title = _gbox.HsGen.Description;
-                        var1 = Math.Round(_graphingData[i].Gearbox.HsGen.Mean, 1);
+                        double var1 = double.NaN;
+                        double var2 = double.NaN;
 
-                        if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.HsGen.Mean, 1); }
+                        if (_equipment == _gbox.Name)
+                        {
+                            if (_variable == _gbox.OilTemp.Description)
+                            {
+                                _priGraph.Title = _gbox.OilTemp.Description;
+                                var1 = Math.Round(_graphingData[i].Gearbox.OilTemp.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.OilTemp.Mean, 1); }
+                            }
+                            else if (_variable == _gbox.HsGen.Description)
+                            {
+                                _priGraph.Title = _gbox.HsGen.Description;
+                                var1 = Math.Round(_graphingData[i].Gearbox.HsGen.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.HsGen.Mean, 1); }
+                            }
+                            else if (_variable == _gbox.HsRot.Description)
+                            {
+                                _priGraph.Title = _gbox.HsRot.Description;
+                                var1 = Math.Round(_graphingData[i].Gearbox.HsRot.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.HsRot.Mean, 1); }
+                            }
+                            else if (_variable == _gbox.ImsGen.Description)
+                            {
+                                _priGraph.Title = _gbox.ImsGen.Description;
+                                var1 = Math.Round(_graphingData[i].Gearbox.ImsGen.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.ImsGen.Mean, 1); }
+                            }
+                            else if (_variable == _gbox.ImsRot.Description)
+                            {
+                                _priGraph.Title = _gbox.ImsRot.Description;
+                                var1 = Math.Round(_graphingData[i].Gearbox.ImsRot.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Gearbox.ImsRot.Mean, 1); }
+                            }
+                        }
+                        else if (_equipment == _genr.Name)
+                        {
+                            if (_variable == _genr.RPMs.Description)
+                            {
+                                _priGraph.Title = _genr.RPMs.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.RPMs.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.RPMs.Mean, 1); }
+                            }
+                            else if (_variable == _genr.BearingG.Description)
+                            {
+                                _priGraph.Title = _genr.BearingG.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.BearingG.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.BearingG.Mean, 1); }
+                            }
+                            else if (_variable == _genr.BearingR.Description)
+                            {
+                                _priGraph.Title = _genr.BearingR.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.BearingR.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.BearingR.Mean, 1); }
+                            }
+                            else if (_variable == _genr.G1u1.Description)
+                            {
+                                _priGraph.Title = _genr.G1u1.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.G1u1.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.G1u1.Mean, 1); }
+                            }
+                            else if (_variable == _genr.G1v1.Description)
+                            {
+                                _priGraph.Title = _genr.G1v1.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.G1v1.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.G1v1.Mean, 1); }
+                            }
+                            else if (_variable == _genr.G1w1.Description)
+                            {
+                                _priGraph.Title = _genr.G1w1.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.G1w1.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.G1w1.Mean, 1); }
+                            }
+                            else if (_variable == _genr.G2u1.Description)
+                            {
+                                _priGraph.Title = _genr.G2u1.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.G2u1.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.G2u1.Mean, 1); }
+                            }
+                            else if (_variable == _genr.G2v1.Description)
+                            {
+                                _priGraph.Title = _genr.G2v1.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.G2v1.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.G2v1.Mean, 1); }
+                            }
+                            else if (_variable == _genr.G2w1.Description)
+                            {
+                                _priGraph.Title = _genr.G2w1.Description;
+                                var1 = Math.Round(_graphingData[i].Genny.G2w1.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.G2w1.Mean, 1); }
+                            }
+                        }
+                        else if (_equipment == _mbrg.Name)
+                        {
+                            if (_variable == _mbrg.Main.Description)
+                            {
+                                _priGraph.Title = _mbrg.Main.Description;
+                                var1 = Math.Round(_graphingData[i].MainBear.Main.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].MainBear.Main.Mean, 1); }
+                            }
+                            else if (_variable == _mbrg.Hs.Description)
+                            {
+                                _priGraph.Title = _mbrg.Hs.Description;
+                                var1 = Math.Round(_graphingData[i].MainBear.Hs.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].MainBear.Hs.Mean, 1); }
+                            }
+                            else if (_variable == _mbrg.Gs.Description)
+                            {
+                                _priGraph.Title = _mbrg.Gs.Description;
+                                var1 = Math.Round(_graphingData[i].MainBear.Gs.Mean, 1);
+                                if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].MainBear.Gs.Mean, 1); }
+                            }
+                        }
+
+                        _times.Add(_graphingData[i].TimeStamp.ToString("dd/MMM/yy HH:mm"));
+                        _list1.Add(!double.IsNaN(var1) ? var1 : double.NaN);
+
+                        if (_averagesComputed) { _list2.Add(!double.IsNaN(var2) ? var2 : double.NaN); }
                     }
-                    else if (input == _eventDetailsSelection[2])
+
+                    // add labels for the graph based on the times view
+                    Labels = _times.ToArray();
+
+                    // set the first graph to the display
+                    _priGraph.Values = new ChartValues<double>(_list1);
+                    _priGraph.Fill = Brushes.Transparent;
+                    LChart_Basic.Series.Add(_priGraph);
+                    LChart_XAxis.Labels = Labels;
+
+                    // prepare the second graph for display if averages have been computed
+                    if (_averagesComputed)
                     {
-                        priGraph.Title = _genr.BearingG.Description;
-                        var1 = Math.Round(_graphingData[i].Genny.BearingG.Mean, 1);
-
-                        if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].Genny.BearingG.Mean, 1); }
+                        _secGraph.Title = "Fleetwise Average";
+                        _secGraph.Values = new ChartValues<double>(_list2);
+                        _secGraph.Fill = Brushes.Transparent;
+                        LChart_Basic.Series.Add(_secGraph);
                     }
-                    else if (input == _eventDetailsSelection[3])
-                    {
-                        priGraph.Title = _mbrg.Main.Description;
-                        var1 = Math.Round(_graphingData[i].MainBear.Main.Mean, 1);
-
-                        if (_averagesComputed) { var2 = Math.Round(_avgGraphingData[i].MainBear.Main.Mean, 1); }
-                    }
-
-                    times.Add(_graphingData[i].TimeStamp.ToString("dd/MMM/yy HH:mm"));
-                    list1.Add(!double.IsNaN(var1) ? var1 : double.NaN);
-
-                    if (_averagesComputed) { list2.Add(!double.IsNaN(var2) ? var2 : double.NaN); }
                 }
-
-                Labels = times.ToArray();
-
-                priGraph.Values = new ChartValues<double>(list1);
-                priGraph.Fill = Brushes.Transparent;
-                LChart_Basic.Series.Add(priGraph);
-
-                if (_averagesComputed)
-                {
-                    secGraph.Title = "Fleetwise Average";
-                    secGraph.Values = new ChartValues<double>(list2);
-                    secGraph.Fill = Brushes.Transparent;
-                    LChart_Basic.Series.Add(secGraph);
-                }
-
-                LChart_XAxis.Labels = Labels;
             }
-            catch { }
+            catch { throw; }
         }
 
         private void DisplayCorrectEventDetails(bool _graphIncludingPreviousWeek)
         {
-            if (Comb_DisplayEvDetails.SelectedIndex != -1)
+            if (Combo_EventDetailsEquipmentChoice.SelectedIndex != -1)
             {
-                LChart_Basic.Visibility = Visibility.Visible;
+                string _variable;
+
+                // check if that selection is null just in case
+                if (Combo_EquipmentVariableChoice.SelectedItem != null) { _variable = Combo_EquipmentVariableChoice.SelectedItem.ToString(); }
+                else { _variable = Combo_EquipmentVariableChoice.Items[0].ToString(); }
 
                 // this here chooses what to display in the events details view in order to 
                 // show the right information based on what is chosen in the combobox
-                if ((string)Comb_DisplayEvDetails.SelectedItem == _eventDetailsSelection[0])
+                if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _eventDetailsSelection[0])
                 {
+                    Combo_EquipmentVariableChoice.Visibility = Visibility.Collapsed;
+
                     LView_EventExplorer_Main.Visibility = Visibility.Visible;
                     LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
                     LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
                     LChart_Basic.Visibility = Visibility.Collapsed;
                 }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == _gbox.Name)
+                else
                 {
+                    Combo_EquipmentVariableChoice.Visibility = Visibility.Visible;
+
                     LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries(_eventDetailsSelection[1], _graphIncludingPreviousWeek);
-                }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == _genr.Name)
-                {
-                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Visible;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    ChartShowSeries(_eventDetailsSelection[2], _graphIncludingPreviousWeek);
-                }
-                else if ((string)Comb_DisplayEvDetails.SelectedItem == _mbrg.Name)
-                {
-                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
-                    ChartShowSeries(_eventDetailsSelection[3], _graphIncludingPreviousWeek);
+                    LChart_Basic.Visibility = Visibility.Visible;
+                    
+                    if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _gbox.Name)
+                    {
+                        LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
+                        LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                        ChartShowSeries(_gbox.Name, _variable, _graphIncludingPreviousWeek);
+                    }
+                    else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _genr.Name)
+                    {
+                        LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_Generator.Visibility = Visibility.Visible;
+                        LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                        ChartShowSeries(_genr.Name, _variable, _graphIncludingPreviousWeek);
+                    }
+                    else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _mbrg.Name)
+                    {
+                        LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
+                        ChartShowSeries(_mbrg.Name, _variable, _graphIncludingPreviousWeek);
+                    }
                 }
             }
         }
@@ -546,7 +786,7 @@ namespace scada_analyst
             // and then do everything data
             ExploreEvent_MenuItem_Click(sender, e);
         }
-
+        
         #endregion
 
         #region Event Summary View Manipulation
@@ -600,28 +840,6 @@ namespace scada_analyst
                     LView_EventsSumWndHigh.Visibility = Visibility.Visible;
                 }
             }
-        }
-
-        /// <summary>
-        /// Checks what equipment is chosen from the menu and changes information displayed based on that.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Comb_DisplayEvDetails_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // only go into this event if the below conditions are true; probably will disable the combobox as well though
-            DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
-        }
-
-        private void CreateEventDetailsView()
-        {
-            _eventDetailsSelection.Add("Main Overview");
-            _eventDetailsSelection.Add(_gbox.Name);
-            _eventDetailsSelection.Add(_genr.Name);
-            _eventDetailsSelection.Add(_mbrg.Name);
-
-            Comb_DisplayEvDetails.ItemsSource = _eventDetailsSelection;
-            Comb_DisplayEvDetails.SelectedIndex = 0;
         }
 
         #endregion
@@ -2008,7 +2226,7 @@ namespace scada_analyst
             else if (LView_PowrRted.SelectedItems.Count == 1) { LView_PowrRted.ContextMenu = menu; }
         }
 
-        private void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
+        private async void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -2018,7 +2236,6 @@ namespace scada_analyst
                     !Tab_DetailTimeFrame.IsSelected)
                 {
                     _usingPreviousWeekForGraphing = true;
-
                     thisEv = LView_PowrNone.SelectedItems.Count == 1 ?
                         (EventData)LView_PowrNone.SelectedItem : (EventData)LView_PowrRted.SelectedItem;
                 }
@@ -2038,40 +2255,40 @@ namespace scada_analyst
                     thisEv = new EventData(thisList, EventData.AnomalySource.USERDEFINED);
                 }
 
+                // get the actual event data based on the above informations
                 _analyser.EventData(_scadaFile, thisEv, _averagesComputed);
 
-                // assign the created dataset lists to their global variables as proprties
-
-                // now sent the thisEvScada to the new ListView to populate it
+                // now send the thisEvScada to the new ListView to populate it
                 InitializeEventExploration(sender, e);
             }
             catch
             {
-                MessageBox.Show("A problem has come up with the code in loading this event. Have the programmer check the indices.", "Warning!");
+                await this.ShowMessageAsync("Warning!", "A problem has come up with the code in loading this event.");
             }
         }
 
         private void InitializeEventExploration(object sender, RoutedEventArgs e)
         {
-            Comb_DisplayEvDetails.IsEnabled = true;
-            LBL_EquipmentChoice.IsEnabled = true;
+            // enable GUI items
+            Combo_EventDetailsEquipmentChoice.IsEnabled = true;
+            Combo_EquipmentVariableChoice.IsEnabled = true;
             CBox_DataSetChoice.IsEnabled = true;
+            LBL_EquipmentChoice.IsEnabled = true;
 
-            // first add it to the gridview on the list
-            LView_EventExplorer_Gearbox.ItemsSource =  ThisEventDataVw;
-            LView_EventExplorer_Generator.ItemsSource = ThisEventDataVw;
-            LView_EventExplorer_MainBear.ItemsSource = ThisEventDataVw;
-
+            // the methods below set both the itemssource for the listviews and then 
+            //display correct event details
             ChangeListViewDataset(sender, e);
+            ChooseAndDisplayCorrectGraph();
 
-            DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
-
+            // the method below is for an implementation I did not opt for
+            #region Defunct
             // lastly also add respective dataviews to the chart and also to the viewmodel
 
             //ScrollableViewModel sVM = new ScrollableViewModel(histEventData.ToList());
 
             //ScrollView.Visibility = Visibility.Visible;
             //ScrollView.DataContext = sVM;
+            #endregion 
         }
 
         private void MakeFault_MenuItem_Click(object sender, RoutedEventArgs e)

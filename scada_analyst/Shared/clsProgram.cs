@@ -12,7 +12,12 @@ namespace scada_analyst.Shared
 
             #region Version 3.000 - Proceeding after Romax
 
-            ProgramVersion v3000 = new ProgramVersion(3000, new DateTime(2017, 07, 212));
+            ProgramVersion v3100 = new ProgramVersion(3100, new DateTime(2017, 07, 24));
+            v3100.AddChange("Equipment choice option is hidden while not necessary.");
+            v3100.AddChange("User can change which specific variable they are investigating in the event details view.");
+            results.Add(v3100);
+
+            ProgramVersion v3000 = new ProgramVersion(3000, new DateTime(2017, 07, 21));
             v3000.AddChange("The graphing function now brings up the variable selected and the fleetwise average of the same variable.");
             v3000.AddChange("Fixed average value calculations for power and nacelle temperatures.");
             v3000.AddChange("Meteorology export checks for data at different heights and only exports what has been loaded.");

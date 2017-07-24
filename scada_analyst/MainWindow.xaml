@@ -920,7 +920,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -930,25 +930,24 @@
                 </Grid.RowDefinitions>
                 
                 <Label Grid.Column="0" Grid.Row="0" Margin="5" Name="LBL_EquipmentChoice"
-                       Content="Equipment:"
-                       IsEnabled="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}" />
+                       Content="Equipment:" />
 
                 <ComboBox Grid.Column="1" Grid.Row="0" Margin="5,5,5,5"
-                          Name="Comb_DisplayEvDetails" Width="150"
-                          SelectionChanged="Comb_DisplayEvDetails_SelectionChanged"
-                          IsEnabled="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}" />
+                          Name="Combo_EventDetailsEquipmentChoice" MinWidth="100"
+                          SelectionChanged="Combo_EventDetailsEquipmentChoice_SelectionChanged" />
 
-                <Label Grid.Column="2" Grid.Row="0" Margin="5"  x:Name="LBL_ClickInfo"
-                       Visibility="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}"/>
-
+                <ComboBox Grid.Column="2" Grid.Row="0" Margin="5,5,5,5"
+                          Name="Combo_EquipmentVariableChoice" MinWidth="100"
+                          SelectionChanged="Combo_EquipmentVariableChoice_SelectionChanged" />
+                
                 <CheckBox Grid.Column="3" Grid.ColumnSpan="1" Grid.Row="0" Margin="5" Name="CBox_DataSetChoice"
                           Unchecked="ChangeListViewDataset" Checked="ChangeListViewDataset" HorizontalAlignment="Right"                 
-                          Content="Include pre-event data in table" VerticalAlignment="Center"
-                          IsEnabled="{Binding ElementName=Tab_DetailsInfo, Path=IsSelected}" />
+                          Content="Include pre-event data in table" VerticalAlignment="Center"  />
 
                 <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" Margin="5" />
 
-                <TabControl Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2">
+                <TabControl Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2"
+                            SelectionChanged="Tab_EventDetailsView_SelectionChanged">
                     <TabControl.Resources>
                         <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
                             <Setter Property="Metro:ControlsHelper.HeaderFontSize" Value="12" />
