@@ -504,7 +504,7 @@ namespace scada_analyst
                                 if (exportGBxMean) { hB.Append("wtc_HSRotTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.HsRot.Dlta, 1) + ","); }
                                 if (exportGBxMean) { hB.Append("wtc_IMSGenTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.ImsGen.Dlta, 1) + ","); }
                                 if (exportGBxMean) { hB.Append("wtc_IMSRotTm_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.ImsRot.Dlta, 1) + ","); }
-                                if (exportGBxMean) { hB.Append("wtc_GeOilTmp_delta"); sB.Append(Common.GetStringDecimals(unit.Gearbox.OilTemp.Dlta, 1)); }
+                                if (exportGBxMean) { hB.Append("wtc_GeOilTmp_delta" + ","); sB.Append(Common.GetStringDecimals(unit.Gearbox.OilTemp.Dlta, 1) + ","); }
                                 
                                 #endregion
 
