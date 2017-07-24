@@ -1987,7 +1987,7 @@ namespace scada_analyst
         #endregion
 
         #endregion
-
+        
         #region Support Classes
 
         public class AnalyticLimit : ObservableObject
@@ -2030,7 +2030,7 @@ namespace scada_analyst
 
             #endregion
         }
-        
+
         public class Distances : ObservableObject
         {
             #region Variables
@@ -2086,9 +2086,11 @@ namespace scada_analyst
             public StructureSmry(Structure thisAsset, List<EventData> loWindEvents, List<EventData> hiWindEvents,
                 List<EventData> noPowrEvents, List<EventData> hiPowrEvents)
             {
-                this.UnitID = thisAsset.UnitID;
                 this.Type = thisAsset.Type;
-                this.PrevailingWindString = thisAsset.PrevailingWindString;
+                this.UnitID = thisAsset.UnitID;
+
+                this.Bearings = thisAsset.Bearings;
+                this.Capacity = thisAsset.Capacity;
 
                 //the below also needs to take into account the right asset ID only
                 _hiWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.HI_SPD, hiWindEvents);

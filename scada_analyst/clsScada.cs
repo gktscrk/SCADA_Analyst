@@ -55,7 +55,7 @@ namespace scada_analyst
         #region Load Data
 
         public void AppendFiles(string[] filenames, List<string> loadedFiles, Common.DateFormat _dateFormat, 
-            int _singleTurbineLoading, TimeSpan _sampleLength, IProgress<int> progress)
+            int _singleTurbineLoading, double _rated, TimeSpan _sampleLength, IProgress<int> progress)
         {
             // map the global sample separation to this loading procedure
             _systemSampleSeparation = _sampleLength;
@@ -68,13 +68,14 @@ namespace scada_analyst
                 }
             }
 
-            LoadAndSort(filenames, _dateFormat, _singleTurbineLoading, progress);
+            LoadAndSort(filenames, _dateFormat, _singleTurbineLoading, _rated, progress);
         }
 
-        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, IProgress<int> progress)
+        private void LoadAndSort(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, double _rated,
+            IProgress<int> progress)
         {
             // load files
-            LoadFiles(filenames, _dateFormat, _singleTurbineLoading, progress);
+            LoadFiles(filenames, _dateFormat, _singleTurbineLoading, _rated, progress);
 
             // rearrange files by timestamps
             SortScada();
@@ -89,18 +90,22 @@ namespace scada_analyst
             // some final calculations need to be done for the windfarm itself
             _windFarm = _windFarm.OrderBy(o => o.UnitID).ToList();
             GetBearings();
+
+            // get capacity factor info
+            GetCapacityFactors();
         }
         
-        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, IProgress<int> progress)
+        private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, double _rated,
+            IProgress<int> progress)
         {
             for (int i = 0; i < filenames.Length; i++)
             {
                 FileName.Add(filenames[i]);
-                LoadScada(filenames[i], _dateFormat, _singleTurbineLoading, progress, filenames.Length, i);
+                LoadScada(filenames[i], _dateFormat, _singleTurbineLoading, _rated, progress, filenames.Length, i);
             }
         }
 
-        private void LoadScada(string filename, Common.DateFormat _dateFormat, int _singleTurbineLoading, 
+        private void LoadScada(string filename, Common.DateFormat _dateFormat, int _singleTurbineLoading, double _rated,
             IProgress<int> progress, int numberOfFiles = 1, int i = 0)
         {
             using (StreamReader sR = new StreamReader(filename))
@@ -167,7 +172,7 @@ namespace scada_analyst
                                 }
                                 else
                                 {
-                                    _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
+                                    _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat, _rated));
                                     _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
                                 }
                             }
@@ -182,7 +187,7 @@ namespace scada_analyst
                                     }
                                     else
                                     {
-                                        _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat));
+                                        _windFarm.Add(new TurbineData(splits, fileHeader, _dateFormat, _rated));
                                         _inclTrbn.Add(_windFarm[_windFarm.Count - 1].UnitID);
                                     }
                                 }
@@ -235,9 +240,15 @@ namespace scada_analyst
         {
             for (int i = 0; i < _windFarm.Count; i++)
             {
-                string mode = _windFarm[i].DataSorted.GroupBy(v => v.YawSys.YawPos.DStr).OrderByDescending(g => g.Count()).First().Key;
+                _windFarm[i].Bearings = new BaseStructure.MetaDataSetup(_windFarm[i], BaseStructure.MetaDataSetup.Mode.BEARINGS);
+            }
+        }
 
-                _windFarm[i].PrevailingWindString = mode;
+        private void GetCapacityFactors()
+        {
+            for (int i = 0; i < _windFarm.Count; i++)
+            {
+                _windFarm[i].Capacity = new BaseStructure.MetaDataSetup(_windFarm[i], BaseStructure.MetaDataSetup.Mode.CAPACITY);
             }
         }
 
@@ -611,6 +622,8 @@ namespace scada_analyst
 
             #region Variables
 
+            private double _ratedPower;
+
             private List<ScadaSample> data = new List<ScadaSample>();
             private List<ScadaSample> dataSorted = new List<ScadaSample>();
 
@@ -620,11 +633,12 @@ namespace scada_analyst
 
             public TurbineData() { }
 
-            public TurbineData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat)
+            public TurbineData(string[] splits, ScadaHeader header, Common.DateFormat _dateFormat, double _rated)
             {
                 // this is the first sample for a turbine which is only used once, all future loading
                 // goes into the other method for every turbine
 
+                _ratedPower = _rated;
                 Type = Types.TURBINE;
 
                 data.Add(new ScadaSample(splits, header, _dateFormat));
@@ -656,6 +670,8 @@ namespace scada_analyst
             }
 
             #region Properties
+
+            public double RatedPower { get { return _ratedPower; } set { _ratedPower = value; } }
 
             public List<ScadaSample> Data { get { return data; } set { data = value; } }
             public List<ScadaSample> DataSorted { get { return dataSorted; } set { dataSorted = value; } }

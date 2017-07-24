@@ -13,6 +13,8 @@ namespace scada_analyst.Shared
 
         #endregion
 
+        #region Constructor
+
         public Structure() { }
 
         private Structure(MeteoData.MetMastData input)
@@ -21,8 +23,7 @@ namespace scada_analyst.Shared
             PositionsLoaded = input.PositionsLoaded;
             UnitID = input.UnitID;
             Type = input.Type;
-
-            PrevailingWindString = input.PrevailingWindString;
+            Bearings = input.Bearings;
 
             CheckDataSeriesTimes(input);
         }
@@ -33,11 +34,13 @@ namespace scada_analyst.Shared
             PositionsLoaded = input.PositionsLoaded;
             UnitID = input.UnitID;
             Type = input.Type;
-
-            PrevailingWindString = input.PrevailingWindString;
+            Bearings = input.Bearings;
+            Capacity = input.Capacity;
 
             CheckDataSeriesTimes(input);
         }
+
+        #endregion
 
         public void CheckDataSeriesTimes(MeteoData.MetMastData input)
         {
@@ -69,6 +72,8 @@ namespace scada_analyst.Shared
             return result;
         }
 
+        #region Conversions
+
         public static explicit operator Structure(MeteoData.MetMastData metMast)
         {
             return new Structure(metMast);
@@ -78,6 +83,8 @@ namespace scada_analyst.Shared
         {
             return new Structure(turbine);
         }
+
+        #endregion
 
         #region Properties
 

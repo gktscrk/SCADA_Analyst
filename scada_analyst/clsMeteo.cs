@@ -173,22 +173,8 @@ namespace scada_analyst
         {
             for (int i = 0; i < _metMasts.Count;i++)
             {
-                string mode;
-                
-                if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN)
-                {
-                    mode = "Unknown";
-                }
-                else if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
-                {
-                    mode = _metMasts[i].MetDataSorted.GroupBy(v => v.Dircs.Metres10.DStr).OrderByDescending(g => g.Count()).First().Key;
-                }
-                else
-                {
-                    mode = _metMasts[i].MetDataSorted.GroupBy(v => v.Dircs.MetresRt.DStr).OrderByDescending(g => g.Count()).First().Key;
-                }
-
-                _metMasts[i].PrevailingWindString = mode;
+                _metMasts[i].Bearings = new BaseStructure.MetaDataSetup
+                    (_metMasts[i], _meteoHeader, BaseStructure.MetaDataSetup.Mode.BEARINGS);
             }
         }
 
@@ -245,6 +231,9 @@ namespace scada_analyst
                             if (unit.TimeStamp >= startExp && unit.TimeStamp <= endExprt)
                             {
                                 hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ",");
+
+                                #region Timestamp
+
                                 hB.Append("TimeStamp" + ",");
 
                                 sB.Append(unit.TimeStamp.Year + "-");
@@ -268,9 +257,13 @@ namespace scada_analyst
                                 if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
                                 else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
 
+                                #endregion
+
                                 // need to add in the respective meteorology file columns to make this work properly
 
                                 // this method takes into account which height version of the data has been loaded in at this point
+                                #region Direction
+
                                 if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.BOTH)
                                 {
                                     hB.Append("met_WinddirectionRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Dircs.MetresRt.Mean, 1) + ",");
@@ -285,33 +278,43 @@ namespace scada_analyst
                                     hB.Append("met_WinddirectionRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Dircs.MetresRt.Mean, 1) + ",");
                                 }
 
+                                #endregion
+
+                                #region Wind Speed
+
                                 if (_meteoHeader.WSpdR.Measured == MeteoSample.HeightInfo.MeasuringHeight.BOTH)
                                 {
                                     hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.MetresRt.Mean, 2) + ",");
                                     hB.Append("met_WindSpeedTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.Metres10.Mean, 2) + ",");
                                 }
-                                else if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                                else if (_meteoHeader.WSpdR.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
                                 {
                                     hB.Append("met_WindSpeedTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.Metres10.Mean, 2) + ",");
                                 }
-                                else if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                                else if (_meteoHeader.WSpdR.Measured == MeteoSample.HeightInfo.MeasuringHeight.ROT)
                                 {
                                     hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.MetresRt.Mean, 2) + ",");
                                 }
+
+                                #endregion
+
+                                #region Temperature
 
                                 if (_meteoHeader.Tempr.Measured == MeteoSample.HeightInfo.MeasuringHeight.BOTH)
                                 {
                                     hB.Append("met_TemperatureRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Tempr.MetresRt.Mean, 1) + ",");
                                     hB.Append("met_TemperatureTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Tempr.Metres10.Mean, 1) + ",");
                                 }
-                                else if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                                else if (_meteoHeader.Tempr.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
                                 {
                                     hB.Append("met_TemperatureTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Tempr.Metres10.Mean, 1) + ",");
                                 }
-                                else if (_meteoHeader.Dircs.Measured == MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                                else if (_meteoHeader.Tempr.Measured == MeteoSample.HeightInfo.MeasuringHeight.ROT)
                                 {
                                     hB.Append("met_TemperatureRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Tempr.MetresRt.Mean, 1) + ",");
                                 }
+
+                                #endregion
 
                                 hB.Append("met_Humidity_mean"); sB.Append(Common.GetStringDecimals(unit.Humid.Mean, 1));
 
@@ -454,7 +457,8 @@ namespace scada_analyst
                             {
                                 if (parts[1].Contains("ten") || parts[1].Contains("10"))
                                 {
-                                    if (Tempr.Measured == HeightInfo.MeasuringHeight.UNKNOWN) { Tempr.Measured = HeightInfo.MeasuringHeight.M_10; }
+                                    if (Tempr.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.M_10)
+                                    { Tempr.Measured = HeightInfo.MeasuringHeight.M_10; }
                                     else { Tempr.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
                                     if (parts[2] == "mean") { Tempr.Metres10.Mean = i; }
@@ -464,7 +468,8 @@ namespace scada_analyst
                                 }
                                 else if (parts[1].Contains("rot"))
                                 {
-                                    if (Tempr.Measured == HeightInfo.MeasuringHeight.UNKNOWN) { Tempr.Measured = HeightInfo.MeasuringHeight.ROT; }
+                                    if (Tempr.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.ROT)
+                                    { Tempr.Measured = HeightInfo.MeasuringHeight.ROT; }
                                     else { Tempr.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
                                     if (parts[2] == "mean") { Tempr.MetresRt.Mean = i; }
@@ -477,7 +482,8 @@ namespace scada_analyst
                             {
                                 if (parts[1].Contains("ten") || parts[1].Contains("10"))
                                 {
-                                    if (Dircs.Measured == HeightInfo.MeasuringHeight.UNKNOWN) { Dircs.Measured = HeightInfo.MeasuringHeight.M_10; }
+                                    if (Dircs.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.M_10)
+                                    { Dircs.Measured = HeightInfo.MeasuringHeight.M_10; }
                                     else { Dircs.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
                                     if (parts[2] == "mean") { Dircs.Metres10.Mean = i; }
@@ -487,7 +493,8 @@ namespace scada_analyst
                                 }
                                 else if (parts[1].Contains("rot"))
                                 {
-                                    if (Dircs.Measured == HeightInfo.MeasuringHeight.UNKNOWN) { Dircs.Measured = HeightInfo.MeasuringHeight.ROT; }
+                                    if (Dircs.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.ROT)
+                                    { Dircs.Measured = HeightInfo.MeasuringHeight.ROT; }
                                     else { Dircs.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
                                     if (parts[2] == "mean") { Dircs.MetresRt.Mean = i; }
@@ -500,7 +507,8 @@ namespace scada_analyst
                             {
                                 if (parts[1].Contains("ten") || parts[1].Contains("10"))
                                 {
-                                    if (WSpdR.Measured == HeightInfo.MeasuringHeight.UNKNOWN){ WSpdR.Measured = HeightInfo.MeasuringHeight.M_10; }
+                                    if (WSpdR.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.M_10)
+                                    { WSpdR.Measured = HeightInfo.MeasuringHeight.M_10; }
                                     else { WSpdR.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
                                     if (parts[2] == "mean") { WSpdR.Metres10.Mean = i; }
@@ -510,7 +518,8 @@ namespace scada_analyst
                                 }
                                 else if (parts[1].Contains("rot"))
                                 {
-                                    if (WSpdR.Measured == HeightInfo.MeasuringHeight.UNKNOWN) { WSpdR.Measured = HeightInfo.MeasuringHeight.ROT; }
+                                    if (WSpdR.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.ROT)
+                                    { WSpdR.Measured = HeightInfo.MeasuringHeight.ROT; }
                                     else { WSpdR.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
                                     if (parts[2] == "mean") { WSpdR.MetresRt.Mean = i; }

@@ -1379,7 +1379,8 @@ namespace scada_analyst
 
                 await Task.Run(() =>
                 {
-                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, _singleTurbineLoading, _separation, progress);
+                    analysis.AppendFiles(filenames, existingData.FileName, _dateFormat, _singleTurbineLoading, 
+                        _analyser.RatedPwr, _separation, progress);
                     _loadedFiles.AddRange(filenames);
                 });
 
@@ -1834,6 +1835,78 @@ namespace scada_analyst
 
         #endregion
 
+        #region Navigation Menu
+
+        private void LView_LoadedOverview_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LView_LoadedOverview.SelectedItems.Count == 1)
+            {
+                DirectoryItem thisItem = (DirectoryItem)LView_LoadedOverview.SelectedItem;
+
+                if (thisItem.StringData == Overview[0].StringData)
+                {
+                    GBox_EventsOverview.Header = "General Overview";
+                    Tab_EventsSummary.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Visibility = Visibility.Collapsed;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[1].StringData)
+                {
+                    GBox_EventsOverview.Header = "Events Overview";
+                    Tab_DetailTimeFrame.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[1].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[2].StringData)
+                {
+                    GBox_EventsOverview.Header = "Events Overview";
+                    Tab_LoWinds.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[2].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[3].StringData)
+                {
+                    GBox_EventsOverview.Header = "Events Overview";
+                    Tab_HiWinds.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[3].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
+                }
+                else if (thisItem.StringData == Overview[4].StringData)
+                {
+                    GBox_EventsOverview.Header = "Events Overview";
+                    Tab_NoPower.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[4].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
+                }
+                else if (thisItem.StringData == Overview[5].StringData)
+                {
+                    GBox_EventsOverview.Header = "Events Overview";
+                    Tab_RtPower.IsSelected = true;
+
+                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
+                    Lbl_TabDescription.Visibility = Visibility.Visible;
+                    Lbl_TabDescription.Content = Overview[5].StringData;
+                    Btn_DurationFilter.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        #endregion
+
         #region Background Methods
 
         #region Thresholds
@@ -1893,68 +1966,6 @@ namespace scada_analyst
         }
 
         #endregion
-
-        private void LView_LoadedOverview_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (LView_LoadedOverview.SelectedItems.Count == 1)
-            {
-                DirectoryItem thisItem = (DirectoryItem)LView_LoadedOverview.SelectedItem;
-
-                if (thisItem.StringData == Overview[0].StringData)
-                {
-                    Tab_EventsSummary.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Visibility = Visibility.Collapsed;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[1].StringData)
-                {
-                    Tab_DetailTimeFrame.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[1].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[2].StringData)
-                {
-                    Tab_LoWinds.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[2].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[3].StringData)
-                {
-                    Tab_HiWinds.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[3].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
-                }
-                else if (thisItem.StringData == Overview[4].StringData)
-                {
-                    Tab_NoPower.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[4].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Visible;
-                }
-                else if (thisItem.StringData == Overview[5].StringData)
-                {
-                    Tab_RtPower.IsSelected = true;
-
-                    Comb_SummaryChoose.Visibility = Visibility.Collapsed;
-                    Lbl_TabDescription.Visibility = Visibility.Visible;
-                    Lbl_TabDescription.Content = Overview[5].StringData;
-                    Btn_DurationFilter.Visibility = Visibility.Visible;
-                }
-            }
-        }
 
         private void ChangeFaultStatus(bool result)
         {

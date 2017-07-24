@@ -217,7 +217,7 @@
 
         </Grid>
 
-        <GroupBox Grid.Column="0" Grid.Row="2" Margin="15,5,5,5" Header="Events Overview">
+        <GroupBox Grid.Column="0" Grid.Row="2" Margin="15,5,5,5" Name="GBox_EventsOverview" >
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -299,7 +299,7 @@
                                         <GridViewColumn Header="Prevailing Winds" Width="100" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding PrevailingWindString, Mode=OneWay}" />
+                                                    <Label Content="{Binding Bearings.FullStr, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -375,7 +375,7 @@
                                         <GridViewColumn Header="Prevailing Winds" Width="100" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding PrevailingWindString, Mode=OneWay}" />
+                                                    <Label Content="{Binding Bearings.FullStr, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -451,7 +451,7 @@
                                         <GridViewColumn Header="Prevailing Winds" Width="100" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding PrevailingWindString, Mode=OneWay}" />
+                                                    <Label Content="{Binding Bearings.FullStr, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -527,7 +527,7 @@
                                         <GridViewColumn Header="Prevailing Winds" Width="100" >
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Label Content="{Binding PrevailingWindString, Mode=OneWay}" />
+                                                    <Label Content="{Binding Bearings.FullStr, Mode=OneWay}" />
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
