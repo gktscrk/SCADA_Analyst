@@ -287,6 +287,7 @@ namespace scada_analyst
             _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             CreateSummaries();
             PopulateOverview();
+            Combo_YearChooser.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -311,6 +312,7 @@ namespace scada_analyst
             _analyser.AddStructureLocations(_geoFile, _meteoFile, _scadaFile, _scadaLoaded, _meteoLoaded, _geoLoaded);
             CreateSummaries();
             PopulateOverview();
+            Combo_YearChooser.SelectedIndex = 0;
         }
 
         #endregion
@@ -911,7 +913,7 @@ namespace scada_analyst
             }
         }
 
-        private void MetaSummary(int _year)
+        private ObservableCollection<Analysis.StructureSmry> MetaSummary(int _year)
         {
             //
             // Tuple Structure
@@ -921,32 +923,38 @@ namespace scada_analyst
             // _windFarm[i].Capacity.Years[0].Values[0].Item3; -> value string
             //
 
+            // this brings up a list of all the data in that year, but to be fair we also need to know all the possible
+            // years beforehand
+            return new ObservableCollection<Analysis.StructureSmry>(_analyser.GeneralSummary(_year));
+        }
+
+        private void Combo_YearChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // this allows removing the source if it doesn't apply 
             LView_CapacityFactor.ItemsSource = null;
             LView_Bearings.ItemsSource = null;
 
-            // this brings up a list of all the data in that year, but to be fair we also need to know all the possible
-            // years beforehand
-            ObservableCollection<Analysis.StructureSmry> _general =
-                new ObservableCollection<Analysis.StructureSmry>(_analyser.GeneralSummary(_year));
+            // create an empty array
+            ObservableCollection<Analysis.StructureSmry> _general = new ObservableCollection<Analysis.StructureSmry>();
+
+            // first get all of the years for which we have data
+            if (Combo_YearChooser.SelectedIndex != -1)
+            {
+                _general = MetaSummary((int)Combo_YearChooser.SelectedItem);
+            }
 
             // all of these reference a different aspect of _sumEvents
             LView_CapacityFactor.ItemsSource = _general;
             LView_Bearings.ItemsSource = _general;
         }
 
-        private void Combo_YearChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // first get all of the years for which we have data
-            if (Combo_YearChooser.SelectedIndex != -1)
-            {
-                MetaSummary((int)Combo_YearChooser.SelectedItem);
-            }
-        }
-
         void CreateLoadedYearsListForComboBox()
         {
-            Combo_YearChooser.ItemsSource = _scadaFile.Years;
-            Combo_YearChooser.SelectedValue = _scadaFile.Years;
+            List<int> _allYears = new List<int>(_scadaFile.Years);
+            _allYears.AddRange(_meteoFile.Years);
+
+            Combo_YearChooser.ItemsSource = _allYears;
+            Combo_YearChooser.SelectedValue = _allYears;
             Combo_YearChooser.Items.Refresh();
         }
 
