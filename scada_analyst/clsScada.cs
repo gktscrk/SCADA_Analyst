@@ -305,7 +305,7 @@ namespace scada_analyst
 
         #region Export Data
 
-        public void ExportFiles(IProgress<int> progress, string output,
+        public void ExportFiles(IProgress<int> progress, string output, bool exportTimeInf, bool exportAssetId,
             bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
             bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
             bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
@@ -319,7 +319,7 @@ namespace scada_analyst
             outputName = output;
 
             // write the SCADA file out in a reasonable method
-            WriteSCADA(progress,
+            WriteSCADA(progress, exportTimeInf, exportAssetId,
                 exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
                 exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
                 exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
@@ -330,7 +330,7 @@ namespace scada_analyst
                 oneTurbine, expStart, exprtEnd, _secondaryData);
         }
 
-        private void WriteSCADA(IProgress<int> progress,
+        private void WriteSCADA(IProgress<int> progress, bool exportTimeInf, bool exportAssetId,
             bool exportPowMaxm, bool exportPowMinm, bool exportPowMean, bool exportPowStdv,
             bool exportAmbMaxm, bool exportAmbMinm, bool exportAmbMean, bool exportAmbStdv,
             bool exportWSpMaxm, bool exportWSpMinm, bool exportWSpMean, bool exportWSpStdv,
@@ -363,43 +363,60 @@ namespace scada_analyst
                             {
                                 // all header lines are created every time as probably similar
                                 // performance to ignoring them with a conditional statement
+
                                 // -1 will represent the full set to be sent in
-                                if (oneTurbine != -1)
+                                if (oneTurbine == -1)
                                 {
-                                    if (unit.AssetID == oneTurbine)
-                                    { hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ","); }
-                                    else if (unit.StationID == oneTurbine)
-                                    { hB.Append("StationId" + ","); sB.Append(unit.StationID + ","); }
+                                    if (exportAssetId)
+                                    {
+                                        // this conditional will be entered if the full set needs to be exported
+                                        if (_useAssetId) { hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ","); }
+                                        else { hB.Append("StationId" + ","); sB.Append(unit.StationID + ","); }
+                                    }
                                 }
                                 else
                                 {
-                                    if (_useAssetId) { hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ","); }
-                                    else { hB.Append("StationId" + ","); sB.Append(unit.StationID + ","); }
+                                    // this conditional will be entered if only one turbine needs to be exported
+                                    if (unit.AssetID == oneTurbine || unit.StationID == oneTurbine)
+                                    {
+                                        if (exportAssetId)
+                                        {
+                                            if (unit.AssetID == oneTurbine) { hB.Append("AssetUID" + ","); sB.Append(unit.AssetID + ","); }
+                                            else if (unit.StationID == oneTurbine) { hB.Append("StationId" + ","); sB.Append(unit.StationID + ","); }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
                                 }
 
                                 #region Timestamp
 
-                                hB.Append("TimeStamp" + ",");
-                                sB.Append(unit.TimeStamp.Year + "-");
+                                if (exportTimeInf)
+                                {
+                                    hB.Append("TimeStamp" + ",");
+                                    sB.Append(unit.TimeStamp.Year + "-");
 
-                                if (10 <= unit.TimeStamp.Month) { sB.Append(unit.TimeStamp.Month); }
-                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Month); }
-                                sB.Append("-");
+                                    if (10 <= unit.TimeStamp.Month) { sB.Append(unit.TimeStamp.Month); }
+                                    else { sB.Append("0"); sB.Append(unit.TimeStamp.Month); }
+                                    sB.Append("-");
 
-                                if (10 <= unit.TimeStamp.Day) { sB.Append(unit.TimeStamp.Day); }
-                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Day); }
-                                sB.Append(" ");
+                                    if (10 <= unit.TimeStamp.Day) { sB.Append(unit.TimeStamp.Day); }
+                                    else { sB.Append("0"); sB.Append(unit.TimeStamp.Day); }
+                                    sB.Append(" ");
 
-                                if (10 <= unit.TimeStamp.Hour) { sB.Append(unit.TimeStamp.Hour); }
-                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Hour); }
-                                sB.Append(":");
+                                    if (10 <= unit.TimeStamp.Hour) { sB.Append(unit.TimeStamp.Hour); }
+                                    else { sB.Append("0"); sB.Append(unit.TimeStamp.Hour); }
+                                    sB.Append(":");
 
-                                if (10 <= unit.TimeStamp.Minute) { sB.Append(unit.TimeStamp.Minute); }
-                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Minute); }
-                                sB.Append(":");
+                                    if (10 <= unit.TimeStamp.Minute) { sB.Append(unit.TimeStamp.Minute); }
+                                    else { sB.Append("0"); sB.Append(unit.TimeStamp.Minute); }
+                                    sB.Append(":");
 
-                                if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
-                                else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
+                                    if (10 <= unit.TimeStamp.Second) { sB.Append(unit.TimeStamp.Second + ","); }
+                                    else { sB.Append("0"); sB.Append(unit.TimeStamp.Second + ","); }
+                                }
 
                                 #endregion 
 

@@ -32,68 +32,78 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Label Grid.Column="1" Grid.Row="0" Margin="5,15,5,5" Content="Max" />
-        <Label Grid.Column="2" Grid.Row="0" Margin="5,15,5,5" Content="Min" />
-        <Label Grid.Column="3" Grid.Row="0" Margin="5,15,5,5" Content="Mean" />
-        <Label Grid.Column="4" Grid.Row="0" Margin="5,15,15,5" Content="StDev" />
+        <CheckBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="5" Margin="15,15,15,5" 
+                  Content="Include Asset Info" Name="CBox_AssetInfo" />
+        <CheckBox Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="5" Margin="15,5,15,5" 
+                  Content="Include Timestamp" Name="CBox_Timestamp" />
 
-        <Label Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="5" Margin="15,5,15,5" 
+        <Separator Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="5" Margin="15,5" />
+
+        <Label Grid.Column="1" Grid.Row="3" Margin="5,5,5,5" Content="Max" />
+        <Label Grid.Column="2" Grid.Row="3" Margin="5,5,5,5" Content="Min" />
+        <Label Grid.Column="3" Grid.Row="3" Margin="5,5,5,5" Content="Mean" />
+        <Label Grid.Column="4" Grid.Row="3" Margin="5,5,15,5" Content="StDev" />
+
+        <Label Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="5" Margin="15,5,15,5" 
                Content="Performance Variables" FontWeight="Bold" FontSize="14" />
-        <TextBlock Grid.Column="0" Grid.Row="2" Margin="15,5,5,5" Text="Power Output" VerticalAlignment="Bottom" />
-        
-        <Label Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="5" Margin="15,5,15,5" 
-               Content="Environmental Variables" FontWeight="Bold" FontSize="14" />
-        <TextBlock Grid.Column="0" Grid.Row="4" Margin="15,5,5,5" Text="Ambient Temp" VerticalAlignment="Bottom" />
-        <TextBlock Grid.Column="0" Grid.Row="5" Margin="15,5,5,5" Text="Wind Speeds" VerticalAlignment="Bottom" />
+        <TextBlock Grid.Column="0" Grid.Row="5" Margin="15,5,5,5" Text="Power Output" VerticalAlignment="Bottom" />
         
         <Label Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="5" Margin="15,5,15,5" 
-               Content="Equipment" FontWeight="Bold" FontSize="14" />
-        <TextBlock Grid.Column="0" Grid.Row="7" Margin="15,5,5,5" Text="Nacelle" VerticalAlignment="Bottom" />
-        <TextBlock Grid.Column="0" Grid.Row="8" Margin="15,5,5,5" Text="Gearbox" VerticalAlignment="Bottom" />
-        <TextBlock Grid.Column="0" Grid.Row="9" Margin="15,5,5,5" Text="Generator" VerticalAlignment="Bottom" />
-        <TextBlock Grid.Column="0" Grid.Row="10" Margin="15,5,5,5" Text="Main Bearing" VerticalAlignment="Bottom" />
+               Content="Environmental Variables" FontWeight="Bold" FontSize="14" />
+        <TextBlock Grid.Column="0" Grid.Row="7" Margin="15,5,5,5" Text="Ambient Temp" VerticalAlignment="Bottom" />
+        <TextBlock Grid.Column="0" Grid.Row="8" Margin="15,5,5,5" Text="Wind Speeds" VerticalAlignment="Bottom" />
         
-        <Button Grid.Column="1" Grid.Row="11" Grid.ColumnSpan="2" Content="OK" Margin="5,5,5,15" Width="80"
+        <Label Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="5" Margin="15,5,15,5" 
+               Content="Equipment" FontWeight="Bold" FontSize="14" />
+        <TextBlock Grid.Column="0" Grid.Row="10" Margin="15,5,5,5" Text="Nacelle" VerticalAlignment="Bottom" />
+        <TextBlock Grid.Column="0" Grid.Row="11" Margin="15,5,5,5" Text="Gearbox" VerticalAlignment="Bottom" />
+        <TextBlock Grid.Column="0" Grid.Row="12" Margin="15,5,5,5" Text="Generator" VerticalAlignment="Bottom" />
+        <TextBlock Grid.Column="0" Grid.Row="13" Margin="15,5,5,5" Text="Main Bearing" VerticalAlignment="Bottom" />
+        
+        <Button Grid.Column="1" Grid.Row="14" Grid.ColumnSpan="2" Content="OK" Margin="5,5,5,15" Width="80"
                 IsDefault="True" Click="ApplyClick" />
-        <Button Grid.Column="3" Grid.Row="11" Grid.ColumnSpan="2" Content="Cancel" Margin="5,5,15,15" Width="80"
+        <Button Grid.Column="3" Grid.Row="14" Grid.ColumnSpan="2" Content="Cancel" Margin="5,5,15,15" Width="80"
                 IsCancel="True" />
 
-        <CheckBox Grid.Column="1" Grid.Row="2" Margin="5,5,5,5" Name="CBox_Pow_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="2" Margin="5,5,5,5" Name="CBox_Pow_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="2" Margin="5,5,5,5" Name="CBox_Pow_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="2" Margin="5,5,15,5" Name="CBox_Pow_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" Grid.Row="5" Margin="5,5,5,5" Name="CBox_Pow_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="5" Margin="5,5,5,5" Name="CBox_Pow_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="5" Margin="5,5,5,5" Name="CBox_Pow_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="5" Margin="5,5,15,5" Name="CBox_Pow_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-        <CheckBox Grid.Column="1" Grid.Row="4" Margin="5,5,5,5" Name="CBox_Amb_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="4" Margin="5,5,5,5" Name="CBox_Amb_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="4" Margin="5,5,5,5" Name="CBox_Amb_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="4" Margin="5,5,15,5" Name="CBox_Amb_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" Grid.Row="7" Margin="5,5,5,5" Name="CBox_Amb_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="7" Margin="5,5,5,5" Name="CBox_Amb_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="7" Margin="5,5,5,5" Name="CBox_Amb_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="7" Margin="5,5,15,5" Name="CBox_Amb_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-        <CheckBox Grid.Column="1" Grid.Row="5" Margin="5,5,5,5" Name="CBox_WSp_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="5" Margin="5,5,5,5" Name="CBox_WSp_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="5" Margin="5,5,5,5" Name="CBox_WSp_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="5" Margin="5,5,15,5" Name="CBox_WSp_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" Grid.Row="8" Margin="5,5,5,5" Name="CBox_WSp_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="8" Margin="5,5,5,5" Name="CBox_WSp_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="8" Margin="5,5,5,5" Name="CBox_WSp_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="8" Margin="5,5,15,5" Name="CBox_WSp_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-        <CheckBox Grid.Column="1" Grid.Row="9" Margin="5,5,5,5" Name="CBox_Gen_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="9" Margin="5,5,5,5" Name="CBox_Gen_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="9" Margin="5,5,5,5" Name="CBox_Gen_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="9" Margin="5,5,15,5" Name="CBox_Gen_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" Grid.Row="10" Margin="5,5,5,5" Name="CBox_Nac_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="10" Margin="5,5,5,5" Name="CBox_Nac_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="10" Margin="5,5,5,5" Name="CBox_Nac_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="10" Margin="5,5,15,5" Name="CBox_Nac_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-        <CheckBox Grid.Column="1" Grid.Row="10" Margin="5,5,5,5" Name="CBox_MBr_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="10" Margin="5,5,5,5" Name="CBox_MBr_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="10" Margin="5,5,5,5" Name="CBox_MBr_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="10" Margin="5,5,15,5" Name="CBox_MBr_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        
-        <CheckBox Grid.Column="1" Grid.Row="8" Margin="5,5,5,5" Name="CBox_GBx_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="8" Margin="5,5,5,5" Name="CBox_GBx_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="8" Margin="5,5,5,5" Name="CBox_GBx_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="8" Margin="5,5,15,5" Name="CBox_GBx_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" Grid.Row="11" Margin="5,5,5,5" Name="CBox_GBx_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="11" Margin="5,5,5,5" Name="CBox_GBx_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="11" Margin="5,5,5,5" Name="CBox_GBx_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="11" Margin="5,5,15,5" Name="CBox_GBx_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-        <CheckBox Grid.Column="1" Grid.Row="7" Margin="5,5,5,5" Name="CBox_Nac_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="2" Grid.Row="7" Margin="5,5,5,5" Name="CBox_Nac_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="3" Grid.Row="7" Margin="5,5,5,5" Name="CBox_Nac_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <CheckBox Grid.Column="4" Grid.Row="7" Margin="5,5,15,5" Name="CBox_Nac_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" Grid.Row="12" Margin="5,5,5,5" Name="CBox_Gen_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="12" Margin="5,5,5,5" Name="CBox_Gen_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="12" Margin="5,5,5,5" Name="CBox_Gen_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="12" Margin="5,5,15,5" Name="CBox_Gen_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <CheckBox Grid.Column="1" Grid.Row="13" Margin="5,5,5,5" Name="CBox_MBr_Maxm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="2" Grid.Row="13" Margin="5,5,5,5" Name="CBox_MBr_Minm" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="3" Grid.Row="13" Margin="5,5,5,5" Name="CBox_MBr_Mean" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="4" Grid.Row="13" Margin="5,5,15,5" Name="CBox_MBr_Stdv" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
     </Grid>
 </Metro:MetroWindow>

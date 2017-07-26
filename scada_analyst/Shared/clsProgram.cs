@@ -12,6 +12,12 @@ namespace scada_analyst.Shared
 
             #region Version 3.000 - Proceeding after Romax
 
+            ProgramVersion v3200 = new ProgramVersion(3200, new DateTime(2017, 07, 26));
+            v3200.AddChange("Can export data without an asset ID.");
+            v3200.AddChange("Can export data without a timestamp.");
+            v3200.AddChange("Fixed single event export to only export that asset information.");
+            results.Add(v3200);
+
             ProgramVersion v3100 = new ProgramVersion(3100, new DateTime(2017, 07, 24));
             v3100.AddChange("Capacities and bearings are highlighted over time in a respective table.");
             v3100.AddChange("New method of bearing calculations breaks these down by month and year.");

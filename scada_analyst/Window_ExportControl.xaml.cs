@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 
 using MahApps.Metro.Controls;
 
@@ -14,11 +9,7 @@ namespace scada_analyst
     /// </summary>
     public partial class Window_ExportControl : MetroWindow
     {
-        #region Variables
-
-
-
-        #endregion
+        #region Constructor
 
         public Window_ExportControl(MetroWindow owner)
         {
@@ -27,12 +18,17 @@ namespace scada_analyst
             Owner = owner;
         }
 
+        #endregion
+
         private void ApplyClick(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
         }
 
         #region Properties
+
+        public bool ExportAssetId { get { return CBox_AssetInfo.IsChecked.Value; } set { CBox_AssetInfo.IsChecked = value; } }
+        public bool ExportTimeInf { get { return CBox_Timestamp.IsChecked.Value; } set { CBox_Timestamp.IsChecked = value; } }
 
         public bool ExportPowMaxm { get { return CBox_Pow_Maxm.IsChecked.Value; } set { CBox_Pow_Maxm.IsChecked = value; } }
         public bool ExportPowMinm { get { return CBox_Pow_Minm.IsChecked.Value; } set { CBox_Pow_Minm.IsChecked = value; } }

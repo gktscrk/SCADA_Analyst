@@ -47,6 +47,7 @@ namespace scada_analyst
         private bool _averagesComputed = false;
         private bool _usingPreviousWeekForGraphing = true;
 
+        private bool exportAssetId = true, exportTimeInf = true;
         private bool exportPowMaxm = false, exportAmbMaxm = false, exportWSpMaxm = false;
         private bool exportPowMinm = false, exportAmbMinm = false, exportWSpMinm = false;
         private bool exportPowMean = true, exportAmbMean = true, exportWSpMean = true;
@@ -839,7 +840,6 @@ namespace scada_analyst
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Visible;
 
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -852,7 +852,6 @@ namespace scada_analyst
                     LView_Bearings.Visibility = Visibility.Visible;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
 
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -865,7 +864,6 @@ namespace scada_analyst
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
 
-                    Btn_DurationFilter.Visibility = Visibility.Visible;
                     LView_EventsSumPwrNone.Visibility = Visibility.Visible;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -878,7 +876,6 @@ namespace scada_analyst
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
 
-                    Btn_DurationFilter.Visibility = Visibility.Visible;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -891,7 +888,6 @@ namespace scada_analyst
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
 
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Visible;
@@ -904,7 +900,6 @@ namespace scada_analyst
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_CapacityFactor.Visibility = Visibility.Collapsed;
 
-                    Btn_DurationFilter.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
@@ -1166,7 +1161,7 @@ namespace scada_analyst
                                 { _dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, Common.DateFormat.DMY); }
                             }
 
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
                                 exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
                                 exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
@@ -1180,7 +1175,7 @@ namespace scada_analyst
                         {
                             // this export option is for the specific event only but needs different options 
                             // for various timeframes
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 false, false, exportPowMean, false,
                                 false, false, exportAmbMean, false,
                                 false, false, exportWSpMean, false,
@@ -1195,7 +1190,7 @@ namespace scada_analyst
                         {
                             // this export option is for the specific event only but needs different options 
                             // for various timeframes
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 false, false, exportPowMean, false,
                                 false, false, exportAmbMean, false,
                                 false, false, exportWSpMean, false,
@@ -1210,7 +1205,7 @@ namespace scada_analyst
                         {
                             // this export option is for the specific event only but needs different options 
                             // for various timeframes
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName,
+                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 false, false, exportPowMean, false,
                                 false, false, exportAmbMean, false,
                                 false, false, exportWSpMean, false,
@@ -1859,6 +1854,9 @@ namespace scada_analyst
         {
             Window_ExportControl exportOptions = new Window_ExportControl(this);
 
+            exportOptions.ExportAssetId = exportAssetId;
+            exportOptions.ExportTimeInf = exportTimeInf;
+
             exportOptions.ExportAmbMaxm = exportAmbMaxm;
             exportOptions.ExportAmbMinm = exportAmbMinm;
             exportOptions.ExportAmbMean = exportAmbMean;
@@ -1896,6 +1894,9 @@ namespace scada_analyst
 
             if (exportOptions.ShowDialog().Value)
             {
+                exportAssetId = exportOptions.ExportAssetId;
+                exportTimeInf = exportOptions.ExportTimeInf;
+
                 exportPowMaxm = exportOptions.ExportPowMaxm;
                 exportPowMinm = exportOptions.ExportPowMinm;
                 exportPowMean = exportOptions.ExportPowMean;
@@ -2241,6 +2242,9 @@ namespace scada_analyst
                     Comb_SummaryChoose.Visibility = Visibility.Visible;
                     Lbl_TabDescription.Visibility = Visibility.Collapsed;
                     Btn_DurationFilter.Visibility = Visibility.Collapsed;
+
+                    LBL_YearChooser.Visibility = Visibility.Visible;
+                    Combo_YearChooser.Visibility = Visibility.Visible;
                 }
                 else if (thisItem.StringData == Overview[1].StringData)
                 {
@@ -2251,6 +2255,9 @@ namespace scada_analyst
                     Lbl_TabDescription.Visibility = Visibility.Visible;
                     Lbl_TabDescription.Content = Overview[1].StringData;
                     Btn_DurationFilter.Visibility = Visibility.Collapsed;
+
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[2].StringData)
                 {
@@ -2261,6 +2268,9 @@ namespace scada_analyst
                     Lbl_TabDescription.Visibility = Visibility.Visible;
                     Lbl_TabDescription.Content = Overview[2].StringData;
                     Btn_DurationFilter.Visibility = Visibility.Collapsed;
+
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[3].StringData)
                 {
@@ -2271,6 +2281,9 @@ namespace scada_analyst
                     Lbl_TabDescription.Visibility = Visibility.Visible;
                     Lbl_TabDescription.Content = Overview[3].StringData;
                     Btn_DurationFilter.Visibility = Visibility.Collapsed;
+
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[4].StringData)
                 {
@@ -2281,6 +2294,9 @@ namespace scada_analyst
                     Lbl_TabDescription.Visibility = Visibility.Visible;
                     Lbl_TabDescription.Content = Overview[4].StringData;
                     Btn_DurationFilter.Visibility = Visibility.Visible;
+
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
                 }
                 else if (thisItem.StringData == Overview[5].StringData)
                 {
@@ -2291,6 +2307,9 @@ namespace scada_analyst
                     Lbl_TabDescription.Visibility = Visibility.Visible;
                     Lbl_TabDescription.Content = Overview[5].StringData;
                     Btn_DurationFilter.Visibility = Visibility.Visible;
+
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
                 }
             }
         }
