@@ -2698,45 +2698,49 @@ namespace scada_analyst
 
         private void Export_MenuItemClick(object sender, RoutedEventArgs e)
         {
-            if (LView_Capacity.SelectedItems.Count > 0 || LView_Bearings.SelectedItems.Count > 0 ||
-                LView_EventsSumWndLows.SelectedItems.Count > 0 || LView_EventsSumWndHigh.SelectedItems.Count > 0 ||
-                LView_EventsSumPwrNone.SelectedItems.Count > 0 || LView_EventsSumPwrHigh.SelectedItems.Count > 0)
+            try
             {
-                DataTable _exportInfo = null;
+                if (LView_Capacity.SelectedItems.Count > 0 || LView_Bearings.SelectedItems.Count > 0 ||
+                    LView_EventsSumWndLows.SelectedItems.Count > 0 || LView_EventsSumWndHigh.SelectedItems.Count > 0 ||
+                    LView_EventsSumPwrNone.SelectedItems.Count > 0 || LView_EventsSumPwrHigh.SelectedItems.Count > 0)
+                {
+                    DataTable _exportInfo = null;
 
-                if (LView_Bearings.SelectedItems.Count > 0)
-                {
-                    _exportInfo = ToDataTable(LView_Bearings, TableExportType.BEARING);
-                }
-                else if (LView_Capacity.SelectedItems.Count > 0)
-                {
-                    _exportInfo = ToDataTable(LView_Capacity, TableExportType.CAPACITY);
-                }
-                else if (LView_EventsSumWndLows.SelectedItems.Count > 0)
-                {
-                    _exportInfo = ToDataTable(LView_EventsSumWndLows, TableExportType.EVENT_STRUT);
-                }
-                else if (LView_EventsSumWndHigh.SelectedItems.Count > 0)
-                {
-                    _exportInfo = ToDataTable(LView_EventsSumWndHigh, TableExportType.EVENT_STRUT);
-                }
-                else if (LView_EventsSumPwrNone.SelectedItems.Count > 0)
-                {
-                    _exportInfo = ToDataTable(LView_EventsSumPwrNone, TableExportType.EVENT_STRUT);
-                }
-                else if (LView_EventsSumPwrHigh.SelectedItems.Count > 0)
-                {
-                    _exportInfo = ToDataTable(LView_EventsSumPwrHigh, TableExportType.EVENT_STRUT);
-                }
+                    if (LView_Bearings.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_Bearings, TableExportType.BEARING);
+                    }
+                    else if (LView_Capacity.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_Capacity, TableExportType.CAPACITY);
+                    }
+                    else if (LView_EventsSumWndLows.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_EventsSumWndLows, TableExportType.EVENT_STRUT);
+                    }
+                    else if (LView_EventsSumWndHigh.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_EventsSumWndHigh, TableExportType.EVENT_STRUT);
+                    }
+                    else if (LView_EventsSumPwrNone.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_EventsSumPwrNone, TableExportType.EVENT_STRUT);
+                    }
+                    else if (LView_EventsSumPwrHigh.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_EventsSumPwrHigh, TableExportType.EVENT_STRUT);
+                    }
 
-                if (_exportInfo != null)
-                {
-                    string _output = GetSaveName();
+                    if (_exportInfo != null)
+                    {
+                        string _output = GetSaveName();
 
-                    if (_output == "") { throw new WritingCancelledException(); }
-                    else { CreateCSVFile(_exportInfo, _output); }
+                        if (_output == "") { throw new WritingCancelledException(); }
+                        else { CreateCSVFile(_exportInfo, _output); }
+                    }
                 }
             }
+            catch { }
         }
 
         private DataTable ToDataTable(ListView _input, TableExportType _type)
