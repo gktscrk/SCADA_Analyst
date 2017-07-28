@@ -2243,8 +2243,8 @@ namespace scada_analyst
                     Lbl_TabDescription.Visibility = Visibility.Collapsed;
                     Btn_DurationFilter.Visibility = Visibility.Collapsed;
 
-                    LBL_YearChooser.Visibility = Visibility.Visible;
-                    Combo_YearChooser.Visibility = Visibility.Visible;
+                    Comb_DisplaySummary_SelectionChanged(sender, e);
+                    LBL_YearChooser.Visibility = Combo_YearChooser.Visibility;
                 }
                 else if (thisItem.StringData == Overview[1].StringData)
                 {
