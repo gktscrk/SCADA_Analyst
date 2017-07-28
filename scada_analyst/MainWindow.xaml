@@ -36,6 +36,8 @@
                 <MenuItem Header="_Loading Options" Click="DateFormatClick" />
                 <MenuItem Header="_Check Loaded Files" Click="LoadedFilesClick" />
                 <Separator />
+                <MenuItem Header="_Convert Export to LaTeX Compatible Table" Click="ExportLatexConversion" />
+                <Separator />
                 <MenuItem Header="_About" Click="AboutClick" />
                 <Separator />
                 <MenuItem Header="_Exit" Click="Exit" />

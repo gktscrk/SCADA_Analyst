@@ -14,6 +14,7 @@ namespace scada_analyst.Shared
 
             ProgramVersion v3300 = new ProgramVersion(3300, new DateTime(2017, 07, 28));
             v3300.AddChange("Export table options in the overview area.");
+            v3300.AddChange("Function that converts an exported event file into a LaTeX-compatible table.");
             results.Add(v3300);
 
             ProgramVersion v3200 = new ProgramVersion(3200, new DateTime(2017, 07, 26));

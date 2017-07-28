@@ -22,6 +22,7 @@ using scada_analyst.Shared;
 using LiveCharts.Wpf;
 using System.Data;
 using System.IO;
+using System.Text;
 
 namespace scada_analyst
 {
@@ -178,6 +179,71 @@ namespace scada_analyst
             {
                 _analyser.DuratFilter = new TimeSpan((int)getTimeDur.NumericValue1, (int)getTimeDur.NumericValue2, 0);
             }
+        }
+
+        /// <summary>
+        /// Looks at a table file exported from this program and converts it to a file that can
+        /// be directly put into a LaTeX file.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ExportLatexConversion(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "Files (*.csv)|*.csv|All files (*.*)|*.*";
+                openFileDialog.Multiselect = true;
+
+                if (openFileDialog.ShowDialog().Value)
+                {
+                    foreach (string filename in openFileDialog.FileNames)
+                    {
+                        string output = Path.GetFileNameWithoutExtension(filename) + "_LaTeX";
+
+                        StreamReader sR = new StreamReader(filename);
+                        StreamWriter sW = new StreamWriter(Path.GetDirectoryName(filename) + "\\" + output + ".csv");
+
+                        try
+                        {
+                            bool _header = false;
+
+                            while(!sR.EndOfStream)
+                            {
+                                string line = sR.ReadLine();
+
+                                if (_header == false)
+                                {
+                                    StringBuilder sB = new StringBuilder();
+
+                                    int count = line.Count(x => x == ',');
+
+                                    sB.Append("\\begin{tabu} to 0.8\\linewidth");
+
+                                    sB.Append(" {");
+                                    for (int i = 0; i <= count; i++)
+                                    {
+                                        sB.Append("X[1,c,m]");
+                                    }
+                                    sB.Append("}");
+
+                                    sW.WriteLine(sB); _header = true;
+                                }
+
+                                sW.WriteLine(line.Replace(",", " & ") + " \\\\");
+                            }
+
+                            sW.WriteLine("\\end{tabu}");
+                        }
+                        finally
+                        {
+                            sR.Close();
+                            sW.Close();
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
         /// <summary>
@@ -1268,6 +1334,16 @@ namespace scada_analyst
             {
                 await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
             }
+        }
+
+        public string GetSaveName()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = ".csv";
+            saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            if (saveFileDialog.ShowDialog().Value) { return saveFileDialog.FileName; }
+            else { return ""; }
         }
 
         /// <summary>
@@ -2753,16 +2829,6 @@ namespace scada_analyst
             }
 
             return table;
-        }
-
-        public string GetSaveName()
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.FileName = ".csv";
-            saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-
-            if (saveFileDialog.ShowDialog().Value) { return saveFileDialog.FileName; }
-            else { return ""; }
         }
 
         private void CreateCSVFile(DataTable dt, string strFilePath)
