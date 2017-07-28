@@ -2765,9 +2765,15 @@ namespace scada_analyst
 
                         for (int j = 0; j < _obj.Bearings.Years[i].Values.Count; j++)
                         {
-                            if (item == _input.Items[0]) { table.Columns.Add("Month " + _obj.Bearings.Years[i].Values[j].Item1, typeof(string)); }
-
-                            newRow["Month " + _obj.Bearings.Years[i].Values[j].Item1] = _obj.Bearings.Years[i].Values[j].Item3;
+                            if (table.Columns.Contains("Month " + _obj.Bearings.Years[i].Values[j].Item1))
+                            {
+                                newRow["Month " + _obj.Bearings.Years[i].Values[j].Item1] = _obj.Bearings.Years[i].Values[j].Item3;
+                            }
+                            else
+                            {
+                                table.Columns.Add("Month " + _obj.Bearings.Years[i].Values[j].Item1, typeof(string));
+                                newRow["Month " + _obj.Bearings.Years[i].Values[j].Item1] = _obj.Bearings.Years[i].Values[j].Item3;
+                            }
                         }
                     }
 
@@ -2793,9 +2799,15 @@ namespace scada_analyst
 
                         for (int j = 0; j < _obj.Capacity.Years[i].Values.Count; j++)
                         {
-                            if (item == _input.Items[0]) { table.Columns.Add("Month " + _obj.Capacity.Years[i].Values[j].Item1, typeof(string)); }
-
-                            newRow["Month " + _obj.Capacity.Years[i].Values[j].Item1] = _obj.Capacity.Years[i].Values[j].Item3;
+                            if (table.Columns.Contains("Month " + _obj.Capacity.Years[i].Values[j].Item1))
+                            {
+                                newRow["Month " + _obj.Capacity.Years[i].Values[j].Item1] = _obj.Capacity.Years[i].Values[j].Item3;
+                            }
+                            else
+                            {
+                                table.Columns.Add("Month " + _obj.Capacity.Years[i].Values[j].Item1, typeof(string));
+                                newRow["Month " + _obj.Capacity.Years[i].Values[j].Item1] = _obj.Capacity.Years[i].Values[j].Item3;
+                            }
                         }
                     }
 
