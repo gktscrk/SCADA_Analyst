@@ -12,6 +12,10 @@ namespace scada_analyst.Shared
 
             #region Version 3.000 - Proceeding after Romax
 
+            ProgramVersion v3300 = new ProgramVersion(3300, new DateTime(2017, 07, 28));
+            v3300.AddChange("Export table options in the overview area.");
+            results.Add(v3300);
+
             ProgramVersion v3200 = new ProgramVersion(3200, new DateTime(2017, 07, 26));
             v3200.AddChange("Can export data without an asset ID.");
             v3200.AddChange("Can export data without a timestamp.");

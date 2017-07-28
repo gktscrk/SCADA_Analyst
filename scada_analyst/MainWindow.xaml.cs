@@ -846,6 +846,12 @@ namespace scada_analyst
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
+                    LView_Bearings.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;                    
                 }
                 else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[1])
                 {
@@ -858,6 +864,12 @@ namespace scada_analyst
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
+                    LView_Capacity.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
                 else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[2])
                 {
@@ -870,6 +882,12 @@ namespace scada_analyst
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
+                    LView_Bearings.SelectedIndex = -1;
+                    LView_Capacity.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
                 else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[3])
                 {
@@ -882,6 +900,12 @@ namespace scada_analyst
                     LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
+                    LView_Bearings.SelectedIndex = -1;
+                    LView_Capacity.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
                 else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[4])
                 {
@@ -894,6 +918,12 @@ namespace scada_analyst
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Visible;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
+                    LView_Bearings.SelectedIndex = -1;
+                    LView_Capacity.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
                 else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[5])
                 {
@@ -906,6 +936,12 @@ namespace scada_analyst
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Visible;
+
+                    LView_Bearings.SelectedIndex = -1;
+                    LView_Capacity.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
                 }
             }
         }
@@ -2384,7 +2420,7 @@ namespace scada_analyst
 
         #endregion
 
-        #region Event List ContextMenu
+        #region Overview ContextMenu
 
         private void LView_EventOptions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -2463,10 +2499,10 @@ namespace scada_analyst
 
             if (LView_Bearings.SelectedItems.Count >= 1) { LView_Bearings.ContextMenu = menu; }
             else if (LView_Capacity.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
-            else if (LView_EventsSumWndLows.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
-            else if (LView_EventsSumPwrNone.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
-            else if (LView_EventsSumWndHigh.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
-            else if (LView_EventsSumPwrHigh.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
+            else if (LView_EventsSumWndLows.SelectedItems.Count >= 1) { LView_EventsSumWndLows.ContextMenu = menu; }
+            else if (LView_EventsSumPwrNone.SelectedItems.Count >= 1) { LView_EventsSumPwrNone.ContextMenu = menu; }
+            else if (LView_EventsSumWndHigh.SelectedItems.Count >= 1) { LView_EventsSumWndHigh.ContextMenu = menu; }
+            else if (LView_EventsSumPwrHigh.SelectedItems.Count >= 1) { LView_EventsSumPwrHigh.ContextMenu = menu; }
         }
 
         private async void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
@@ -2602,19 +2638,19 @@ namespace scada_analyst
                 }
                 else if (LView_EventsSumWndLows.SelectedItems.Count > 0)
                 {
-                    _exportInfo = ToDataTable(LView_EventsSumWndLows, TableExportType.LO_WINDS);
+                    _exportInfo = ToDataTable(LView_EventsSumWndLows, TableExportType.EVENT_STRUT);
                 }
                 else if (LView_EventsSumWndHigh.SelectedItems.Count > 0)
                 {
-                    _exportInfo = ToDataTable(LView_EventsSumWndHigh, TableExportType.HI_WINDS);
+                    _exportInfo = ToDataTable(LView_EventsSumWndHigh, TableExportType.EVENT_STRUT);
                 }
                 else if (LView_EventsSumPwrNone.SelectedItems.Count > 0)
                 {
-                    _exportInfo = ToDataTable(LView_EventsSumPwrNone, TableExportType.LO_POWER);
+                    _exportInfo = ToDataTable(LView_EventsSumPwrNone, TableExportType.EVENT_STRUT);
                 }
                 else if (LView_EventsSumPwrHigh.SelectedItems.Count > 0)
                 {
-                    _exportInfo = ToDataTable(LView_EventsSumPwrHigh, TableExportType.LO_WINDS);
+                    _exportInfo = ToDataTable(LView_EventsSumPwrHigh, TableExportType.EVENT_STRUT);
                 }
 
                 if (_exportInfo != null)
@@ -2624,22 +2660,6 @@ namespace scada_analyst
                     if (_output == "") { throw new WritingCancelledException(); }
                     else { CreateCSVFile(_exportInfo, _output); }
                 }
-            }
-        }
-
-        public string GetSaveName()
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.FileName = ".csv";
-            saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-
-            if (saveFileDialog.ShowDialog().Value)
-            {
-                return saveFileDialog.FileName;
-            }
-            else
-            {
-                return "";
             }
         }
 
@@ -2705,9 +2725,44 @@ namespace scada_analyst
 
                     table.Rows.Add(newRow);
                 }
+                else if (item is Analysis.StructureSmry && _type == TableExportType.EVENT_STRUT)
+                {
+                    Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
+
+                    if (item == _input.Items[0])
+                    {
+                        table.Columns.Add("Asset ID", typeof(int));
+                        table.Columns.Add("<0.5h", typeof(int));
+                        table.Columns.Add(">0.5h < 2h", typeof(int));
+                        table.Columns.Add(">2h < 8h", typeof(int));
+                        table.Columns.Add(">8h < 2d", typeof(int));
+                        table.Columns.Add(">2d", typeof(int));
+                    }                
+
+                    DataRow newRow = table.NewRow();
+
+                    newRow["Asset ID"] = _obj.UnitID;
+                    newRow["<0.5h"] = _obj.NoPower.ShortEvs;
+                    newRow[">0.5h < 2h"] = _obj.NoPower.DeciMins;
+                    newRow[">2h < 8h"] = _obj.NoPower.HourLong;
+                    newRow[">8h < 2d"] = _obj.NoPower.ManyHors;
+                    newRow[">2d"] = _obj.NoPower.DaysLong;
+                    
+                    table.Rows.Add(newRow);
+                }
             }
 
             return table;
+        }
+
+        public string GetSaveName()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = ".csv";
+            saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            if (saveFileDialog.ShowDialog().Value) { return saveFileDialog.FileName; }
+            else { return ""; }
         }
 
         private void CreateCSVFile(DataTable dt, string strFilePath)
@@ -2754,10 +2809,7 @@ namespace scada_analyst
         {
             BEARING,
             CAPACITY,
-            LO_WINDS,
-            HI_WINDS,
-            LO_POWER,
-            HI_POWER
+            EVENT_STRUT
         }
 
         #endregion
