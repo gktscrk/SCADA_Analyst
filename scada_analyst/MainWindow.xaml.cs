@@ -20,6 +20,8 @@ using MahApps.Metro.Controls.Dialogs;
 using scada_analyst.Controls;
 using scada_analyst.Shared;
 using LiveCharts.Wpf;
+using System.Data;
+using System.IO;
 
 namespace scada_analyst
 {
@@ -838,7 +840,7 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Visible;
                     Combo_YearChooser.Visibility = Visibility.Visible;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_CapacityFactor.Visibility = Visibility.Visible;
+                    LView_Capacity.Visibility = Visibility.Visible;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -850,7 +852,7 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Visible;
                     Combo_YearChooser.Visibility = Visibility.Visible;
                     LView_Bearings.Visibility = Visibility.Visible;
-                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -862,7 +864,7 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Visible;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -874,7 +876,7 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
@@ -886,7 +888,7 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -898,7 +900,7 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Collapsed;
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_CapacityFactor.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -926,7 +928,7 @@ namespace scada_analyst
         private void Combo_YearChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // this allows removing the source if it doesn't apply 
-            LView_CapacityFactor.ItemsSource = null;
+            LView_Capacity.ItemsSource = null;
             LView_Bearings.ItemsSource = null;
 
             // create an empty array
@@ -939,11 +941,11 @@ namespace scada_analyst
             }
 
             // all of these reference a different aspect of _sumEvents
-            LView_CapacityFactor.ItemsSource = _general;
+            LView_Capacity.ItemsSource = _general;
             LView_Bearings.ItemsSource = _general;
         }
 
-        void CreateLoadedYearsListForComboBox()
+        private void CreateLoadedYearsListForComboBox()
         {
             List<int> _allYears = new List<int>(_scadaFile.Years);
             _allYears.AddRange(_meteoFile.Years);
@@ -2327,8 +2329,7 @@ namespace scada_analyst
 
         private void SetContextMenuAssets()
         {
-            ContextMenu menu = null;
-                menu = new ContextMenu();
+            ContextMenu menu = new ContextMenu();
 
             if (LView_Overview.SelectedItems.Count == 1)
             {
@@ -2337,8 +2338,7 @@ namespace scada_analyst
                 removeAsset_MenuItem.Click += RemoveAsset_MenuItem_Click;
                 menu.Items.Add(removeAsset_MenuItem);
             }
-
-            if (LView_Overview.SelectedItems.Count > 1)
+            else if (LView_Overview.SelectedItems.Count > 1)
             {
                 MenuItem removeAsset_MenuItem = new MenuItem();
                 removeAsset_MenuItem.Header = "Remove Assets";
@@ -2386,15 +2386,14 @@ namespace scada_analyst
 
         #region Event List ContextMenu
 
-        private void LView_Powr_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void LView_EventOptions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetContextMenuPowerEvents();
         }
 
         private void SetContextMenuPowerEvents()
         {
-            ContextMenu menu = null;
-            menu = new ContextMenu();
+            ContextMenu menu = new ContextMenu();
 
             if (LView_PowrNone.SelectedItems.Count == 1 || LView_PowrRted.SelectedItems.Count == 1)
             {
@@ -2441,6 +2440,33 @@ namespace scada_analyst
 
             if (LView_PowrNone.SelectedItems.Count >= 1) { LView_PowrNone.ContextMenu = menu; }
             else if (LView_PowrRted.SelectedItems.Count == 1) { LView_PowrRted.ContextMenu = menu; }
+        }
+
+        private void LView_SummaryOptions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SetContextMenuSummaries();
+        }
+
+        private void SetContextMenuSummaries()
+        {
+            ContextMenu menu = new ContextMenu();
+
+            if (LView_Capacity.SelectedItems.Count > 0 || LView_Bearings.SelectedItems.Count > 0 ||
+                LView_EventsSumWndLows.SelectedItems.Count > 0 || LView_EventsSumWndHigh.SelectedItems.Count > 0 ||
+                LView_EventsSumPwrNone.SelectedItems.Count > 0 || LView_EventsSumPwrHigh.SelectedItems.Count > 0)
+            {
+                MenuItem exportEvent_MenuItem = new MenuItem();
+                exportEvent_MenuItem.Header = "Export to CSV";
+                exportEvent_MenuItem.Click += Export_MenuItemClick;
+                menu.Items.Add(exportEvent_MenuItem);
+            }
+
+            if (LView_Bearings.SelectedItems.Count >= 1) { LView_Bearings.ContextMenu = menu; }
+            else if (LView_Capacity.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
+            else if (LView_EventsSumWndLows.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
+            else if (LView_EventsSumPwrNone.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
+            else if (LView_EventsSumWndHigh.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
+            else if (LView_EventsSumPwrHigh.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
         }
 
         private async void ExploreEvent_MenuItem_Click(object sender, RoutedEventArgs e)
@@ -2558,8 +2584,184 @@ namespace scada_analyst
             }
         }
 
+        private void Export_MenuItemClick(object sender, RoutedEventArgs e)
+        {
+            if (LView_Capacity.SelectedItems.Count > 0 || LView_Bearings.SelectedItems.Count > 0 ||
+                LView_EventsSumWndLows.SelectedItems.Count > 0 || LView_EventsSumWndHigh.SelectedItems.Count > 0 ||
+                LView_EventsSumPwrNone.SelectedItems.Count > 0 || LView_EventsSumPwrHigh.SelectedItems.Count > 0)
+            {
+                DataTable _exportInfo = null;
+
+                if (LView_Bearings.SelectedItems.Count > 0)
+                {
+                    _exportInfo = ToDataTable(LView_Bearings, TableExportType.BEARING);
+                }
+                else if (LView_Capacity.SelectedItems.Count > 0)
+                {
+                    _exportInfo = ToDataTable(LView_Capacity, TableExportType.CAPACITY);
+                }
+                else if (LView_EventsSumWndLows.SelectedItems.Count > 0)
+                {
+                    _exportInfo = ToDataTable(LView_EventsSumWndLows, TableExportType.LO_WINDS);
+                }
+                else if (LView_EventsSumWndHigh.SelectedItems.Count > 0)
+                {
+                    _exportInfo = ToDataTable(LView_EventsSumWndHigh, TableExportType.HI_WINDS);
+                }
+                else if (LView_EventsSumPwrNone.SelectedItems.Count > 0)
+                {
+                    _exportInfo = ToDataTable(LView_EventsSumPwrNone, TableExportType.LO_POWER);
+                }
+                else if (LView_EventsSumPwrHigh.SelectedItems.Count > 0)
+                {
+                    _exportInfo = ToDataTable(LView_EventsSumPwrHigh, TableExportType.LO_WINDS);
+                }
+
+                if (_exportInfo != null)
+                {
+                    string _output = GetSaveName();
+
+                    if (_output == "") { throw new WritingCancelledException(); }
+                    else { CreateCSVFile(_exportInfo, _output); }
+                }
+            }
+        }
+
+        public string GetSaveName()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = ".csv";
+            saveFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            if (saveFileDialog.ShowDialog().Value)
+            {
+                return saveFileDialog.FileName;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        private DataTable ToDataTable(ListView _input, TableExportType _type)
+        {
+            DataTable table = new DataTable();
+                        
+            foreach (object item in _input.Items)
+            {
+                if (item is Analysis.StructureSmry && _type == TableExportType.BEARING)
+                {
+                    Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
+
+                    if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
+                    if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
+
+                    DataRow newRow = table.NewRow();
+
+                    newRow["Asset ID"] = _obj.UnitID;
+                    newRow["Total"] = _obj.Bearings.FullStr;
+
+                    for (int i = 0; i < _obj.Bearings.Years.Count; i++)
+                    {
+                        if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.Bearings.Years[i].Years, typeof(string)); }
+
+                        newRow["Year " + _obj.Bearings.Years[i].Years] = _obj.Bearings.Years[i].YearStr;
+
+                        for (int j = 0; j < _obj.Bearings.Years[i].Values.Count; j++)
+                        {
+                            if (item == _input.Items[0]) { table.Columns.Add("Month " + _obj.Bearings.Years[i].Values[j].Item1, typeof(string)); }
+
+                            newRow["Month " + _obj.Bearings.Years[i].Values[j].Item1] = _obj.Bearings.Years[i].Values[j].Item3;
+                        }
+                    }
+
+                    table.Rows.Add(newRow);
+                }
+                else if (item is Analysis.StructureSmry && _type == TableExportType.CAPACITY)
+                {
+                    Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
+                    
+                    if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
+                    if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
+
+                    DataRow newRow = table.NewRow();
+
+                    newRow["Asset ID"] = _obj.UnitID;
+                    newRow["Total"] = _obj.Capacity.FullStr;
+
+                    for (int i = 0; i < _obj.Capacity.Years.Count; i++)
+                    {
+                        if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.Capacity.Years[i].Years, typeof(string)); }
+
+                        newRow["Year " + _obj.Capacity.Years[i].Years] = _obj.Capacity.Years[i].YearStr;
+
+                        for (int j = 0; j < _obj.Capacity.Years[i].Values.Count; j++)
+                        {
+                            if (item == _input.Items[0]) { table.Columns.Add("Month " + _obj.Capacity.Years[i].Values[j].Item1, typeof(string)); }
+
+                            newRow["Month " + _obj.Capacity.Years[i].Values[j].Item1] = _obj.Capacity.Years[i].Values[j].Item3;
+                        }
+                    }
+
+                    table.Rows.Add(newRow);
+                }
+            }
+
+            return table;
+        }
+
+        private void CreateCSVFile(DataTable dt, string strFilePath)
+        {
+            StreamWriter sw = new StreamWriter(strFilePath, false);
+
+            try
+            {
+                int iColCount = dt.Columns.Count;
+                for (int i = 0; i < iColCount; i++)
+                {
+                    sw.Write(dt.Columns[i]);
+                    if (i < iColCount - 1)
+                    {
+                        sw.Write(",");
+                    }
+                }
+
+                sw.Write(sw.NewLine);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    for (int i = 0; i < iColCount; i++)
+                    {
+                        if (!Convert.IsDBNull(dr[i]))
+                        {
+                            sw.Write(dr[i].ToString());
+                        }
+                        if (i < iColCount - 1)
+                        {
+                            sw.Write(",");
+                        }
+                    }
+                    sw.Write(sw.NewLine);
+                }
+            }
+            finally
+            {
+                sw.Close();
+            }
+        }
+
+        public enum TableExportType
+        {
+            BEARING,
+            CAPACITY,
+            LO_WINDS,
+            HI_WINDS,
+            LO_POWER,
+            HI_POWER
+        }
+
         #endregion
-                
+
         #region Event Details List ContextMenu
 
         private void Lists_EventDetails_SelectionChanged(object sender, RoutedEventArgs e)
@@ -2614,8 +2816,8 @@ namespace scada_analyst
         }
 
         #endregion
-
-        #endregion 
+        
+        #endregion
 
         #region Support Classes
 
