@@ -880,8 +880,9 @@ namespace scada_analyst
 
         private void CreateSummaryComboInfo()
         {
+            _generalOverview.Add("Wind Speeds");
             _generalOverview.Add("Capacity Factors");
-            _generalOverview.Add("Wind Direction Info");
+            _generalOverview.Add("Wind Directionality");
             _generalOverview.Add("No Power Production Events");
             _generalOverview.Add("High Power Production Events");
             _generalOverview.Add("Low Wind Speed Events");
@@ -906,7 +907,8 @@ namespace scada_analyst
                     LBL_YearChooser.Visibility = Visibility.Visible;
                     Combo_YearChooser.Visibility = Visibility.Visible;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_Capacity.Visibility = Visibility.Visible;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_WindInfo.Visibility = Visibility.Visible;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -914,43 +916,48 @@ namespace scada_analyst
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
 
                     LView_Bearings.SelectedIndex = -1;
-                    LView_EventsSumPwrNone.SelectedIndex = -1;
-                    LView_EventsSumPwrHigh.SelectedIndex = -1;
-                    LView_EventsSumWndLows.SelectedIndex = -1;
-                    LView_EventsSumWndHigh.SelectedIndex = -1;                    
-                }
-                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[1])
-                {
-                    LBL_YearChooser.Visibility = Visibility.Visible;
-                    Combo_YearChooser.Visibility = Visibility.Visible;
-                    LView_Bearings.Visibility = Visibility.Visible;
-                    LView_Capacity.Visibility = Visibility.Collapsed;
-
-                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
-                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
-                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
-                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
-
                     LView_Capacity.SelectedIndex = -1;
                     LView_EventsSumPwrNone.SelectedIndex = -1;
                     LView_EventsSumPwrHigh.SelectedIndex = -1;
                     LView_EventsSumWndLows.SelectedIndex = -1;
                     LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
-                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[2])
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[1])
                 {
-                    LBL_YearChooser.Visibility = Visibility.Collapsed;
-                    Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LBL_YearChooser.Visibility = Visibility.Visible;
+                    Combo_YearChooser.Visibility = Visibility.Visible;
                     LView_Bearings.Visibility = Visibility.Collapsed;
-                    LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Visible;
+                    LView_WindInfo.Visibility = Visibility.Collapsed;
 
-                    LView_EventsSumPwrNone.Visibility = Visibility.Visible;
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
 
                     LView_Bearings.SelectedIndex = -1;
+                    LView_WindInfo.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;                    
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[2])
+                {
+                    LBL_YearChooser.Visibility = Visibility.Visible;
+                    Combo_YearChooser.Visibility = Visibility.Visible;
+                    LView_Bearings.Visibility = Visibility.Visible;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_WindInfo.Visibility = Visibility.Collapsed;
+
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
                     LView_Capacity.SelectedIndex = -1;
+                    LView_WindInfo.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
                     LView_EventsSumPwrHigh.SelectedIndex = -1;
                     LView_EventsSumWndLows.SelectedIndex = -1;
                     LView_EventsSumWndHigh.SelectedIndex = -1;
@@ -961,15 +968,17 @@ namespace scada_analyst
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_WindInfo.Visibility = Visibility.Collapsed;
 
-                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
-                    LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
+                    LView_EventsSumPwrNone.Visibility = Visibility.Visible;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
 
                     LView_Bearings.SelectedIndex = -1;
                     LView_Capacity.SelectedIndex = -1;
-                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_WindInfo.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
                     LView_EventsSumWndLows.SelectedIndex = -1;
                     LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
@@ -979,16 +988,18 @@ namespace scada_analyst
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_WindInfo.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
-                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
-                    LView_EventsSumWndLows.Visibility = Visibility.Visible;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Visible;
+                    LView_EventsSumWndLows.Visibility = Visibility.Collapsed;
                     LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
 
                     LView_Bearings.SelectedIndex = -1;
                     LView_Capacity.SelectedIndex = -1;
+                    LView_WindInfo.SelectedIndex = -1;
                     LView_EventsSumPwrNone.SelectedIndex = -1;
-                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndLows.SelectedIndex = -1;
                     LView_EventsSumWndHigh.SelectedIndex = -1;
                 }
                 else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[5])
@@ -997,6 +1008,27 @@ namespace scada_analyst
                     Combo_YearChooser.Visibility = Visibility.Collapsed;
                     LView_Bearings.Visibility = Visibility.Collapsed;
                     LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_WindInfo.Visibility = Visibility.Collapsed;
+
+                    LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
+                    LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
+                    LView_EventsSumWndLows.Visibility = Visibility.Visible;
+                    LView_EventsSumWndHigh.Visibility = Visibility.Collapsed;
+
+                    LView_Bearings.SelectedIndex = -1;
+                    LView_Capacity.SelectedIndex = -1;
+                    LView_WindInfo.SelectedIndex = -1;
+                    LView_EventsSumPwrNone.SelectedIndex = -1;
+                    LView_EventsSumPwrHigh.SelectedIndex = -1;
+                    LView_EventsSumWndHigh.SelectedIndex = -1;
+                }
+                else if ((string)Comb_SummaryChoose.SelectedItem == _generalOverview[6])
+                {
+                    LBL_YearChooser.Visibility = Visibility.Collapsed;
+                    Combo_YearChooser.Visibility = Visibility.Collapsed;
+                    LView_Bearings.Visibility = Visibility.Collapsed;
+                    LView_Capacity.Visibility = Visibility.Collapsed;
+                    LView_WindInfo.Visibility = Visibility.Collapsed;
 
                     LView_EventsSumPwrNone.Visibility = Visibility.Collapsed;
                     LView_EventsSumPwrHigh.Visibility = Visibility.Collapsed;
@@ -1005,6 +1037,7 @@ namespace scada_analyst
 
                     LView_Bearings.SelectedIndex = -1;
                     LView_Capacity.SelectedIndex = -1;
+                    LView_WindInfo.SelectedIndex = -1;
                     LView_EventsSumPwrNone.SelectedIndex = -1;
                     LView_EventsSumPwrHigh.SelectedIndex = -1;
                     LView_EventsSumWndLows.SelectedIndex = -1;
@@ -1032,6 +1065,7 @@ namespace scada_analyst
             // this allows removing the source if it doesn't apply 
             LView_Capacity.ItemsSource = null;
             LView_Bearings.ItemsSource = null;
+            LView_WindInfo.ItemsSource = null;
 
             // create an empty array
             ObservableCollection<Analysis.StructureSmry> _general = new ObservableCollection<Analysis.StructureSmry>();
@@ -1045,12 +1079,20 @@ namespace scada_analyst
             // all of these reference a different aspect of _sumEvents
             LView_Capacity.ItemsSource = _general;
             LView_Bearings.ItemsSource = _general;
+            LView_WindInfo.ItemsSource = _general;
         }
 
         private void CreateLoadedYearsListForComboBox()
         {
             List<int> _allYears = new List<int>(_scadaFile.Years);
-            _allYears.AddRange(_meteoFile.Years);
+
+            for (int i = 0; i < _meteoFile.Years.Count; i ++)
+            {
+                if (!_allYears.Contains(_meteoFile.Years[i]))
+                {
+                    _allYears.Add(_meteoFile.Years[i]);
+                }
+            }
 
             Combo_YearChooser.ItemsSource = _allYears;
             Combo_YearChooser.SelectedValue = _allYears;
@@ -2564,6 +2606,7 @@ namespace scada_analyst
             ContextMenu menu = new ContextMenu();
 
             if (LView_Capacity.SelectedItems.Count > 0 || LView_Bearings.SelectedItems.Count > 0 ||
+                LView_WindInfo.SelectedItems.Count > 0 ||
                 LView_EventsSumWndLows.SelectedItems.Count > 0 || LView_EventsSumWndHigh.SelectedItems.Count > 0 ||
                 LView_EventsSumPwrNone.SelectedItems.Count > 0 || LView_EventsSumPwrHigh.SelectedItems.Count > 0)
             {
@@ -2575,6 +2618,7 @@ namespace scada_analyst
 
             if (LView_Bearings.SelectedItems.Count >= 1) { LView_Bearings.ContextMenu = menu; }
             else if (LView_Capacity.SelectedItems.Count >= 1) { LView_Capacity.ContextMenu = menu; }
+            else if (LView_WindInfo.SelectedItems.Count >= 1) { LView_WindInfo.ContextMenu = menu; }
             else if (LView_EventsSumWndLows.SelectedItems.Count >= 1) { LView_EventsSumWndLows.ContextMenu = menu; }
             else if (LView_EventsSumPwrNone.SelectedItems.Count >= 1) { LView_EventsSumPwrNone.ContextMenu = menu; }
             else if (LView_EventsSumWndHigh.SelectedItems.Count >= 1) { LView_EventsSumWndHigh.ContextMenu = menu; }
@@ -2701,6 +2745,7 @@ namespace scada_analyst
             try
             {
                 if (LView_Capacity.SelectedItems.Count > 0 || LView_Bearings.SelectedItems.Count > 0 ||
+                    LView_WindInfo.SelectedItems.Count > 0 ||
                     LView_EventsSumWndLows.SelectedItems.Count > 0 || LView_EventsSumWndHigh.SelectedItems.Count > 0 ||
                     LView_EventsSumPwrNone.SelectedItems.Count > 0 || LView_EventsSumPwrHigh.SelectedItems.Count > 0)
                 {
@@ -2713,6 +2758,10 @@ namespace scada_analyst
                     else if (LView_Capacity.SelectedItems.Count > 0)
                     {
                         _exportInfo = ToDataTable(LView_Capacity, TableExportType.CAPACITY);
+                    }
+                    else if (LView_Capacity.SelectedItems.Count > 0)
+                    {
+                        _exportInfo = ToDataTable(LView_WindInfo, TableExportType.WINDINFO);
                     }
                     else if (LView_EventsSumWndLows.SelectedItems.Count > 0)
                     {
@@ -2817,6 +2866,40 @@ namespace scada_analyst
 
                     table.Rows.Add(newRow);
                 }
+                else if (item is Analysis.StructureSmry && _type == TableExportType.WINDINFO)
+                {
+                    Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
+
+                    if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
+                    if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
+
+                    DataRow newRow = table.NewRow();
+
+                    newRow["Asset ID"] = _obj.UnitID;
+                    newRow["Total"] = _obj.WindInfo.FullStr;
+
+                    for (int i = 0; i < _obj.WindInfo.Years.Count; i++)
+                    {
+                        if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.WindInfo.Years[i].Years, typeof(string)); }
+
+                        newRow["Year " + _obj.WindInfo.Years[i].Years] = _obj.WindInfo.Years[i].YearStr;
+
+                        for (int j = 0; j < _obj.WindInfo.Years[i].Values.Count; j++)
+                        {
+                            if (table.Columns.Contains("Month " + _obj.WindInfo.Years[i].Values[j].Item1))
+                            {
+                                newRow["Month " + _obj.WindInfo.Years[i].Values[j].Item1] = _obj.WindInfo.Years[i].Values[j].Item3;
+                            }
+                            else
+                            {
+                                table.Columns.Add("Month " + _obj.WindInfo.Years[i].Values[j].Item1, typeof(string));
+                                newRow["Month " + _obj.WindInfo.Years[i].Values[j].Item1] = _obj.WindInfo.Years[i].Values[j].Item3;
+                            }
+                        }
+                    }
+
+                    table.Rows.Add(newRow);
+                }
                 else if (item is Analysis.StructureSmry && _type == TableExportType.EVENT_STRUT)
                 {
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
@@ -2891,6 +2974,7 @@ namespace scada_analyst
         {
             BEARING,
             CAPACITY,
+            WINDINFO,
             EVENT_STRUT
         }
 
@@ -2952,11 +3036,7 @@ namespace scada_analyst
         #endregion
         
         #endregion
-
-        #region Support Classes
-
-        #endregion
-
+        
         #region Properties
 
         public Analysis Analyser { get { return _analyser; } set { _analyser = value; } }

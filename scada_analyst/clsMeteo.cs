@@ -69,9 +69,15 @@ namespace scada_analyst
 
             SortMeteorology();
             PopulateTimeDif();
+            
+            // some final calculations need to be done for the assets
+            _metMasts = _metMasts.OrderBy(o => o.UnitID).ToList();
+
+            // get bearing info
             GetBearings();
 
-            _metMasts = _metMasts.OrderBy(o => o.UnitID).ToList();
+            // get wind speeds as well#
+            GetWindSpeeds();
         }
 
         private void LoadMetFiles(string[] filenames, Common.DateFormat _dateFormat, IProgress<int> progress)
@@ -178,8 +184,17 @@ namespace scada_analyst
         {
             for (int i = 0; i < _metMasts.Count;i++)
             {
-                _metMasts[i].Bearings = new BaseStructure.MetaDataSetup
-                    (_metMasts[i], _meteoHeader, BaseStructure.MetaDataSetup.Mode.BEARINGS);
+                _metMasts[i].Bearings = 
+                    new BaseStructure.MetaDataSetup(_metMasts[i], _meteoHeader, BaseStructure.MetaDataSetup.Mode.BEARINGS);
+            }
+        }
+        
+        private void GetWindSpeeds()
+        {
+            for (int i = 0; i < _metMasts.Count; i++)
+            {
+                _metMasts[i].WindInfo = 
+                    new BaseStructure.MetaDataSetup(_metMasts[i], _meteoHeader, BaseStructure.MetaDataSetup.Mode.WINDINFO);
             }
         }
 
@@ -287,18 +302,18 @@ namespace scada_analyst
 
                                 #region Wind Speed
 
-                                if (_meteoHeader.WSpdR.Measured == MeteoSample.HeightInfo.MeasuringHeight.BOTH)
+                                if (_meteoHeader.Speed.Measured == MeteoSample.HeightInfo.MeasuringHeight.BOTH)
                                 {
-                                    hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.MetresRt.Mean, 2) + ",");
-                                    hB.Append("met_WindSpeedTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.Metres10.Mean, 2) + ",");
+                                    hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Speed.MetresRt.Mean, 2) + ",");
+                                    hB.Append("met_WindSpeedTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Speed.Metres10.Mean, 2) + ",");
                                 }
-                                else if (_meteoHeader.WSpdR.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                                else if (_meteoHeader.Speed.Measured == MeteoSample.HeightInfo.MeasuringHeight.M_10)
                                 {
-                                    hB.Append("met_WindSpeedTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.Metres10.Mean, 2) + ",");
+                                    hB.Append("met_WindSpeedTen_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Speed.Metres10.Mean, 2) + ",");
                                 }
-                                else if (_meteoHeader.WSpdR.Measured == MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                                else if (_meteoHeader.Speed.Measured == MeteoSample.HeightInfo.MeasuringHeight.ROT)
                                 {
-                                    hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.WSpdR.MetresRt.Mean, 2) + ",");
+                                    hB.Append("met_WindSpeedRot_mean" + ","); sB.Append(Common.GetStringDecimals(unit.Speed.MetresRt.Mean, 2) + ",");
                                 }
 
                                 #endregion
@@ -512,25 +527,25 @@ namespace scada_analyst
                             {
                                 if (parts[1].Contains("ten") || parts[1].Contains("10"))
                                 {
-                                    if (WSpdR.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.M_10)
-                                    { WSpdR.Measured = HeightInfo.MeasuringHeight.M_10; }
-                                    else { WSpdR.Measured = HeightInfo.MeasuringHeight.BOTH; }
+                                    if (Speed.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.M_10)
+                                    { Speed.Measured = HeightInfo.MeasuringHeight.M_10; }
+                                    else { Speed.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
-                                    if (parts[2] == "mean") { WSpdR.Metres10.Mean = i; }
-                                    else if (parts[2] == "stddev") { WSpdR.Metres10.Stdv = i; }
-                                    else if (parts[2] == "max") { WSpdR.Metres10.Maxm = i; }
-                                    else if (parts[2] == "min") { WSpdR.Metres10.Minm = i; }
+                                    if (parts[2] == "mean") { Speed.Metres10.Mean = i; }
+                                    else if (parts[2] == "stddev") { Speed.Metres10.Stdv = i; }
+                                    else if (parts[2] == "max") { Speed.Metres10.Maxm = i; }
+                                    else if (parts[2] == "min") { Speed.Metres10.Minm = i; }
                                 }
                                 else if (parts[1].Contains("rot"))
                                 {
-                                    if (WSpdR.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.ROT)
-                                    { WSpdR.Measured = HeightInfo.MeasuringHeight.ROT; }
-                                    else { WSpdR.Measured = HeightInfo.MeasuringHeight.BOTH; }
+                                    if (Speed.Measured == HeightInfo.MeasuringHeight.UNKNOWN || Tempr.Measured == HeightInfo.MeasuringHeight.ROT)
+                                    { Speed.Measured = HeightInfo.MeasuringHeight.ROT; }
+                                    else { Speed.Measured = HeightInfo.MeasuringHeight.BOTH; }
 
-                                    if (parts[2] == "mean") { WSpdR.MetresRt.Mean = i; }
-                                    else if (parts[2] == "stddev") { WSpdR.MetresRt.Stdv = i; }
-                                    else if (parts[2] == "max") { WSpdR.MetresRt.Maxm = i; }
-                                    else if (parts[2] == "min") { WSpdR.MetresRt.Minm = i; }
+                                    if (parts[2] == "mean") { Speed.MetresRt.Mean = i; }
+                                    else if (parts[2] == "stddev") { Speed.MetresRt.Stdv = i; }
+                                    else if (parts[2] == "max") { Speed.MetresRt.Maxm = i; }
+                                    else if (parts[2] == "min") { Speed.MetresRt.Minm = i; }
                                 }
                             }
                         }
@@ -553,10 +568,10 @@ namespace scada_analyst
                 Tempr.Metres10.Stdv = noVal;
                 Tempr.Metres10.Maxm = noVal;
                 Tempr.Metres10.Minm = noVal;                
-                WSpdR.Metres10.Mean = noVal;
-                WSpdR.Metres10.Stdv = noVal;
-                WSpdR.Metres10.Maxm = noVal;
-                WSpdR.Metres10.Minm = noVal;
+                Speed.Metres10.Mean = noVal;
+                Speed.Metres10.Stdv = noVal;
+                Speed.Metres10.Maxm = noVal;
+                Speed.Metres10.Minm = noVal;
 
                 Dircs.MetresRt.Mean = noVal;
                 Dircs.MetresRt.Stdv = noVal;
@@ -566,10 +581,10 @@ namespace scada_analyst
                 Tempr.MetresRt.Stdv = noVal;
                 Tempr.MetresRt.Maxm = noVal;
                 Tempr.MetresRt.Minm = noVal;
-                WSpdR.MetresRt.Mean = noVal;
-                WSpdR.MetresRt.Stdv = noVal;
-                WSpdR.MetresRt.Maxm = noVal;
-                WSpdR.MetresRt.Minm = noVal;
+                Speed.MetresRt.Mean = noVal;
+                Speed.MetresRt.Stdv = noVal;
+                Speed.MetresRt.Maxm = noVal;
+                Speed.MetresRt.Minm = noVal;
             }
 
             #region Properties
@@ -590,7 +605,7 @@ namespace scada_analyst
 
             private HeightInfo _dircs = new HeightInfo();
             private HeightInfo _tempr = new HeightInfo();
-            private HeightInfo _wSpdR = new HeightInfo();
+            private HeightInfo _speed = new HeightInfo();
 
             #endregion
 
@@ -639,14 +654,14 @@ namespace scada_analyst
                 _tempr.MetresRt.Maxm = GetVals(_tempr.MetresRt.Maxm, data, header.Tempr.MetresRt.Maxm);
                 _tempr.MetresRt.Minm = GetVals(_tempr.MetresRt.Minm, data, header.Tempr.MetresRt.Minm);
 
-                _wSpdR.Metres10.Mean = GetVals(_wSpdR.Metres10.Mean, data, header.WSpdR.Metres10.Mean);
-                _wSpdR.Metres10.Stdv = GetVals(_wSpdR.Metres10.Stdv, data, header.WSpdR.Metres10.Stdv);
-                _wSpdR.Metres10.Maxm = GetVals(_wSpdR.Metres10.Maxm, data, header.WSpdR.Metres10.Maxm);
-                _wSpdR.Metres10.Minm = GetVals(_wSpdR.Metres10.Minm, data, header.WSpdR.Metres10.Minm);
-                _wSpdR.MetresRt.Mean = GetVals(_wSpdR.MetresRt.Mean, data, header.WSpdR.MetresRt.Mean);
-                _wSpdR.MetresRt.Stdv = GetVals(_wSpdR.MetresRt.Stdv, data, header.WSpdR.MetresRt.Stdv);
-                _wSpdR.MetresRt.Maxm = GetVals(_wSpdR.MetresRt.Maxm, data, header.WSpdR.MetresRt.Maxm);
-                _wSpdR.MetresRt.Minm = GetVals(_wSpdR.MetresRt.Minm, data, header.WSpdR.MetresRt.Minm);
+                _speed.Metres10.Mean = GetVals(_speed.Metres10.Mean, data, header.Speed.Metres10.Mean);
+                _speed.Metres10.Stdv = GetVals(_speed.Metres10.Stdv, data, header.Speed.Metres10.Stdv);
+                _speed.Metres10.Maxm = GetVals(_speed.Metres10.Maxm, data, header.Speed.Metres10.Maxm);
+                _speed.Metres10.Minm = GetVals(_speed.Metres10.Minm, data, header.Speed.Metres10.Minm);
+                _speed.MetresRt.Mean = GetVals(_speed.MetresRt.Mean, data, header.Speed.MetresRt.Mean);
+                _speed.MetresRt.Stdv = GetVals(_speed.MetresRt.Stdv, data, header.Speed.MetresRt.Stdv);
+                _speed.MetresRt.Maxm = GetVals(_speed.MetresRt.Maxm, data, header.Speed.MetresRt.Maxm);
+                _speed.MetresRt.Minm = GetVals(_speed.MetresRt.Minm, data, header.Speed.MetresRt.Minm);
 
                 _dircs.Metres10.Mean = GetVals(_dircs.Metres10.Mean, data, header.Dircs.Metres10.Mean);
                 _dircs.Metres10.Stdv = GetVals(_dircs.Metres10.Stdv, data, header.Dircs.Metres10.Stdv);
@@ -711,7 +726,7 @@ namespace scada_analyst
 
             public HeightInfo Dircs { get { return _dircs; } set { _dircs = value; } }
             public HeightInfo Tempr { get { return _tempr; } set { _tempr = value; } }
-            public HeightInfo WSpdR { get { return _wSpdR; } set { _wSpdR = value; } }
+            public HeightInfo Speed { get { return _speed; } set { _speed = value; } }
 
             #endregion
         }

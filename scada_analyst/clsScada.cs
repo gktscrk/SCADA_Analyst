@@ -95,6 +95,9 @@ namespace scada_analyst
 
             // get capacity factor info
             GetCapacityFactors();
+
+            // get wind speeds as well#
+            GetWindSpeeds();
         }
         
         private void LoadFiles(string[] filenames, Common.DateFormat _dateFormat, int _singleTurbineLoading, double _rated,
@@ -256,6 +259,14 @@ namespace scada_analyst
             for (int i = 0; i < _windFarm.Count; i++)
             {
                 _windFarm[i].Capacity = new BaseStructure.MetaDataSetup(_windFarm[i], BaseStructure.MetaDataSetup.Mode.CAPACITY);
+            }
+        }
+
+        private void GetWindSpeeds()
+        {
+            for (int i = 0; i < _windFarm.Count; i++)
+            {
+                _windFarm[i].WindInfo = new BaseStructure.MetaDataSetup(_windFarm[i], BaseStructure.MetaDataSetup.Mode.WINDINFO);
             }
         }
 

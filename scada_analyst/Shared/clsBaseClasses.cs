@@ -79,6 +79,7 @@ namespace scada_analyst.Shared
         private GridPosition _position;
         private MetaDataSetup _bearings = new MetaDataSetup();
         private MetaDataSetup _capacity = new MetaDataSetup();
+        private MetaDataSetup _windInfo = new MetaDataSetup();
         private Types _type = Types.UNKNOWN;
 
         private List<DateTime> _inclSamples = new List<DateTime>();
@@ -113,7 +114,10 @@ namespace scada_analyst.Shared
 
                 int _prevYear;
                 int _thisYear;
-                
+
+                double _totalValue = 0;
+                int _counter = 0;
+
                 for (int i = 1; i < _input.MetDataSorted.Count; i++)
                 {
                     // create the triggering option
@@ -130,6 +134,10 @@ namespace scada_analyst.Shared
                         {
                             _years.Add(new Year(_thisYearsData, _meteoHeader));
                         }
+                        else if (_mode == Mode.WINDINFO)
+                        {
+                            _years.Add(new Year(_thisYearsData, _meteoHeader, _mode));
+                        }
 
                         // clear the info as has already been used
                         _thisYearsData.Clear();
@@ -144,6 +152,33 @@ namespace scada_analyst.Shared
                         if (_mode == Mode.BEARINGS)
                         {
                             _years.Add(new Year(_thisYearsData, _meteoHeader));
+                        }
+                        else if (_mode == Mode.WINDINFO)
+                        {
+                            _years.Add(new Year(_thisYearsData, _meteoHeader, _mode));
+                        }
+                    }
+
+                    // increment counters
+                    if (_mode == Mode.WINDINFO)
+                    {
+                        // increment the counter by the right value depending on what case we are dealing with
+                        if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { }
+                        else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                        {
+                            if (!double.IsNaN(_input.MetDataSorted[i].Speed.Metres10.Mean))
+                            {
+                                if (i == 1) { _totalValue += _input.MetDataSorted[0].Speed.Metres10.Mean; }
+                                _totalValue += _input.MetDataSorted[i].Speed.Metres10.Mean; _counter++;
+                            }
+                        }
+                        else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                        {
+                            if (!double.IsNaN(_input.MetDataSorted[i].Speed.MetresRt.Mean))
+                            {
+                                if (i == 1) { _totalValue += _input.MetDataSorted[0].Speed.MetresRt.Mean; }
+                                _totalValue += _input.MetDataSorted[i].Speed.MetresRt.Mean; _counter++;
+                            }
                         }
                     }
                 }
@@ -160,10 +195,15 @@ namespace scada_analyst.Shared
                     {
                         _fullStr = _input.MetDataSorted.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
-                    else
+                    else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
                     {
                         _fullStr = _input.MetDataSorted.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
+                }
+                else if (_mode == Mode.WINDINFO)
+                {
+                    _fullValue = Math.Round(_totalValue / _counter, 2);
+                    _fullStr = Common.GetStringDecimals(_fullValue, 2);
                 }
             }
 
@@ -179,7 +219,8 @@ namespace scada_analyst.Shared
                 int _prevYear;
                 int _thisYear;
 
-                double _totalPower = 0;
+                double _totalValue = 0;
+                int _totalCounter = 0;
 
                 for (int i = 1; i < _input.DataSorted.Count; i++)
                 {
@@ -201,6 +242,10 @@ namespace scada_analyst.Shared
                         {
                             _years.Add(new Year(_thisYearsData, _input.RatedPower));
                         }
+                        else if (_mode == Mode.WINDINFO)
+                        {
+                            _years.Add(new Year(_thisYearsData, 0));
+                        }
 
                         // clear the info as has already been used
                         _thisYearsData.Clear();
@@ -220,6 +265,10 @@ namespace scada_analyst.Shared
                         {
                             _years.Add(new Year(_thisYearsData, _input.RatedPower));
                         }
+                        else if (_mode == Mode.WINDINFO)
+                        {
+                            _years.Add(new Year(_thisYearsData, 0));
+                        }
                     }
 
                     // increment the counters with the relevant info
@@ -227,8 +276,16 @@ namespace scada_analyst.Shared
                     {
                         if (!double.IsNaN(_input.DataSorted[i].Power.Mean))
                         {
-                            if (i == 1) { _totalPower += _input.DataSorted[0].Power.Mean; }
-                            _totalPower += _input.DataSorted[i].Power.Mean;
+                            if (i == 1) { _totalValue += _input.DataSorted[0].Power.Mean; }
+                            _totalValue += _input.DataSorted[i].Power.Mean; _totalCounter++;
+                        }
+                    }
+                    else if (_mode == Mode.WINDINFO)
+                    {
+                        if (!double.IsNaN(_input.DataSorted[i].Anemo.ActWinds.Mean))
+                        {
+                            if (i == 1) { _totalValue += _input.DataSorted[0].Anemo.ActWinds.Mean; }
+                            _totalValue += _input.DataSorted[i].Anemo.ActWinds.Mean; _totalCounter++;
                         }
                     }
                 }
@@ -241,8 +298,15 @@ namespace scada_analyst.Shared
                 }
                 else if (_mode == Mode.CAPACITY)
                 {
-                    _fullValue = Math.Round(_totalPower / (_input.RatedPower * _input.DataSorted.Count) * 100, 1);
+                    // calculating the percentage result of the total capacity
+                    _fullValue = Math.Round(_totalValue / (_input.RatedPower * _totalCounter) * 100, 1);
                     _fullStr = Common.GetStringDecimals(_fullValue, 1);
+                }
+                else if (_mode == Mode.WINDINFO)
+                {
+                    // calculating the average of all the results
+                    _fullValue = Math.Round(_totalValue / _totalCounter, 2);
+                    _fullStr = Common.GetStringDecimals(_fullValue, 2);
                 }
             }
 
@@ -301,10 +365,7 @@ namespace scada_analyst.Shared
                             _monthData.Clear();
                             _monthData.Add(_yearlyData[i]);
                         }
-                        else if (_thisMonth == _prevMonth)
-                        {
-                            _monthData.Add(_yearlyData[i]);
-                        }
+                        else if (_thisMonth == _prevMonth) { _monthData.Add(_yearlyData[i]); }
 
                         // the last samples also need to be added to the values list to not miss out on anything
                         // so this check is necessary in case the last samples are not of a different month
@@ -327,6 +388,12 @@ namespace scada_analyst.Shared
                     _yearStr = _yearlyData.GroupBy(v => v.YawSys.YawPos.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                 }
 
+                /// <summary>
+                /// This entry points allows adding a direction information sample of a year's length from a meteorological
+                /// data source
+                /// </summary>
+                /// <param name="_yearlyData"></param>
+                /// <param name="_meteoHeader"></param>
                 public Year(List<MeteoData.MeteoSample> _yearlyData, MeteoData.MeteoHeader _meteoHeader)
                 {
                     // get year
@@ -352,15 +419,12 @@ namespace scada_analyst.Shared
                         {
                             string mode = "";
 
-                            if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN)
-                            {
-                                mode = "Unknown";
-                            }
+                            if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { mode = "Unknown"; }
                             else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                             {
                                 mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
-                            else
+                            else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
                             {
                                 mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
@@ -371,10 +435,7 @@ namespace scada_analyst.Shared
                             _monthData.Clear();
                             _monthData.Add(_yearlyData[i]);
                         }
-                        else if (_thisMonth == _prevMonth)
-                        {
-                            _monthData.Add(_yearlyData[i]);
-                        }
+                        else if (_thisMonth == _prevMonth) { _monthData.Add(_yearlyData[i]); }
 
                         // the last samples also need to be added to the values list to not miss out on anything
                         // so this check is necessary in case the last samples are not of a different month
@@ -382,15 +443,12 @@ namespace scada_analyst.Shared
                         {
                             string mode = "";
 
-                            if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN)
-                            {
-                                mode = "Unknown";
-                            }
+                            if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { mode = "Unknown"; }
                             else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                             {
                                 mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
-                            else
+                            else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
                             {
                                 mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                             }
@@ -405,40 +463,163 @@ namespace scada_analyst.Shared
                     {
                         string mode = "";
 
-                        if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN)
-                        {
-                            mode = "Unknown";
-                        }
+                        if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { mode = "Unknown"; }
                         else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                         {
                             mode = _monthData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                         }
-                        else
+                        else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
                         {
                             mode = _monthData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                         }
 
-                        _values.Add(new Tuple<int, double, string>
-                            (_yearlyData[0].TimeStamp.Month, double.NaN, mode));
+                        _values.Add(new Tuple<int, double, string>(_yearlyData[0].TimeStamp.Month, double.NaN, mode));
                     }
 
                     // calculation of the yearly values - looking for the mode
-                    if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN)
-                    {
-                        _yearStr = "Unknown";
-                    }
+                    if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { _yearStr = "Unknown"; }
                     else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                     {
                         _yearStr = _yearlyData.GroupBy(v => v.Dircs.Metres10.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
-                    else
+                    else if (_meteoHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
                     {
                         _yearStr = _yearlyData.GroupBy(v => v.Dircs.MetresRt.DStrShort).OrderByDescending(g => g.Count()).First().Key;
                     }
                 }
 
                 /// <summary>
-                /// This entry point is for adding a new set of year data for capacity-based calculations.
+                /// This entry point allows adding a wind speed information sample of a year's length from a meteorological
+                /// dataset.
+                /// </summary>
+                /// <param name="_yearlyData"></param>
+                /// <param name="_meteoHeader"></param>
+                /// <param name="_mode"></param>
+                public Year(List<MeteoData.MeteoSample> _yearlyData, MeteoData.MeteoHeader _meteoHeader, Mode _mode)
+                {
+                    // get year
+                    _year = _yearlyData[0].TimeStamp.Year;
+
+                    // create variables
+                    int _prevMonth;
+                    int _thisMonth;
+                    int _samplesPerMonth = 0;
+
+                    double _staticValues = 0; // this incrementor won't be reset into a new month
+                    int _staticCounter = 0;
+                    double _monthlyValue = 0;
+
+                    for (int i = 1; i < _yearlyData.Count; i++)
+                    {
+                        // create tracking variables for the month
+                        _thisMonth = _yearlyData[i].TimeStamp.Month;
+                        _prevMonth = _yearlyData[i - 1].TimeStamp.Month;
+
+                        // this here adds the first sample to the previous month whatever else happens
+                        if (i == 1)
+                        {
+                            if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { }
+                            else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                            {
+                                if (!double.IsNaN(_yearlyData[0].Speed.Metres10.Mean))
+                                {
+                                    _monthlyValue += _yearlyData[0].Speed.Metres10.Mean; _samplesPerMonth++;
+                                    _staticValues += _yearlyData[0].Speed.Metres10.Mean; _staticCounter++;
+                                }
+                            }
+                            else if(_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                            {
+                                if (!double.IsNaN(_yearlyData[0].Speed.MetresRt.Mean))
+                                {
+                                    _monthlyValue += _yearlyData[0].Speed.MetresRt.Mean; _samplesPerMonth++;
+                                    _staticValues += _yearlyData[0].Speed.MetresRt.Mean; _staticCounter++;
+                                }
+                            }
+                        }
+
+                        // conditional to check if the month is the same as the previous one
+                        if (_thisMonth != _prevMonth)
+                        {
+                            // monthValue represents the value for the month
+                            double _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+                            
+                            // if calculated, add it to the Tuple and reset relevant counters
+                            _values.Add(new Tuple<int, double, string>(_prevMonth, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+                            _monthlyValue = 0; _samplesPerMonth = 0;
+                        }
+
+                        // only increment value if it is not NaN
+
+                        if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { }
+                        else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                        {
+                            if (!double.IsNaN(_yearlyData[i].Speed.Metres10.Mean))
+                            {
+                                _monthlyValue += _yearlyData[i].Speed.Metres10.Mean; _samplesPerMonth++;
+                                _staticValues += _yearlyData[i].Speed.Metres10.Mean; _staticCounter++;
+                            }
+                        }
+                        else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                        {
+                            if (!double.IsNaN(_yearlyData[i].Speed.MetresRt.Mean))
+                            {
+                                _monthlyValue += _yearlyData[i].Speed.MetresRt.Mean; _samplesPerMonth++;
+                                _staticValues += _yearlyData[i].Speed.MetresRt.Mean; _staticCounter++;
+                            }
+                        }
+
+                        // the last samples also need to be added to the values list to not miss out on anything
+                        // so this check is necessary in case the last samples are not of a different month
+                        if (i == _yearlyData.Count - 1)
+                        {
+                            double _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+
+                            _values.Add(new Tuple<int, double, string>(_thisMonth, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+                        }
+                    }
+
+                    // special provision if only one sample extends to the new year as the loop won't initialise
+                    if (_yearlyData.Count == 1)
+                    {
+                        if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.UNKNOWN) { }
+                        else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                        {
+                            if (!double.IsNaN(_yearlyData[0].Speed.Metres10.Mean))
+                            {
+                                // add values to the counter
+                                _monthlyValue += _yearlyData[0].Speed.Metres10.Mean; _samplesPerMonth++;
+
+                                double _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+                                _values.Add(new Tuple<int, double, string>
+                                    (_yearlyData[0].TimeStamp.Month, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+
+                                _staticValues += _yearlyData[0].Speed.Metres10.Mean; _staticCounter++;
+                            }
+                        }
+                        else if (_meteoHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT)
+                        {
+                            if (!double.IsNaN(_yearlyData[0].Speed.MetresRt.Mean))
+                            {
+                                // add values to the counter
+                                _monthlyValue += _yearlyData[0].Speed.MetresRt.Mean; _samplesPerMonth++;
+
+                                double _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+                                _values.Add(new Tuple<int, double, string>
+                                    (_yearlyData[0].TimeStamp.Month, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+
+                                _staticValues += _yearlyData[0].Speed.MetresRt.Mean; _staticCounter++;
+                            }
+                        }
+                    }
+
+                    // calculation for the yearly values
+                    _value = Math.Round(_staticValues / _staticCounter, 2);                    
+                    _yearStr = Common.GetStringDecimals(_value, 2);
+                }
+
+                /// <summary>
+                /// This entry point is for adding a new set of year data for capacity factor and wind speed calculations. The 
+                /// wind speed calculations are initiliased if the user sends in 0 for rated power.
                 /// </summary>
                 /// <param name="_yearlyData"></param>
                 /// <param name="_ratedPower"></param>
@@ -452,8 +633,9 @@ namespace scada_analyst.Shared
                     int _thisMonth;
                     int _samplesPerMonth = 0;
 
-                    double _powerCounter = 0;
-                    double _monthCounter = 0;
+                    double _staticValues = 0; // this counter won't be reset into a new month
+                    int _staticCounter = 0;
+                    double _monthlyValue = 0;
 
                     for (int i = 1; i < _yearlyData.Count; i++)
                     {
@@ -464,10 +646,21 @@ namespace scada_analyst.Shared
                         // this here adds the first sample to the previous month whatever else happens
                         if (i == 1)
                         {
-                            if (!double.IsNaN(_yearlyData[0].Power.Mean))
+                            if (_ratedPower != 0)
                             {
-                                _monthCounter += _yearlyData[0].Power.Mean; _samplesPerMonth++;
-                                _powerCounter += _yearlyData[0].Power.Mean;
+                                if (!double.IsNaN(_yearlyData[0].Power.Mean))
+                                {
+                                    _monthlyValue += _yearlyData[0].Power.Mean; _samplesPerMonth++;
+                                    _staticValues += _yearlyData[0].Power.Mean; _staticCounter++;
+                                }
+                            }
+                            else
+                            { 
+                                if (!double.IsNaN(_yearlyData[0].Anemo.ActWinds.Mean))
+                                {
+                                    _monthlyValue += _yearlyData[0].Anemo.ActWinds.Mean; _samplesPerMonth++;
+                                    _staticValues += _yearlyData[0].Anemo.ActWinds.Mean; _staticCounter++;
+                                }
                             }
                         }
 
@@ -475,27 +668,40 @@ namespace scada_analyst.Shared
                         if (_thisMonth != _prevMonth)
                         {
                             // monthValue represents the capacity factor for the month
-                            double _monthValue = Math.Round(_monthCounter / (_ratedPower * _samplesPerMonth) * 100, 1);
+                            double _monthValue;
 
                             // if calculated, add it to the Tuple and reset relevant counters
-                            _values.Add(new Tuple<int, double, string>(_prevMonth, _monthValue, Common.GetStringDecimals(_monthValue, 1)));
-                            _monthCounter = 0; _samplesPerMonth = 0;
-
-                            // only increment value if it is not NaN
-                            if (!double.IsNaN(_yearlyData[i].Power.Mean))
+                            if (_ratedPower != 0)
                             {
-                                // add values to the counter
-                                _monthCounter += _yearlyData[i].Power.Mean; _samplesPerMonth++;
-                                _powerCounter += _yearlyData[i].Power.Mean;
+                                _monthValue = Math.Round(_monthlyValue / (_ratedPower * _samplesPerMonth) * 100, 1);
+                                _values.Add(new Tuple<int, double, string>(_prevMonth, _monthValue, Common.GetStringDecimals(_monthValue, 1)));
                             }
+                            else
+                            {
+                                _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+                                _values.Add(new Tuple<int, double, string>(_prevMonth, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+                            }
+
+                            _monthlyValue = 0; _samplesPerMonth = 0;
                         }
-                        else if (_thisMonth == _prevMonth)
+
+                        // only increment value if it is not NaN
+                        if (_ratedPower != 0)
                         {
                             if (!double.IsNaN(_yearlyData[i].Power.Mean))
                             {
                                 // add values to the counter
-                                _monthCounter += _yearlyData[i].Power.Mean; _samplesPerMonth++;
-                                _powerCounter += _yearlyData[i].Power.Mean;
+                                _monthlyValue += _yearlyData[i].Power.Mean; _samplesPerMonth++;
+                                _staticValues += _yearlyData[i].Power.Mean; _staticCounter++;
+                            }
+                        }
+                        else
+                        {
+                            if (!double.IsNaN(_yearlyData[i].Anemo.ActWinds.Mean))
+                            {
+                                // add values to the counter
+                                _monthlyValue += _yearlyData[i].Anemo.ActWinds.Mean; _samplesPerMonth++;
+                                _staticValues += _yearlyData[i].Anemo.ActWinds.Mean; _staticCounter++;
                             }
                         }
 
@@ -503,30 +709,68 @@ namespace scada_analyst.Shared
                         // so this check is necessary in case the last samples are not of a different month
                         if (i == _yearlyData.Count - 1)
                         {
-                            double _monthValue = Math.Round(_monthCounter / (_ratedPower * _samplesPerMonth) * 100, 1);
-                            _values.Add(new Tuple<int, double, string>(_thisMonth, _monthValue, Common.GetStringDecimals(_monthValue, 1)));
+                            double _monthValue;
+
+                            if (_ratedPower != 0)
+                            {
+                                _monthValue = Math.Round(_monthlyValue / (_ratedPower * _samplesPerMonth) * 100, 1);
+                                _values.Add(new Tuple<int, double, string>
+                                    (_thisMonth, _monthValue, Common.GetStringDecimals(_monthValue, 1)));
+                            }
+                            else
+                            {
+                                _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+                                _values.Add(new Tuple<int, double, string>
+                                    (_thisMonth, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+                            }
+
                         }
                     }
 
                     // special provision if only one sample extends to the new year as the loop won't initialise
                     if (_yearlyData.Count == 1)
                     {
-                        if (!double.IsNaN(_yearlyData[0].Power.Mean))
+                        if (_ratedPower != 0)
                         {
-                            // add values to the counter
-                            _monthCounter += _yearlyData[0].Power.Mean; _samplesPerMonth++;
+                            if (!double.IsNaN(_yearlyData[0].Power.Mean))
+                            {
+                                // add values to the counter
+                                _monthlyValue += _yearlyData[0].Power.Mean; _samplesPerMonth++;
 
-                            double _monthValue = Math.Round(_monthCounter / (_ratedPower * _samplesPerMonth) * 100, 1);
-                            _values.Add(new Tuple<int, double, string>
-                                (_yearlyData[0].TimeStamp.Month, _monthValue, Common.GetStringDecimals(_monthValue, 1)));
+                                double _monthValue = Math.Round(_monthlyValue / (_ratedPower * _samplesPerMonth) * 100, 1);
+                                _values.Add(new Tuple<int, double, string>
+                                    (_yearlyData[0].TimeStamp.Month, _monthValue, Common.GetStringDecimals(_monthValue, 1)));
 
-                            _powerCounter += _yearlyData[0].Power.Mean;
+                                _staticValues += _yearlyData[0].Power.Mean; _staticCounter++;
+                            }
+                        }
+                        else
+                        {
+                            if (!double.IsNaN(_yearlyData[0].Anemo.ActWinds.Mean))
+                            {
+                                // add values to the counter
+                                _monthlyValue += _yearlyData[0].Anemo.ActWinds.Mean; _samplesPerMonth++;
+
+                                double _monthValue = Math.Round(_monthlyValue / _samplesPerMonth, 2);
+                                _values.Add(new Tuple<int, double, string>
+                                    (_yearlyData[0].TimeStamp.Month, _monthValue, Common.GetStringDecimals(_monthValue, 2)));
+
+                                _staticValues += _yearlyData[0].Anemo.ActWinds.Mean; _staticCounter++;
+                            }
                         }
                     }
 
                     // calculation for the yearly values
-                    _value = Math.Round(_powerCounter / (_ratedPower * _yearlyData.Count) * 100, 1);
-                    _yearStr = Common.GetStringDecimals(_value, 1);
+                    if (_ratedPower != 0)
+                    {
+                        _value = Math.Round(_staticValues / (_ratedPower * _staticCounter) * 100, 1);
+                        _yearStr = Common.GetStringDecimals(_value, 1);
+                    }
+                    else
+                    {
+                        _value = Math.Round(_staticValues / _staticCounter, 2);
+                        _yearStr = Common.GetStringDecimals(_value, 2);
+                    }
                 }
 
                 #endregion
@@ -546,7 +790,8 @@ namespace scada_analyst.Shared
             public enum Mode
             {
                 BEARINGS,
-                CAPACITY
+                CAPACITY,
+                WINDINFO
             }
 
             #endregion
@@ -582,6 +827,7 @@ namespace scada_analyst.Shared
         public GridPosition Position {  get { return _position; } set { _position = value; } }
         public MetaDataSetup Bearings { get { return _bearings; } set { _bearings = value; } }
         public MetaDataSetup Capacity { get { return _capacity; } set { _capacity = value; } }
+        public MetaDataSetup WindInfo { get { return _windInfo; } set { _windInfo = value; } }
         public Types Type { get { return _type; } set { _type = value; } }
 
         public List<DateTime> InclSamples { get { return _inclSamples; } set { _inclSamples = value; } }

@@ -50,34 +50,34 @@ namespace scada_analyst
 
             for (int i = 0; i < data.Count; i++)
             {
-                if (data[i].WSpdR.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                if (data[i].Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                 {
                     if (input == WeatherType.LO_SPD)
                     {
-                        if (i == 0) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+                        if (i == 0) { _extrmSpeed = data[i].Speed.Metres10.Mean; }
 
-                        if (data[i].WSpdR.Metres10.Mean < _extrmSpeed) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+                        if (data[i].Speed.Metres10.Mean < _extrmSpeed) { _extrmSpeed = data[i].Speed.Metres10.Mean; }
                     }
                     else if (input == WeatherType.HI_SPD)
                     {
-                        if (i == 0) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+                        if (i == 0) { _extrmSpeed = data[i].Speed.Metres10.Mean; }
 
-                        if (data[i].WSpdR.Metres10.Mean > _extrmSpeed) { _extrmSpeed = data[i].WSpdR.Metres10.Mean; }
+                        if (data[i].Speed.Metres10.Mean > _extrmSpeed) { _extrmSpeed = data[i].Speed.Metres10.Mean; }
                     }
                 }
                 else
                 {
                     if (input == WeatherType.LO_SPD)
                     {
-                        if (i == 0) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+                        if (i == 0) { _extrmSpeed = data[i].Speed.MetresRt.Mean; }
 
-                        if (data[i].WSpdR.MetresRt.Mean < _extrmSpeed) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+                        if (data[i].Speed.MetresRt.Mean < _extrmSpeed) { _extrmSpeed = data[i].Speed.MetresRt.Mean; }
                     }
                     else if (input == WeatherType.HI_SPD)
                     {
-                        if (i == 0) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+                        if (i == 0) { _extrmSpeed = data[i].Speed.MetresRt.Mean; }
 
-                        if (data[i].WSpdR.MetresRt.Mean > _extrmSpeed) { _extrmSpeed = data[i].WSpdR.MetresRt.Mean; }
+                        if (data[i].Speed.MetresRt.Mean > _extrmSpeed) { _extrmSpeed = data[i].Speed.MetresRt.Mean; }
                     }
                 }
 

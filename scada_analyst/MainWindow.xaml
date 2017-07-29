@@ -276,6 +276,153 @@
                             </Grid.RowDefinitions>
 
                             <ListView Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="5,5,5,5"
+                                      Name="LView_WindInfo" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                      VerticalAlignment="Top" HorizontalAlignment="Left" 
+                                      SelectionChanged="LView_SummaryOptions_SelectionChanged"
+                                      ScrollViewer.CanContentScroll="True" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.View>
+                                    <GridView ColumnHeaderContainerStyle="{DynamicResource CustomHeaderStyle}">
+                                        <GridViewColumn Header="Asset ID" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding UnitID, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Type" Width="70" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding TypeString, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Total" Width="50" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindInfo.FullStr, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Year" Width="50" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Overall, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jan" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Jan, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Feb" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Feb, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Mar" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Mar, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Apr" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Apr, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="May" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.May, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jun" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Jun, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Jul" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Jul, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Aug" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Aug, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Sep" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Sep, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Oct" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Oct, Mode=OneWay}"
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Nov" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Nov, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Dec" Width="40" >
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Label Content="{Binding WindData.Dec, Mode=OneWay}" 
+                                                           Padding="3,0"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <ListView Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="5,5,5,5"
                                       Name="LView_Capacity" ScrollViewer.HorizontalScrollBarVisibility="Auto"
                                       VerticalAlignment="Top" HorizontalAlignment="Left" 
                                       SelectionChanged="LView_SummaryOptions_SelectionChanged"

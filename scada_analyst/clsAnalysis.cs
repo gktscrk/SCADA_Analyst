@@ -269,10 +269,10 @@ namespace scada_analyst
                     {
                         for (int j = 0; j < meteoFile.MetMasts[i].MetDataSorted.Count; j++)
                         {
-                            if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                            if (meteoFile.MetMasts[i].MetDataSorted[j].Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
                             {
-                                if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Metres10.Mean < CutIn &&
-                                    meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Metres10.Mean >= 0)
+                                if (meteoFile.MetMasts[i].MetDataSorted[j].Speed.Metres10.Mean < CutIn &&
+                                    meteoFile.MetMasts[i].MetDataSorted[j].Speed.Metres10.Mean >= 0)
                                 {
                                     List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
@@ -281,7 +281,7 @@ namespace scada_analyst
                                     {
                                         if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Metres10.Mean > CutIn) { j = k - 1; break; }
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].Speed.Metres10.Mean > CutIn) { j = k - 1; break; }
                                         else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
 
                                         thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
@@ -290,7 +290,7 @@ namespace scada_analyst
                                     _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
                                     _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
                                 }
-                                else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.Metres10.Mean > CutOut)
+                                else if (meteoFile.MetMasts[i].MetDataSorted[j].Speed.Metres10.Mean > CutOut)
                                 {
                                     List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
@@ -299,7 +299,7 @@ namespace scada_analyst
                                     {
                                         if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.Metres10.Mean < CutOut) { j = k - 1; break; }
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].Speed.Metres10.Mean < CutOut) { j = k - 1; break; }
                                         else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
 
                                         thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
@@ -311,8 +311,8 @@ namespace scada_analyst
                             }
                             else
                             {
-                                if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.MetresRt.Mean < CutIn &&
-                                    meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.MetresRt.Mean >= 0)
+                                if (meteoFile.MetMasts[i].MetDataSorted[j].Speed.MetresRt.Mean < CutIn &&
+                                    meteoFile.MetMasts[i].MetDataSorted[j].Speed.MetresRt.Mean >= 0)
                                 {
                                     List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
@@ -321,7 +321,7 @@ namespace scada_analyst
                                     {
                                         if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.MetresRt.Mean > CutIn) { j = k - 1; break; }
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].Speed.MetresRt.Mean > CutIn) { j = k - 1; break; }
                                         else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
 
                                         thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
@@ -330,7 +330,7 @@ namespace scada_analyst
                                     _loSpEvents.Add(new EventData(thisEvent, scada_analyst.EventData.WeatherType.LO_SPD));
                                     _allWtrEvts.Add(_loSpEvents[_loSpEvents.Count - 1]);
                                 }
-                                else if (meteoFile.MetMasts[i].MetDataSorted[j].WSpdR.MetresRt.Mean > CutOut)
+                                else if (meteoFile.MetMasts[i].MetDataSorted[j].Speed.MetresRt.Mean > CutOut)
                                 {
                                     List<MeteoData.MeteoSample> thisEvent = new List<MeteoData.MeteoSample>();
                                     thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[j]);
@@ -339,7 +339,7 @@ namespace scada_analyst
                                     {
                                         if (meteoFile.MetMasts[i].MetDataSorted[k].SampleSeparation > new TimeSpan(0, 10, 0)) { j = k - 1; break; }
 
-                                        if (meteoFile.MetMasts[i].MetDataSorted[k].WSpdR.MetresRt.Mean < CutOut) { j = k - 1; break; }
+                                        if (meteoFile.MetMasts[i].MetDataSorted[k].Speed.MetresRt.Mean < CutOut) { j = k - 1; break; }
                                         else if (k == meteoFile.MetMasts[i].MetDataSorted.Count - 1) { j = k; }
 
                                         thisEvent.Add(meteoFile.MetMasts[i].MetDataSorted[k]);
@@ -2081,7 +2081,8 @@ namespace scada_analyst
 
             private MetaDataCounter _bearInfo;
             private MetaDataCounter _capaInfo;
-            
+            private MetaDataCounter _windData;
+
             #endregion
 
             #region Constructor
@@ -2094,6 +2095,7 @@ namespace scada_analyst
 
                 this.Bearings = thisAsset.Bearings;
                 this.Capacity = thisAsset.Capacity;
+                this.WindInfo = thisAsset.WindInfo;
 
                 //the below also needs to take into account the right asset ID only
                 _hiWinds = new EventsCounter(this.UnitID, scada_analyst.EventData.WeatherType.HI_SPD, hiWindEvents);
@@ -2113,6 +2115,7 @@ namespace scada_analyst
 
                 this.Bearings = thisAsset.Bearings;
                 this.Capacity = thisAsset.Capacity;
+                this.WindInfo = thisAsset.WindInfo;
 
                 for (int i = 0; i < Bearings.Years.Count; i++)
                 {
@@ -2130,6 +2133,16 @@ namespace scada_analyst
                     {
                         _capaInfo = new MetaDataCounter(Capacity.Years[i].Values);
                         _capaInfo.Overall = Capacity.Years[i].YearStr;
+                        break;
+                    }
+                }
+
+                for (int i = 0; i < WindInfo.Years.Count; i++)
+                {
+                    if (WindInfo.Years[i].Years == _year)
+                    {
+                        _windData = new MetaDataCounter(WindInfo.Years[i].Values);
+                        _windData.Overall = WindInfo.Years[i].YearStr;
                         break;
                     }
                 }
@@ -2286,6 +2299,7 @@ namespace scada_analyst
 
             public MetaDataCounter BearInfo { get { return _bearInfo; } set { _bearInfo = value; } }
             public MetaDataCounter CapaInfo { get { return _capaInfo; } set { _capaInfo = value; } }
+            public MetaDataCounter WindData { get { return _windData; } set { _windData = value; } }
 
             #endregion
         }

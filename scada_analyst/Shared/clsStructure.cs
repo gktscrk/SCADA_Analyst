@@ -23,7 +23,6 @@ namespace scada_analyst.Shared
             PositionsLoaded = input.PositionsLoaded;
             UnitID = input.UnitID;
             Type = input.Type;
-            Bearings = input.Bearings;
 
             CheckDataSeriesTimesAndProperties(input);
         }
@@ -47,6 +46,7 @@ namespace scada_analyst.Shared
 
             Bearings = input.Bearings;
             Capacity = input.Capacity;
+            WindInfo = input.WindInfo;
         }
 
         public void CheckDataSeriesTimesAndProperties(ScadaData.TurbineData input)
@@ -56,6 +56,7 @@ namespace scada_analyst.Shared
 
             Bearings = input.Bearings;
             Capacity = input.Capacity;
+            WindInfo = input.WindInfo;
         }
 
         private DateTime GetFirstOrLast(List<DateTime> times, bool getFirst)
