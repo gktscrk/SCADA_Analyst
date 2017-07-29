@@ -2759,7 +2759,7 @@ namespace scada_analyst
                     {
                         _exportInfo = ToDataTable(LView_Capacity, TableExportType.CAPACITY);
                     }
-                    else if (LView_Capacity.SelectedItems.Count > 0)
+                    else if (LView_WindInfo.SelectedItems.Count > 0)
                     {
                         _exportInfo = ToDataTable(LView_WindInfo, TableExportType.WINDINFO);
                     }
