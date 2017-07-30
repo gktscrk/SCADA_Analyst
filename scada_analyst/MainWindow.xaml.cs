@@ -2837,12 +2837,18 @@ namespace scada_analyst
         private DataTable ToDataTable(ListView _input, TableExportType _type)
         {
             DataTable table = new DataTable();
-                        
+
+            // what year is selected
+            int _year = (int)Combo_YearChooser.SelectedItem;
+
             foreach (object item in _input.Items)
             {
                 if (item is Analysis.StructureSmry && _type == TableExportType.BEARING)
                 {
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
+
+                    // get which year info we should be looking for
+                    int index = _obj.Bearings.Years.FindIndex(x => x.YearName == _year);
 
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
                     if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
@@ -2852,22 +2858,20 @@ namespace scada_analyst
                     newRow["Asset ID"] = _obj.UnitID;
                     newRow["Total"] = _obj.Bearings.FullStr;
 
-                    for (int i = 0; i < _obj.Bearings.Years.Count; i++)
+                    // add the overall yearly value as well into one of the columns
+                    if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.Bearings.Years[index].YearName, typeof(string)); }
+                    newRow["Year " + _obj.Bearings.Years[index].YearName] = _obj.Bearings.Years[index].ValStr;
+
+                    //check the other DataTable objects and add their respective information into this one
+                    for (int j = 0; j < _obj.Bearings.Years[index].MonthlyData.Columns.Count; j++)
                     {
-                        // add the overall yearly value as well into one of the columns
-                        if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.Bearings.Years[i].YearName, typeof(string)); }
-                        newRow["Year " + _obj.Bearings.Years[i].YearName] = _obj.Bearings.Years[i].ValStr;     
-
-                        //check the other DataTable objects and add their respective information into this one
-                        for (int j = 0; j < _obj.Bearings.Years[i].MonthlyData.Columns.Count; j++)
+                        if (!table.Columns.Contains(_obj.Bearings.Years[index].MonthlyData.Columns[j].ToString()))
                         {
-                            if (!table.Columns.Contains(_obj.Bearings.Years[i].MonthlyData.Columns[j].ToString()))
-                            {
-                                table.Columns.Add(_obj.Bearings.Years[i].MonthlyData.Columns[j].ToString(), typeof(string));
-                            }
+                            table.Columns.Add(_obj.Bearings.Years[index].MonthlyData.Columns[j].ToString(), typeof(string));
+                        }
 
-                            newRow[_obj.Bearings.Years[i].MonthlyData.Columns[j].ToString()] = _obj.Bearings.Years[i].MonthlyData.Rows[0].ItemArray[j];
-                        }                   
+                        newRow[_obj.Bearings.Years[index].MonthlyData.Columns[j].ToString()] = 
+                            _obj.Bearings.Years[index].MonthlyData.Rows[0].ItemArray[j];
                     }
 
                     table.Rows.Add(newRow);
@@ -2875,7 +2879,10 @@ namespace scada_analyst
                 else if (item is Analysis.StructureSmry && _type == TableExportType.CAPACITY)
                 {
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
-                    
+
+                    // get which year info we should be looking for
+                    int index = _obj.Capacity.Years.FindIndex(x => x.YearName == _year);
+
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
                     if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
 
@@ -2884,22 +2891,20 @@ namespace scada_analyst
                     newRow["Asset ID"] = _obj.UnitID;
                     newRow["Total"] = _obj.Capacity.FullStr;
 
-                    for (int i = 0; i < _obj.Capacity.Years.Count; i++)
+                    // add the overall yearly value as well into one of the columns
+                    if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.Capacity.Years[index].YearName, typeof(string)); }
+                    newRow["Year " + _obj.Capacity.Years[index].YearName] = _obj.Capacity.Years[index].ValStr;
+
+                    //check the other DataTable objects and add their respective information into this one
+                    for (int j = 0; j < _obj.Capacity.Years[index].MonthlyData.Columns.Count; j++)
                     {
-                        // add the overall yearly value as well into one of the columns
-                        if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.Capacity.Years[i].YearName, typeof(string)); }
-                        newRow["Year " + _obj.Capacity.Years[i].YearName] = _obj.Capacity.Years[i].ValStr;
-
-                        //check the other DataTable objects and add their respective information into this one
-                        for (int j = 0; j < _obj.Capacity.Years[i].MonthlyData.Columns.Count; j++)
+                        if (!table.Columns.Contains(_obj.Capacity.Years[index].MonthlyData.Columns[j].ToString()))
                         {
-                            if (!table.Columns.Contains(_obj.Capacity.Years[i].MonthlyData.Columns[j].ToString()))
-                            {
-                                table.Columns.Add(_obj.Capacity.Years[i].MonthlyData.Columns[j].ToString(), typeof(string));
-                            }
-
-                            newRow[_obj.Capacity.Years[i].MonthlyData.Columns[j].ToString()] = _obj.Capacity.Years[i].MonthlyData.Rows[0].ItemArray[j];
+                            table.Columns.Add(_obj.Capacity.Years[index].MonthlyData.Columns[j].ToString(), typeof(string));
                         }
+
+                        newRow[_obj.Capacity.Years[index].MonthlyData.Columns[j].ToString()] = 
+                            _obj.Capacity.Years[index].MonthlyData.Rows[0].ItemArray[j];
                     }
 
                     table.Rows.Add(newRow);
@@ -2907,6 +2912,9 @@ namespace scada_analyst
                 else if (item is Analysis.StructureSmry && _type == TableExportType.WINDINFO)
                 {
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
+
+                    // get which year info we should be looking for
+                    int index = _obj.Capacity.Years.FindIndex(x => x.YearName == _year);
 
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
                     if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
@@ -2916,22 +2924,20 @@ namespace scada_analyst
                     newRow["Asset ID"] = _obj.UnitID;
                     newRow["Total"] = _obj.WindInfo.FullStr;
 
-                    for (int i = 0; i < _obj.WindInfo.Years.Count; i++)
+                    // add the overall yearly value as well into one of the columns
+                    if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.WindInfo.Years[index].YearName, typeof(string)); }
+                    newRow["Year " + _obj.WindInfo.Years[index].YearName] = _obj.WindInfo.Years[index].ValStr;
+
+                    //check the other DataTable objects and add their respective information into this one
+                    for (int j = 0; j < _obj.WindInfo.Years[index].MonthlyData.Columns.Count; j++)
                     {
-                        // add the overall yearly value as well into one of the columns
-                        if (item == _input.Items[0]) { table.Columns.Add("Year " + _obj.WindInfo.Years[i].YearName, typeof(string)); }
-                        newRow["Year " + _obj.WindInfo.Years[i].YearName] = _obj.WindInfo.Years[i].ValStr;
-
-                        //check the other DataTable objects and add their respective information into this one
-                        for (int j = 0; j < _obj.WindInfo.Years[i].MonthlyData.Columns.Count; j++)
+                        if (!table.Columns.Contains(_obj.WindInfo.Years[index].MonthlyData.Columns[j].ToString()))
                         {
-                            if (!table.Columns.Contains(_obj.WindInfo.Years[i].MonthlyData.Columns[j].ToString()))
-                            {
-                                table.Columns.Add(_obj.WindInfo.Years[i].MonthlyData.Columns[j].ToString(), typeof(string));
-                            }
-
-                            newRow[_obj.WindInfo.Years[i].MonthlyData.Columns[j].ToString()] = _obj.WindInfo.Years[i].MonthlyData.Rows[0].ItemArray[j];
+                            table.Columns.Add(_obj.WindInfo.Years[index].MonthlyData.Columns[j].ToString(), typeof(string));
                         }
+
+                        newRow[_obj.WindInfo.Years[index].MonthlyData.Columns[j].ToString()] = 
+                            _obj.WindInfo.Years[index].MonthlyData.Rows[0].ItemArray[j];
                     }
 
                     table.Rows.Add(newRow);
@@ -2948,7 +2954,7 @@ namespace scada_analyst
                         table.Columns.Add(">2h < 8h", typeof(int));
                         table.Columns.Add(">8h < 2d", typeof(int));
                         table.Columns.Add(">2d", typeof(int));
-                    }                
+                    }
 
                     DataRow newRow = table.NewRow();
 
@@ -2958,7 +2964,7 @@ namespace scada_analyst
                     newRow[">2h < 8h"] = _obj.NoPower.HourLong;
                     newRow[">8h < 2d"] = _obj.NoPower.ManyHors;
                     newRow[">2d"] = _obj.NoPower.DaysLong;
-                    
+
                     table.Rows.Add(newRow);
                 }
             }
@@ -2972,7 +2978,7 @@ namespace scada_analyst
 
             // get what year we are looking at
             int _year = (int)Combo_YearChooser.SelectedItem;
-
+            
             foreach (object item in _input.Items)
             {
                 if (item is Analysis.StructureSmry && _type == TableExportType.BEARING)

@@ -1087,7 +1087,7 @@ namespace scada_analyst.Shared
 
                             // if we are here, there must be no more data for the first week
                             _table.Columns.Add("W" + _incrementor.ToString(), typeof(double));
-                            double _add = _valueCounter != 0 ? Math.Round(_valueCounter / (_valueIncrement * _ratedPower), 1) : double.NaN;
+                            double _add = _valueCounter != 0 ? Math.Round(_valueCounter / (_valueIncrement * _ratedPower) * 100, 1) : double.NaN;
                             newRow["W" + _incrementor.ToString()] = _add;
 
                             // add in previous values we'd otherwise miss, after nulling counters
