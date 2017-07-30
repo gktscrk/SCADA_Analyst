@@ -2914,7 +2914,7 @@ namespace scada_analyst
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     // get which year info we should be looking for
-                    int index = _obj.Capacity.Years.FindIndex(x => x.YearName == _year);
+                    int index = _obj.WindInfo.Years.FindIndex(x => x.YearName == _year);
 
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
                     if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
