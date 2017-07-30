@@ -2863,10 +2863,10 @@ namespace scada_analyst
                         {
                             if (!table.Columns.Contains(_obj.Bearings.Years[i].MonthlyData.Columns[j].ToString()))
                             {
-                                table.Columns.Add(_obj.Bearings.Years[i].MonthlyData.Columns[j]);
+                                table.Columns.Add(_obj.Bearings.Years[i].MonthlyData.Columns[j].ToString(), typeof(string));
                             }
 
-                            newRow[_obj.Bearings.Years[i].MonthlyData.Columns[j]] = _obj.Bearings.Years[i].MonthlyData.Rows[0].ItemArray[j];
+                            newRow[_obj.Bearings.Years[i].MonthlyData.Columns[j].ToString()] = _obj.Bearings.Years[i].MonthlyData.Rows[0].ItemArray[j];
                         }                   
                     }
 
@@ -2895,10 +2895,10 @@ namespace scada_analyst
                         {
                             if (!table.Columns.Contains(_obj.Capacity.Years[i].MonthlyData.Columns[j].ToString()))
                             {
-                                table.Columns.Add(_obj.Capacity.Years[i].MonthlyData.Columns[j]);
+                                table.Columns.Add(_obj.Capacity.Years[i].MonthlyData.Columns[j].ToString(), typeof(string));
                             }
 
-                            newRow[_obj.Capacity.Years[i].MonthlyData.Columns[j]] = _obj.Capacity.Years[i].MonthlyData.Rows[0].ItemArray[j];
+                            newRow[_obj.Capacity.Years[i].MonthlyData.Columns[j].ToString()] = _obj.Capacity.Years[i].MonthlyData.Rows[0].ItemArray[j];
                         }
                     }
 
@@ -2927,10 +2927,10 @@ namespace scada_analyst
                         {
                             if (!table.Columns.Contains(_obj.WindInfo.Years[i].MonthlyData.Columns[j].ToString()))
                             {
-                                table.Columns.Add(_obj.WindInfo.Years[i].MonthlyData.Columns[j]);
+                                table.Columns.Add(_obj.WindInfo.Years[i].MonthlyData.Columns[j].ToString(), typeof(string));
                             }
 
-                            newRow[_obj.WindInfo.Years[i].MonthlyData.Columns[j]] = _obj.WindInfo.Years[i].MonthlyData.Rows[0].ItemArray[j];
+                            newRow[_obj.WindInfo.Years[i].MonthlyData.Columns[j].ToString()] = _obj.WindInfo.Years[i].MonthlyData.Rows[0].ItemArray[j];
                         }
                     }
 
@@ -2980,7 +2980,6 @@ namespace scada_analyst
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
-                    if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
 
                     DataRow newRow = table.NewRow();
 
@@ -2994,10 +2993,11 @@ namespace scada_analyst
                     {
                         if (!table.Columns.Contains(_obj.Bearings.Years[index].WeeklyData.Columns[j].ToString()))
                         {
-                            table.Columns.Add(_obj.Bearings.Years[index].WeeklyData.Columns[j]);
+                            table.Columns.Add(_obj.Bearings.Years[index].WeeklyData.Columns[j].ToString(), typeof(string));
                         }
 
-                        newRow[_obj.Bearings.Years[index].WeeklyData.Columns[j]] = _obj.Bearings.Years[index].WeeklyData.Rows[0].ItemArray[j];
+                        newRow[_obj.Bearings.Years[index].WeeklyData.Columns[j].ToString()] = 
+                            _obj.Bearings.Years[index].WeeklyData.Rows[0].ItemArray[j];
                     }
 
                     table.Rows.Add(newRow);
@@ -3007,7 +3007,6 @@ namespace scada_analyst
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
-                    if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
 
                     DataRow newRow = table.NewRow();
 
@@ -3021,10 +3020,11 @@ namespace scada_analyst
                     {
                         if (!table.Columns.Contains(_obj.Capacity.Years[index].WeeklyData.Columns[j].ToString()))
                         {
-                            table.Columns.Add(_obj.Capacity.Years[index].WeeklyData.Columns[j]);
+                            table.Columns.Add(_obj.Capacity.Years[index].WeeklyData.Columns[j].ToString(), typeof(string));
                         }
 
-                        newRow[_obj.Capacity.Years[index].WeeklyData.Columns[j]] = _obj.Capacity.Years[index].WeeklyData.Rows[0].ItemArray[j];
+                        newRow[_obj.Capacity.Years[index].WeeklyData.Columns[j].ToString()] = 
+                            _obj.Capacity.Years[index].WeeklyData.Rows[0].ItemArray[j].ToString();
                     }
 
                     table.Rows.Add(newRow);
@@ -3034,7 +3034,6 @@ namespace scada_analyst
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     if (item == _input.Items[0]) { table.Columns.Add("Asset ID", typeof(int)); }
-                    if (item == _input.Items[0]) { table.Columns.Add("Total", typeof(string)); }
 
                     DataRow newRow = table.NewRow();
 
@@ -3048,10 +3047,11 @@ namespace scada_analyst
                     {
                         if (!table.Columns.Contains(_obj.WindInfo.Years[index].WeeklyData.Columns[j].ToString()))
                         {
-                            table.Columns.Add(_obj.WindInfo.Years[index].WeeklyData.Columns[j]);
+                            table.Columns.Add(_obj.WindInfo.Years[index].WeeklyData.Columns[j].ToString(), typeof(string));
                         }
 
-                        newRow[_obj.WindInfo.Years[index].WeeklyData.Columns[j]] = _obj.WindInfo.Years[index].WeeklyData.Rows[0].ItemArray[j];
+                        newRow[_obj.WindInfo.Years[index].WeeklyData.Columns[j].ToString()] = 
+                            _obj.WindInfo.Years[index].WeeklyData.Rows[0].ItemArray[j].ToString();
                     }
 
                     table.Rows.Add(newRow);

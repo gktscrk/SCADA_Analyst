@@ -408,9 +408,6 @@ namespace scada_analyst.Shared
                 /// <param name="_mode"></param>
                 public void GetOverallAverage(List<MeteoData.MeteoSample> _yearlyData, MeteoData.MeteoHeader _meteoHeader)
                 {
-                    // get year
-                    _yearName = _yearlyData[0].TimeStamp.Year;
-                    
                     double _staticValues = 0; // this incrementor won't be reset into a new month
                     int _staticCounter = 0;
 
