@@ -12,9 +12,15 @@ namespace scada_analyst.Shared
 
             #region Version 3.000 - Proceeding after Romax
 
-            ProgramVersion v3400 = new ProgramVersion(3300, new DateTime(2017, 07, 29));
+            ProgramVersion v3500 = new ProgramVersion(3500, new DateTime(2017, 07, 30));
+            v3500.AddChange("Changed methodology for capacity factor and wind speed calculations.");
+            v3500.AddChange("Added in a weekly values calculation for wind direction and speed, and capacity factor. These can be exported.");
+            results.Add(v3500);
+
+            ProgramVersion v3400 = new ProgramVersion(3400, new DateTime(2017, 07, 29));
             v3400.AddChange("Changed methodology for capacity factor and wind speed calculations -- all NaN values are now ignored.");
             v3400.AddChange("Exporting summary tables supports wind speed info export as well.");
+            v3400.AddChange("Changed event matching methodology to check only events from the same source.");
             results.Add(v3400);
 
             ProgramVersion v3300 = new ProgramVersion(3300, new DateTime(2017, 07, 28));

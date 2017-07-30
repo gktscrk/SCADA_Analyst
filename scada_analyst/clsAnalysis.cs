@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using scada_analyst.Shared;
+using System.Data;
 
 namespace scada_analyst
 {
@@ -1229,11 +1230,15 @@ namespace scada_analyst
 
                 for (int i = 0; i < currentEvents.Count; i++)
                 {
+                    // this bool prevents the second loop from running to the full
                     bool goIntoHiSpEvents = true;
 
                     for (int j = 0; j < _loSpEvents.Count; j++)
                     {
-                        if (currentEvents[i].EvTimes.Intersect(_loSpEvents[j].EvTimes).Any())
+                        // this code checks whether the asset these two events are from are the same
+                        // and if they are, whether any of the datetimes are from the second list
+                        if (currentEvents[i].SourceAsset == _loSpEvents[j].SourceAsset && 
+                            currentEvents[i].EvTimes.Intersect(_loSpEvents[j].EvTimes).Any())
                         {
                             currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.LO_SP;
 
@@ -1246,10 +1251,10 @@ namespace scada_analyst
                     {
                         for (int k = 0; k < _hiSpEvents.Count; k++)
                         {
-                            if (currentEvents[i].EvTimes.Intersect(_hiSpEvents[k].EvTimes).Any())
+                            if (currentEvents[i].SourceAsset == _hiSpEvents[k].SourceAsset && 
+                                currentEvents[i].EvTimes.Intersect(_hiSpEvents[k].EvTimes).Any())
                             {
                                 currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.HI_SP;
-
                                 break;
                             }
                         }
@@ -1260,7 +1265,7 @@ namespace scada_analyst
 
                     count++;
 
-                    if (count % 10 == 0)
+                    if (count % 50 == 0)
                     {
                         if (progress != null)
                         {
@@ -2119,30 +2124,30 @@ namespace scada_analyst
 
                 for (int i = 0; i < Bearings.Years.Count; i++)
                 {
-                    if (Bearings.Years[i].Years == _year)
+                    if (Bearings.Years[i].YearName == _year)
                     {
-                        _bearInfo = new MetaDataCounter(Bearings.Years[i].Values);
-                        _bearInfo.Overall = Bearings.Years[i].YearStr;
+                        _bearInfo = new MetaDataCounter(Bearings.Years[i].MonthlyData);
+                        _bearInfo.Overall = Bearings.Years[i].ValStr;
                         break;
                     }
                 }
 
                 for (int i = 0; i < Capacity.Years.Count; i++)
                 {
-                    if (Capacity.Years[i].Years == _year)
+                    if (Capacity.Years[i].YearName == _year)
                     {
-                        _capaInfo = new MetaDataCounter(Capacity.Years[i].Values);
-                        _capaInfo.Overall = Capacity.Years[i].YearStr;
+                        _capaInfo = new MetaDataCounter(Capacity.Years[i].MonthlyData);
+                        _capaInfo.Overall = Capacity.Years[i].ValStr;
                         break;
                     }
                 }
 
                 for (int i = 0; i < WindInfo.Years.Count; i++)
                 {
-                    if (WindInfo.Years[i].Years == _year)
+                    if (WindInfo.Years[i].YearName == _year)
                     {
-                        _windData = new MetaDataCounter(WindInfo.Years[i].Values);
-                        _windData.Overall = WindInfo.Years[i].YearStr;
+                        _windData = new MetaDataCounter(WindInfo.Years[i].MonthlyData);
+                        _windData.Overall = WindInfo.Years[i].ValStr;
                         break;
                     }
                 }
@@ -2247,23 +2252,20 @@ namespace scada_analyst
 
                 #region Constructor
 
-                public MetaDataCounter(List<Tuple<int,double,string>> _input)
+                public MetaDataCounter(DataTable _input)
                 {
-                    for (int i = 0; i < _input.Count; i++)
-                    {
-                        if (_input[i].Item1 == 1) { _jan = _input[i].Item3; }
-                        else if (_input[i].Item1 == 2) { _feb = _input[i].Item3; }
-                        else if (_input[i].Item1 == 3) { _mar = _input[i].Item3; }
-                        else if (_input[i].Item1 == 4) { _apr = _input[i].Item3; }
-                        else if (_input[i].Item1 == 5) { _may = _input[i].Item3; }
-                        else if (_input[i].Item1 == 6) { _jun = _input[i].Item3; }
-                        else if (_input[i].Item1 == 7) { _jul = _input[i].Item3; }
-                        else if (_input[i].Item1 == 8) { _aug = _input[i].Item3; }
-                        else if (_input[i].Item1 == 9) { _sep = _input[i].Item3; }
-                        else if (_input[i].Item1 == 10) { _oct = _input[i].Item3; }
-                        else if (_input[i].Item1 == 11) { _nov = _input[i].Item3; }
-                        else if (_input[i].Item1 == 12) { _dec = _input[i].Item3; }
-                    }
+                    _jan = _input.Rows[0].ItemArray[0].ToString();
+                    _feb = _input.Rows[0].ItemArray[1].ToString();
+                    _mar = _input.Rows[0].ItemArray[2].ToString();
+                    _apr = _input.Rows[0].ItemArray[3].ToString();
+                    _may = _input.Rows[0].ItemArray[4].ToString();
+                    _jun = _input.Rows[0].ItemArray[5].ToString();
+                    _jul = _input.Rows[0].ItemArray[6].ToString();
+                    _aug = _input.Rows[0].ItemArray[7].ToString();
+                    _sep = _input.Rows[0].ItemArray[8].ToString();
+                    _oct = _input.Rows[0].ItemArray[9].ToString();
+                    _nov = _input.Rows[0].ItemArray[10].ToString();
+                    _dec = _input.Rows[0].ItemArray[11].ToString();
                 }
 
                 #endregion
