@@ -2837,14 +2837,14 @@ namespace scada_analyst
         private DataTable ToDataTable(ListView _input, TableExportType _type)
         {
             DataTable table = new DataTable();
-
-            // what year is selected
-            int _year = (int)Combo_YearChooser.SelectedItem;
-
+            
             foreach (object item in _input.Items)
             {
                 if (item is Analysis.StructureSmry && _type == TableExportType.BEARING)
                 {
+                    // what year is selected
+                    int _year = (int)Combo_YearChooser.SelectedItem;
+
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     // get which year info we should be looking for
@@ -2878,6 +2878,9 @@ namespace scada_analyst
                 }
                 else if (item is Analysis.StructureSmry && _type == TableExportType.CAPACITY)
                 {
+                    // what year is selected
+                    int _year = (int)Combo_YearChooser.SelectedItem;
+
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     // get which year info we should be looking for
@@ -2911,6 +2914,9 @@ namespace scada_analyst
                 }
                 else if (item is Analysis.StructureSmry && _type == TableExportType.WINDINFO)
                 {
+                    // what year is selected
+                    int _year = (int)Combo_YearChooser.SelectedItem;
+
                     Analysis.StructureSmry _obj = (Analysis.StructureSmry)item;
 
                     // get which year info we should be looking for
