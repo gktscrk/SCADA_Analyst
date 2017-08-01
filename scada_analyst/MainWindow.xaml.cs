@@ -2620,8 +2620,20 @@ namespace scada_analyst
             {
                 MenuItem exportWeeklyEvent_MenuItem = new MenuItem();
                 exportWeeklyEvent_MenuItem.Header = "Export Related Weekly Info to CSV";
-                exportWeeklyEvent_MenuItem.Click += ExportWeekly_MenuItemClick;
+                exportWeeklyEvent_MenuItem.Click += Export_MenuItemClick;
                 menu.Items.Add(exportWeeklyEvent_MenuItem);
+            }
+
+            if (LView_Bearings.SelectedItems.Count > 0)
+            {
+                MenuItem exportDirections_MenuItem = new MenuItem();
+                exportDirections_MenuItem.Header = "Export Related Yearly Info to CSV";
+                exportDirections_MenuItem.Click += ExportYearlyDirsAsync_MenuItemClick;
+                menu.Items.Add(exportDirections_MenuItem);
+                MenuItem exportDirectionsAndSpeed_MenuItem = new MenuItem();
+                exportDirectionsAndSpeed_MenuItem.Header = "Export Related Yearly Info (and Speed) to CSV";
+                exportDirectionsAndSpeed_MenuItem.Click += ExportYearlyDirsAndSpeedAsync_MenuItemClick;
+                menu.Items.Add(exportDirectionsAndSpeed_MenuItem);
             }
 
             if (LView_Bearings.SelectedItems.Count >= 1) { LView_Bearings.ContextMenu = menu; }
@@ -2832,6 +2844,118 @@ namespace scada_analyst
                 }
             }
             catch { }
+        }
+
+        private async void ExportYearlyDirsAsync_MenuItemClick(object sender, RoutedEventArgs e)
+        {
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                int _year = (int)Combo_YearChooser.SelectedItem;
+
+                if (LView_Bearings.SelectedItems.Count > 0)
+                {
+                    if (LView_Bearings.SelectedItems.Count > 0)
+                    {
+                        string _output = GetSaveName();
+
+                        if (_output == "")
+                        {
+                            throw new WritingCancelledException();
+                        }
+                        else
+                        {
+                            DataTable _exportInfo = new DataTable();
+
+                            ProgressBarVisible();
+
+                            await Task.Run(() => 
+                                _exportInfo = _analyser.GetYearlyBearings(_scadaFile, _meteoFile, _year, progress));
+
+                            if (_exportInfo != new DataTable())
+                            {
+                                CreateCSVFile(_exportInfo, _output);
+                            }
+                            else
+                            {
+                                throw new WritingCancelledException();
+                            }
+
+                            ProgressBarInvisible();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
+        }
+
+        private async void ExportYearlyDirsAndSpeedAsync_MenuItemClick(object sender, RoutedEventArgs e)
+        {
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            var progress = new Progress<int>(value =>
+            {
+                UpdateProgress(value);
+            });
+
+            try
+            {
+                int _year = (int)Combo_YearChooser.SelectedItem;
+
+                if (LView_Bearings.SelectedItems.Count > 0)
+                {
+                    if (LView_Bearings.SelectedItems.Count > 0)
+                    {
+                        string _output = GetSaveName();
+
+                        if (_output == "")
+                        {
+                            throw new WritingCancelledException();
+                        }
+                        else
+                        {
+                            List<DataTable> _exportInfo = new List<DataTable>();
+
+                            ProgressBarVisible();
+
+                            await Task.Run(() => _exportInfo = _analyser.GetYearlyBearingsWithSpeed(_scadaFile, _meteoFile, _year, progress));
+
+                            if (_exportInfo != new List<DataTable>())
+                            {
+                                for (int i = 0; i < _exportInfo.Count; i++)
+                                {
+                                    int index = _assetsVw[i].UnitID;
+
+                                    string name = Path.GetDirectoryName(_output) + "\\" + Path.GetFileNameWithoutExtension(_output) + "_" + index + ".csv";
+
+                                    CreateCSVFile(_exportInfo[i], name);
+                                }
+                            }
+                            else
+                            {
+                                throw new WritingCancelledException();
+                            }
+
+                            ProgressBarInvisible();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Warning!", ex.GetType().Name + ": " + ex.Message);
+            }
         }
 
         private DataTable ToDataTable(ListView _input, TableExportType _type)

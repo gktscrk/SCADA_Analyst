@@ -12,6 +12,10 @@ namespace scada_analyst.Shared
 
             #region Version 3.000 - Proceeding after Romax
 
+            ProgramVersion v3600 = new ProgramVersion(3600, new DateTime(2017, 08, 01));
+            v3600.AddChange("Added option to export all yearly bearing data.");
+            results.Add(v3600);
+
             ProgramVersion v3500 = new ProgramVersion(3500, new DateTime(2017, 07, 30));
             v3500.AddChange("Changed methodology for capacity factor and wind speed calculations.");
             v3500.AddChange("Added in a weekly values calculation for wind direction and speed, and capacity factor. These can be exported.");

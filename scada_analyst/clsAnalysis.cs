@@ -116,7 +116,7 @@ namespace scada_analyst
             }
         }
 
-        public List<ScadaData.ScadaSample> GetSpecEventDetails(ScadaData scadaFile, int targetAsset, 
+        public List<ScadaData.ScadaSample> GetSpecEventDetails(ScadaData scadaFile, int targetAsset,
             DateTime _startTime, DateTime _endTime)
         {
             List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
@@ -491,7 +491,7 @@ namespace scada_analyst
                 // every timestep must check what the previous one had as its value
                 int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.OilTemp.Description);
 
-                if (eventData[i].SampleSeparation == ScadaSeprtr && 
+                if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Gearbox.OilTemp.Mean - eventData[i - 1].Gearbox.OilTemp.Mean) > _rateChange[index].MaxVars)
                 {
                     List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
@@ -1091,7 +1091,7 @@ namespace scada_analyst
             #endregion
         }
 
-        private void GetThresholdEvents(List<ScadaData.ScadaSample> eventData, int input, double variable, int index, 
+        private void GetThresholdEvents(List<ScadaData.ScadaSample> eventData, int input, double variable, int index,
             EventData.AnomalySource type)
         {
             // try to build one comprehensive method
@@ -1124,6 +1124,232 @@ namespace scada_analyst
         }
 
         #endregion
+
+        public DataTable GetYearlyBearings(ScadaData _scada, MeteoData _meteo, int _year, IProgress<int> progress)
+        {
+            DataTable _table = new DataTable();
+
+            try
+            {
+                int count = 0;
+
+                // add column for the asset ID 
+                _table.Columns.Add("Asset", typeof(string));
+
+                // for every loaded asset
+                for (int i = 0; i < _assetList.Count; i++)
+                {
+                    int index;
+
+                    DataRow _add = _table.NewRow();
+
+                    // check whether we are dealing with turbines or metmasts
+                    if (_assetList[i].Type == BaseStructure.Types.TURBINE)
+                    {
+                        // get the ID of the one we're investigating
+                        index = _scada.WindFarm.FindIndex(x => x.UnitID == _assetList[i].UnitID);
+
+                        // add asset value
+                        _add["Asset"] = _scada.WindFarm[index].UnitID.ToString();
+
+                        // add samples to the data table
+                        // note that their order is not important!
+                        for (int j = 0; j < _scada.WindFarm[index].DataSorted.Count; j++)
+                        {
+                            if (_scada.WindFarm[index].DataSorted[j].TimeStamp.Year == _year)
+                            {
+                                // if this column does not exist, add it on
+                                if (!_table.Columns.Contains(_scada.WindFarm[index].DataSorted[j].TimeStamp.ToString()))
+                                {
+                                    _table.Columns.Add(_scada.WindFarm[index].DataSorted[j].TimeStamp.ToString(), typeof(string));
+                                }
+
+                                // add the sample value to the column
+                                _add[_scada.WindFarm[index].DataSorted[j].TimeStamp.ToString()] =
+                                    _scada.WindFarm[index].DataSorted[j].YawSys.YawPos.Mean.ToString();
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)((double)100 / _assetList.Count * i +
+                                     (double)j * 100 / _scada.WindFarm[index].DataSorted.Count / _assetList.Count));
+                                }
+                            }
+                        }
+                    }
+                    else if (_assetList[i].Type == BaseStructure.Types.METMAST)
+                    {
+                        // get the ID of the one we're investigating
+                        index = _meteo.MetMasts.FindIndex(x => x.UnitID == _assetList[i].UnitID);
+
+                        // add asset value
+                        _add["Asset"] = _meteo.MetMasts[index].UnitID.ToString();
+
+                        // add samples to the data table
+                        // note that their order is not important!
+                        for (int j = 0; j < _meteo.MetMasts[index].MetDataSorted.Count; j++)
+                        {
+                            if (_meteo.MetMasts[index].MetDataSorted[j].TimeStamp.Year == _year)
+                            {
+                                // if this column does not exist, add it on
+                                if (!_table.Columns.Contains(_meteo.MetMasts[index].MetDataSorted[j].TimeStamp.ToString()))
+                                {
+                                    _table.Columns.Add(_meteo.MetMasts[index].MetDataSorted[j].TimeStamp.ToString(), typeof(string));
+                                }
+
+                                // add the sample value to the column but also check for what height samples
+                                if (_meteo.MetrHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                                {
+                                    _add[_meteo.MetMasts[index].MetDataSorted[j].TimeStamp.ToString()] =
+                                        _meteo.MetMasts[index].MetDataSorted[j].Dircs.Metres10.Mean.ToString();
+                                }
+                                else if (_meteo.MetrHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT ||
+                                    _meteo.MetrHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.BOTH)
+                                {
+                                    _add[_meteo.MetMasts[index].MetDataSorted[j].TimeStamp.ToString()] =
+                                        _meteo.MetMasts[index].MetDataSorted[j].Dircs.MetresRt.Mean.ToString();
+                                }
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)((double)100 / _assetList.Count * i +
+                                     (double)j * 100 / _meteo.MetMasts[index].MetDataSorted.Count / _assetList.Count));
+                                }
+                            }
+                        }
+                    }
+
+                    // lastly, definitely helps to add the row to the table
+                    _table.Rows.Add(_add);
+                }
+            }
+            catch { }
+
+            return _table;
+        }
+
+        public List<DataTable> GetYearlyBearingsWithSpeed(ScadaData _scada, MeteoData _meteo, int _year, IProgress<int> progress)
+        {
+            List<DataTable> _tableList = new List<DataTable>();
+
+            try
+            {
+                int count = 0;
+
+                // for every loaded asset
+                for (int i = 0; i < _assetList.Count; i++)
+                {
+                    // add a new table for every asset
+                    _tableList.Add(new DataTable());
+                    DataTable _thisTable = _tableList[_tableList.Count - 1];
+
+                    // add column for the asset ID 
+                    _thisTable.Columns.Add("Direction", typeof(string));
+                    _thisTable.Columns.Add("Speed", typeof(string));
+
+                    int index;
+
+                    // check whether we are dealing with turbines or metmasts
+                    if (_assetList[i].Type == BaseStructure.Types.TURBINE)
+                    {
+                        // get the ID of the one we're investigating
+                        index = _scada.WindFarm.FindIndex(x => x.UnitID == _assetList[i].UnitID);
+                        
+                        // add samples to the data table
+                        // note that their order is not important!
+                        for (int j = 0; j < _scada.WindFarm[index].DataSorted.Count; j++)
+                        {
+                            if (_scada.WindFarm[index].DataSorted[j].TimeStamp.Year == _year)
+                            {
+                                DataRow _add = _thisTable.NewRow();
+
+                                // add the sample value to the column
+                                _add["Direction"] = _scada.WindFarm[index].DataSorted[j].YawSys.YawPos.Mean.ToString("#.0");
+                                _add["Speed"] = _scada.WindFarm[index].DataSorted[j].Anemo.ActWinds.Mean.ToString("#.00");
+
+                                // lastly, definitely helps to add the row to the table
+                                _thisTable.Rows.Add(_add);
+
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)((double)100 / _assetList.Count * i +
+                                     (double)j * 100 / _scada.WindFarm[index].DataSorted.Count / _assetList.Count));
+                                }
+                            }
+                        }
+                    }
+                    else if (_assetList[i].Type == BaseStructure.Types.METMAST)
+                    {
+                        // get the ID of the one we're investigating
+                        index = _meteo.MetMasts.FindIndex(x => x.UnitID == _assetList[i].UnitID);
+                        
+                        // add samples to the data table
+                        // note that their order is not important!
+                        for (int j = 0; j < _meteo.MetMasts[index].MetDataSorted.Count; j++)
+                        {
+                            if (_meteo.MetMasts[index].MetDataSorted[j].TimeStamp.Year == _year)
+                            {
+                                DataRow _add = _thisTable.NewRow();
+
+                                // add the sample value to the column but also check for what height samples
+                                if (_meteo.MetrHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                                {
+                                    _add["Direction"] = _meteo.MetMasts[index].MetDataSorted[j].Dircs.Metres10.Mean.ToString("#.0");
+                                }
+                                else if (_meteo.MetrHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT ||
+                                    _meteo.MetrHeader.Dircs.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.BOTH)
+                                {
+                                    _add["Direction"] = _meteo.MetMasts[index].MetDataSorted[j].Dircs.MetresRt.Mean.ToString("#.0");
+                                }
+
+                                // add the sample value to the column but also check for what height samples
+                                if (_meteo.MetrHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.M_10)
+                                {
+                                    _add["Speed"] = _meteo.MetMasts[index].MetDataSorted[j].Speed.Metres10.Mean.ToString("#.00");
+                                }
+                                else if (_meteo.MetrHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.ROT ||
+                                    _meteo.MetrHeader.Speed.Measured == MeteoData.MeteoSample.HeightInfo.MeasuringHeight.BOTH)
+                                {
+                                    _add["Speed"] = _meteo.MetMasts[index].MetDataSorted[j].Speed.MetresRt.Mean.ToString("#.00");
+                                }
+
+                                // lastly, definitely helps to add the row to the table
+                                _thisTable.Rows.Add(_add);
+                            }
+
+                            count++;
+
+                            if (count % 1000 == 0)
+                            {
+                                if (progress != null)
+                                {
+                                    progress.Report((int)((double)100 / _assetList.Count * i +
+                                     (double)j * 100 / _meteo.MetMasts[index].MetDataSorted.Count / _assetList.Count));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return _tableList;
+        }
 
         #endregion
 
