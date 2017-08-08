@@ -12,6 +12,12 @@ namespace scada_analyst.Shared
 
             #region Version 3.000 - Proceeding after Romax
 
+            ProgramVersion v3700 = new ProgramVersion(3700, new DateTime(2017, 08, 08));
+            v3700.AddChange("Exporting average data for explored events is now possible.");
+            v3700.AddChange("Averages for nacelle and power output now save properly.");
+            v3700.AddChange("Averages caveats: Importing data with loaded averages means that the average graph does not display as this presently needs the averages to be calculated based on data in the program.");
+            results.Add(v3700);
+
             ProgramVersion v3600 = new ProgramVersion(3600, new DateTime(2017, 08, 01));
             v3600.AddChange("Added option to export all yearly bearing data.");
             results.Add(v3600);

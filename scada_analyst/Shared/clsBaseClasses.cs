@@ -75,7 +75,7 @@ namespace scada_analyst.Shared
         #region Variables
 
         private bool _positionsLoaded = false;
-        private int _unitID = -1;
+        private int _unitID = -1; // don't change from -1, otherwise unexpected behaviour might occur
 
         private GridPosition _position;
         private MetaDataSetup _bearings = new MetaDataSetup();

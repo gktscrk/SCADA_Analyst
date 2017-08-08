@@ -60,6 +60,7 @@
                 <MenuItem Header="_SCADA Data" Click="ExportScadaDataAsync" />
                 <Separator/>
                 <MenuItem Header="_Export Date Range Only" IsCheckable="True" Name="CBox_DateRangeExport" />
+                <MenuItem Header="_Export Event Averages" IsCheckable="True" Name="CBox_EventAverageExport" />
                 <MenuItem Header="_Export Settings" Click="SetExportSettings" />
             </MenuItem>
             <MenuItem Header="_Analysis Options">

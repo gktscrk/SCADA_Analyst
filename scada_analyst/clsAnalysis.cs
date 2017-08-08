@@ -486,27 +486,35 @@ namespace scada_analyst
 
             #region Gearbox
 
+            // for all samples in the dataset
             for (int i = 1; i < eventData.Count; i++)
             {
-                // every timestep must check what the previous one had as its value
+                // find which index in the list of thresholds concerns itself with this variable
                 int index = _rateChange.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.OilTemp.Description);
 
+                // if the variable difference between this sample and the previous one is higher than the limit
                 if (eventData[i].SampleSeparation == ScadaSeprtr &&
                     Math.Abs(eventData[i].Gearbox.OilTemp.Mean - eventData[i - 1].Gearbox.OilTemp.Mean) > _rateChange[index].MaxVars)
                 {
+                    // create a new sample data list and add a first sample to it
                     List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                     thisEvent.Add(eventData[i - 1]); thisEvent.Add(eventData[i]);
 
+                    // and now check how long this rate of change-crossing happened for
                     for (int j = i + 1; j < eventData.Count; j++)
                     {
+                        // if the samples are further apart than the SCADA sample interval (standard 10 min), break
                         if (eventData[j].SampleSeparation > ScadaSeprtr) { i = j - 1; break; }
 
+                        // if the sample value is below the rate of change limit, break
                         if (Math.Abs(eventData[j].Gearbox.OilTemp.Mean - eventData[j - 1].Gearbox.OilTemp.Mean) < _rateChange[index].MaxVars) { i = j - 1; break; }
                         else if (j == eventData.Count - 1) { i = j; }
 
+                        // otherwise add to this rate of change-crossing list
                         thisEvent.Add(eventData[j]);
                     }
 
+                    // once those have been checked, create a rate of change-crossing event which is displayed
                     _rChngEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_OIL));
                 }
             }
@@ -827,25 +835,34 @@ namespace scada_analyst
 
             #region Gearbox
 
+            // for all samples in the dataset
             for (int i = 0; i < eventData.Count; i++)
             {
+                // find which index in the list of thresholds concerns itself with this variable
                 int index = _thresholds.FindIndex(x => x.Type == AnalyticLimit.Equipment.GEARBOX && x.VarName == _gbox.OilTemp.Description);
 
+                // if the variable at that sample is higher than the user-specified value...
                 if (eventData[i].Gearbox.OilTemp.Mean > _thresholds[index].MaxVars)
                 {
+                    // create a new sample data list and add a first sample to it
                     List<ScadaData.ScadaSample> thisEvent = new List<ScadaData.ScadaSample>();
                     thisEvent.Add(eventData[i]);
 
+                    // and now check how long this threshold-crossing happened for
                     for (int j = i + 1; j < eventData.Count; j++)
                     {
+                        // if the samples are further apart than the SCADA sample interval (standard 10 min), break
                         if (eventData[j].SampleSeparation > ScadaSeprtr) { i = j - 1; break; }
 
+                        // if the sample value is below the threshold value, break
                         if (eventData[j].Gearbox.OilTemp.Mean < _thresholds[index].MaxVars) { i = j - 1; break; }
                         else if (j == eventData.Count - 1) { i = j; }
 
+                        // otherwise add to this threshold-crossing list
                         thisEvent.Add(eventData[j]);
                     }
 
+                    // once those have been checked, create a threshold-crossing event which is displayed
                     _thresEvnts.Add(new EventData(thisEvent, scada_analyst.EventData.AnomalySource.GEAR_OIL));
                 }
             }
@@ -1454,38 +1471,46 @@ namespace scada_analyst
             {
                 int count = 0;
 
+                // check all events that have been found
                 for (int i = 0; i < currentEvents.Count; i++)
                 {
-                    // this bool prevents the second loop from running to the full
+                    // this boolean prevents the second loop from running if culprit is found already
                     bool goIntoHiSpEvents = true;
 
+                    // start by checking in low speed events list
                     for (int j = 0; j < _loSpEvents.Count; j++)
                     {
-                        // this code checks whether the asset these two events are from are the same
-                        // and if they are, whether any of the datetimes are from the second list
+                        // this code checks whether the asset these two events are from is the same
+                        // and if it is, whether any of the datetimes also belong to the second list
                         if (currentEvents[i].SourceAsset == _loSpEvents[j].SourceAsset && 
                             currentEvents[i].EvTimes.Intersect(_loSpEvents[j].EvTimes).Any())
                         {
+                            // if they do, we have confirmed the association, and we can break this loop
                             currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.LO_SP;
-
-                            goIntoHiSpEvents = false;
-                            break;
+                            goIntoHiSpEvents = false; break;
                         }
                     }
 
                     if (goIntoHiSpEvents)
                     {
+                        // if we did not confirm the association before, we are in this loop
+
+                        // check all the high speed events as well
                         for (int k = 0; k < _hiSpEvents.Count; k++)
                         {
+                            // this code checks whether the asset these two events are from is the same
+                            // and if it is, whether any of the datetimes also belong to the second list
                             if (currentEvents[i].SourceAsset == _hiSpEvents[k].SourceAsset && 
                                 currentEvents[i].EvTimes.Intersect(_hiSpEvents[k].EvTimes).Any())
                             {
+                                // and if the association is confirmed, we can break out from this loop
                                 currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.HI_SP;
                                 break;
                             }
                         }
                     }
 
+                    // if an association was not found, we need to classify it as 'OTHER'
                     if (currentEvents[i].AssocEv == scada_analyst.EventData.EventAssoct.NONE)
                     { currentEvents[i].AssocEv = scada_analyst.EventData.EventAssoct.OTHER; }
 
@@ -1590,7 +1615,7 @@ namespace scada_analyst
             catch { throw; }
         }
 
-        private List<EventData> AddDaytimesToEvents(List<EventData> currentEvents, IProgress<int> progress, int start = 0)
+        private List<EventData> AddDaytimesToEvents(List<EventData> _currentEvents, IProgress<int> progress, int start = 0)
         {
             // this method will contain the search for whether a non power production
             // event took place during the day or during the night by calculating the 
@@ -1598,11 +1623,14 @@ namespace scada_analyst
 
             int count = 0;
 
-            for (int i = 0; i < currentEvents.Count; i++)
+            // check all events that have been found
+            for (int i = 0; i < _currentEvents.Count; i++)
             {
-                Structure asset = _assetList.Where(x => x.UnitID == currentEvents[i].SourceAsset).FirstOrDefault();
+                // find out which structure we are working with
+                Structure _asset = _assetList.Where(x => x.UnitID == _currentEvents[i].SourceAsset).FirstOrDefault();
 
-                currentEvents[i].DayTime = scada_analyst.EventData.GetEventDayTime(currentEvents[i], asset);
+                // assign the time of day to this event
+                _currentEvents[i].DayTime = scada_analyst.EventData.GetEventDayTime(_currentEvents[i], _asset);
 
                 count++;
 
@@ -1610,12 +1638,12 @@ namespace scada_analyst
                 {
                     if (progress != null)
                     {
-                        progress.Report((int)(start + 0.5 * i / currentEvents.Count * 100.0));
+                        progress.Report((int)(start + 0.5 * i / _currentEvents.Count * 100.0));
                     }
                 }
             }
 
-            return currentEvents;
+            return _currentEvents;
         }
 
         public void RemoveProcessedDaytimes(IProgress<int> progress)

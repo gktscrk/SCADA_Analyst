@@ -499,6 +499,8 @@ namespace scada_analyst
 
         private void ChooseAndDisplayCorrectGraph()
         {
+            // first method creates the menu choices
+            // and in the second the choice is displayed
             CreateVariableChoice();
             DisplayCorrectEventDetails(_usingPreviousWeekForGraphing);
         }
@@ -547,7 +549,76 @@ namespace scada_analyst
             //LBL_ClickInfo.Content = "Info: " + point.Y + "° C at " + time;
         }
 
-        private void ChartShowSeries(string _equipment, string _variable, bool _previousWeekIncluded)
+        private void DisplayCorrectEventDetails(bool _graphIncludingPreviousWeek)
+        {
+            if (Combo_EventDetailsEquipmentChoice.SelectedIndex != -1)
+            {
+                string _variable;
+
+                // check if that selection is null just in case
+                if (Combo_EquipmentVariableChoice.SelectedItem != null) { _variable = Combo_EquipmentVariableChoice.SelectedItem.ToString(); }
+                else { _variable = Combo_EquipmentVariableChoice.Items[0].ToString(); }
+
+                // this here chooses what to display in the events details view in order to 
+                // show the right information based on what is chosen in the combobox
+                if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _eventDetailsSelection[0])
+                {
+                    Combo_EquipmentVariableChoice.Visibility = Visibility.Collapsed;
+
+                    LView_EventExplorer_Main.Visibility = Visibility.Visible;
+                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                    LChart_Basic.Visibility = Visibility.Collapsed;
+
+                    LView_EventExplorer_Gearbox.SelectedIndex = -1;
+                    LView_EventExplorer_Generator.SelectedIndex = -1;
+                    LView_EventExplorer_MainBear.SelectedIndex = -1;
+                }
+                else
+                {
+                    Combo_EquipmentVariableChoice.Visibility = Visibility.Visible;
+
+                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
+                    LChart_Basic.Visibility = Visibility.Visible;
+
+                    LView_EventExplorer_Main.SelectedIndex = -1;
+
+                    if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _gbox.Name)
+                    {
+                        LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
+                        LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                        DisplaySeriesOnGraph(_gbox.Name, _variable, _graphIncludingPreviousWeek);
+
+                        LView_EventExplorer_Generator.SelectedIndex = -1;
+                        LView_EventExplorer_MainBear.SelectedIndex = -1;
+                    }
+                    else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _genr.Name)
+                    {
+                        LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_Generator.Visibility = Visibility.Visible;
+                        LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
+                        DisplaySeriesOnGraph(_genr.Name, _variable, _graphIncludingPreviousWeek);
+
+                        LView_EventExplorer_Gearbox.SelectedIndex = -1;
+                        LView_EventExplorer_MainBear.SelectedIndex = -1;
+                    }
+                    else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _mbrg.Name)
+                    {
+                        LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
+                        LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
+                        DisplaySeriesOnGraph(_mbrg.Name, _variable, _graphIncludingPreviousWeek);
+
+                        LView_EventExplorer_Gearbox.SelectedIndex = -1;
+                        LView_EventExplorer_Generator.SelectedIndex = -1;
+                    }
+                }
+            }
+        }
+
+        private void DisplaySeriesOnGraph(string _equipment, string _variable, bool _previousWeekIncluded)
         {
             try
             {
@@ -736,75 +807,6 @@ namespace scada_analyst
                 }
             }
             catch { throw; }
-        }
-
-        private void DisplayCorrectEventDetails(bool _graphIncludingPreviousWeek)
-        {
-            if (Combo_EventDetailsEquipmentChoice.SelectedIndex != -1)
-            {
-                string _variable;
-
-                // check if that selection is null just in case
-                if (Combo_EquipmentVariableChoice.SelectedItem != null) { _variable = Combo_EquipmentVariableChoice.SelectedItem.ToString(); }
-                else { _variable = Combo_EquipmentVariableChoice.Items[0].ToString(); }
-
-                // this here chooses what to display in the events details view in order to 
-                // show the right information based on what is chosen in the combobox
-                if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _eventDetailsSelection[0])
-                {
-                    Combo_EquipmentVariableChoice.Visibility = Visibility.Collapsed;
-
-                    LView_EventExplorer_Main.Visibility = Visibility.Visible;
-                    LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                    LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                    LChart_Basic.Visibility = Visibility.Collapsed;
-
-                    LView_EventExplorer_Gearbox.SelectedIndex = -1;
-                    LView_EventExplorer_Generator.SelectedIndex = -1;
-                    LView_EventExplorer_MainBear.SelectedIndex = -1;
-                }
-                else
-                {
-                    Combo_EquipmentVariableChoice.Visibility = Visibility.Visible;
-
-                    LView_EventExplorer_Main.Visibility = Visibility.Collapsed;
-                    LChart_Basic.Visibility = Visibility.Visible;
-
-                    LView_EventExplorer_Main.SelectedIndex = -1;
-
-                    if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _gbox.Name)
-                    {
-                        LView_EventExplorer_Gearbox.Visibility = Visibility.Visible;
-                        LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                        LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                        ChartShowSeries(_gbox.Name, _variable, _graphIncludingPreviousWeek);
-
-                        LView_EventExplorer_Generator.SelectedIndex = -1;
-                        LView_EventExplorer_MainBear.SelectedIndex = -1;
-                    }
-                    else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _genr.Name)
-                    {
-                        LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                        LView_EventExplorer_Generator.Visibility = Visibility.Visible;
-                        LView_EventExplorer_MainBear.Visibility = Visibility.Collapsed;
-                        ChartShowSeries(_genr.Name, _variable, _graphIncludingPreviousWeek);
-
-                        LView_EventExplorer_Gearbox.SelectedIndex = -1;
-                        LView_EventExplorer_MainBear.SelectedIndex = -1;
-                    }
-                    else if ((string)Combo_EventDetailsEquipmentChoice.SelectedItem == _mbrg.Name)
-                    {
-                        LView_EventExplorer_Gearbox.Visibility = Visibility.Collapsed;
-                        LView_EventExplorer_Generator.Visibility = Visibility.Collapsed;
-                        LView_EventExplorer_MainBear.Visibility = Visibility.Visible;
-                        ChartShowSeries(_mbrg.Name, _variable, _graphIncludingPreviousWeek);
-
-                        LView_EventExplorer_Gearbox.SelectedIndex = -1;
-                        LView_EventExplorer_Generator.SelectedIndex = -1;
-                    }
-                }
-            }
         }
 
         private void PickDetailedBeginTime(object sender, RoutedEventArgs e)
@@ -1266,10 +1268,10 @@ namespace scada_analyst
         /// <param name="e"></param>
         private async void ExportScadaDataAsync(object sender, RoutedEventArgs e)
         {
-            await GenericScadaExportAsync(ScadaData.ExportMode.FULL);
+            await GenericScadaExportAsync(_scadaFile, ScadaData.ExportMode.FULL);
         }
 
-        private async Task GenericScadaExportAsync(ScadaData.ExportMode _exportMode)
+        private async Task GenericScadaExportAsync(ScadaData _exportData, ScadaData.ExportMode _exportMode)
         {
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
@@ -1281,7 +1283,7 @@ namespace scada_analyst
 
             try
             {
-                if (_scadaFile.WindFarm.Count != 0)
+                if (_exportData.WindFarm.Count != 0)
                 {
                     // set a default file name and filters
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -1307,7 +1309,7 @@ namespace scada_analyst
                                 { _dataExportEndTm = Common.StringToDateTime(endCal.TextBox_Calendar.Text, Common.DateFormat.DMY); }
                             }
 
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
+                            await Task.Run(() => _exportData.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 exportPowMaxm, exportPowMinm, exportPowMean, exportPowStdv,
                                 exportAmbMaxm, exportAmbMinm, exportAmbMean, exportAmbStdv,
                                 exportWSpMaxm, exportWSpMinm, exportWSpMean, exportWSpStdv,
@@ -1321,7 +1323,7 @@ namespace scada_analyst
                         {
                             // this export option is for the specific event only but needs different options 
                             // for various timeframes
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
+                            await Task.Run(() => _exportData.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 false, false, exportPowMean, false,
                                 false, false, exportAmbMean, false,
                                 false, false, exportWSpMean, false,
@@ -1336,7 +1338,7 @@ namespace scada_analyst
                         {
                             // this export option is for the specific event only but needs different options 
                             // for various timeframes
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
+                            await Task.Run(() => _exportData.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 false, false, exportPowMean, false,
                                 false, false, exportAmbMean, false,
                                 false, false, exportWSpMean, false,
@@ -1351,7 +1353,7 @@ namespace scada_analyst
                         {
                             // this export option is for the specific event only but needs different options 
                             // for various timeframes
-                            await Task.Run(() => _scadaFile.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
+                            await Task.Run(() => _exportData.ExportFiles(progress, saveFileDialog.FileName, exportTimeInf, exportAssetId,
                                 false, false, exportPowMean, false,
                                 false, false, exportAmbMean, false,
                                 false, false, exportWSpMean, false,
@@ -3267,17 +3269,23 @@ namespace scada_analyst
             else if (LView_EventExplorer_Generator.SelectedItems.Count > 0) { _target = LView_EventExplorer_Generator; }
             else if (LView_EventExplorer_MainBear.SelectedItems.Count > 0) { _target = LView_EventExplorer_MainBear; }
 
+            string ttip = "This will provide two prompts if the average export option is checked in the export options menu" +
+                " with the second prompt representing the export file output for the averages data.";
+
             // add relevant menuitems
             MenuItem exportEventOnly_MenuItem = new MenuItem();
             exportEventOnly_MenuItem.Header = "Export Event Only";
+            exportEventOnly_MenuItem.ToolTip = ttip;
             exportEventOnly_MenuItem.Click += ExportEvent_MenuItem_Click;
             menu.Items.Add(exportEventOnly_MenuItem);
             MenuItem exportEventWeek_MenuItem = new MenuItem();
             exportEventWeek_MenuItem.Header = "Export Event and Preceding Week";
+            exportEventWeek_MenuItem.ToolTip = ttip;
             exportEventWeek_MenuItem.Click += ExportEventWeek_MenuItem_Click;
             menu.Items.Add(exportEventWeek_MenuItem);
             MenuItem exportEventHistory_MenuItem = new MenuItem();
             exportEventHistory_MenuItem.Header = "Export Full Event History";
+            exportEventHistory_MenuItem.ToolTip = ttip;
             exportEventHistory_MenuItem.Click += ExportEventHistory_MenuItem_Click;
             menu.Items.Add(exportEventHistory_MenuItem);
 
@@ -3287,17 +3295,38 @@ namespace scada_analyst
 
         private async void ExportEvent_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_ONLY);
+            await GenericScadaExportAsync(_scadaFile, ScadaData.ExportMode.EVENT_ONLY);
+
+            if (CBox_EventAverageExport.IsChecked)
+            {
+                ScadaData _averages = new ScadaData(_analyser.FleetMeans);
+
+                await GenericScadaExportAsync(_averages, ScadaData.ExportMode.EVENT_ONLY);
+            }
         }
 
         private async void ExportEventWeek_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_WEEK);
+            await GenericScadaExportAsync(_scadaFile, ScadaData.ExportMode.EVENT_WEEK);
+
+            if (CBox_EventAverageExport.IsChecked)
+            {
+                ScadaData _averages = new ScadaData(_analyser.FleetMeans);
+
+                await GenericScadaExportAsync(_averages, ScadaData.ExportMode.EVENT_WEEK);
+            }
         }
 
         private async void ExportEventHistory_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            await GenericScadaExportAsync(ScadaData.ExportMode.EVENT_HISTORIC);
+            await GenericScadaExportAsync(_scadaFile, ScadaData.ExportMode.EVENT_HISTORIC);
+
+            if (CBox_EventAverageExport.IsChecked)
+            {
+                ScadaData _averages = new ScadaData(_analyser.FleetMeans);
+
+                await GenericScadaExportAsync(_averages, ScadaData.ExportMode.EVENT_HISTORIC);
+            }
         }
 
         #endregion
