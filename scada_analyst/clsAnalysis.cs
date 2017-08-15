@@ -1295,7 +1295,6 @@ namespace scada_analyst
 
                                 // lastly, definitely helps to add the row to the table
                                 _thisTable.Rows.Add(_add);
-
                             }
 
                             count++;
